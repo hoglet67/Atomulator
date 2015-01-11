@@ -101,16 +101,6 @@ void loadroms()
 	load_rom("roms/afloat.rom",             ROM_SIZE_ATOM,          ROM_OFS_AFLOAT);
 	load_rom("roms/abasic.rom",             ROM_SIZE_ATOM,          ROM_OFS_ABASIC);
 	load_rom("roms/axr1.rom",               ROM_SIZE_ATOM,          ROM_OFS_UTILITY);
-
-/*SP6 CHANGES*/
-
-	load_rom("roms/atom_bbc_ext1.rom",      ROM_SIZE_ATOM,	    ROM_OFS_BBC_EXT1);
-	load_rom("roms/atom_bbc_ext2.rom",      ROM_SIZE_ATOM,	    ROM_OFS_BBC_EXT2);
-	load_rom("roms/atom_bbc_basic2.rom",    ROM_SIZE_BBC_BASIC,     ROM_OFS_BBC_BASIC1);
-	load_rom("roms/atom_bbc_mos3.rom",      ROM_SIZE_ATOM,          ROM_OFS_BBC_OS);
-
-/*END SP6*/
-
 	load_rom("roms/ramrom.rom",             RAM_ROM_SIZE,           ROM_OFS_RAMROM);
 
 }
@@ -182,7 +172,7 @@ void set_rr_ptrs()
 // Re-written for 1.20 to reflect latest RAMROM ROM Layout - see roms.h
 void reset_rom()
 {
-    debuglog("reset_rom(), ramrom=%d, bbcmode=%d\n",ramrom_enable, bbcmode);
+    debuglog("reset_rom(), ramrom=%d, bbcmode=%d\n",ramrom_enable, RR_bit_set(RAMROM_FLAG_BBCMODE));
     set_rr_ptrs();    
     debuglog("reset_rom():done\n");
 }
@@ -191,329 +181,209 @@ uint8_t fetcheddat[32];
 
 uint8_t readmeml(uint16_t addr)
 {
-	if (debugon)
-		debugread(addr);
+    if (debugon) {
+        debugread(addr);
+    }
 
-	if (pc == addr)
-		fetchc[addr] = 31;
+    if (pc == addr) {
+        fetchc[addr] = 31;
+    } else {
+        readc[addr] = 31;
+    }
+
+    switch (addr & 0xFC00) {
+    case 0x0000:         /*Block zero RAM*/
+	return ram[addr];
+
+    case 0x0400: case 0x0C00:
+    case 0x1000: case 0x1400: case 0x1800: case 0x1C00:
+    case 0x2000: case 0x2400:         /*DOS RAM*/
+    case 0x2800: case 0x2C00:
+    case 0x3000: case 0x3400: case 0x3800: case 0x3C00:
+    case 0x4000: case 0x4400: case 0x4800: case 0x4C00:
+    case 0x5000: case 0x5400: case 0x5800: case 0x5C00:
+    case 0x6000: case 0x6400: case 0x6800: case 0x6C00:
+	return ram[addr];
+        
+    case 0x7000: case 0x7400: case 0x7800: case 0x7C00:
+	if(!ramrom_enable || (RR_enables & RAMROM_FLAG_EXTRAM)==0)
+	    return ram[addr];
+
+    case 0x8000: case 0x8400: case 0x8800: case 0x8C00:         /*Video RAM*/
+    case 0x9000: case 0x9400: case 0x9800: case 0x9C00:
+	if (snow && cycles >= 0 && cycles < 32)
+	    fetcheddat[31 - cycles] = ram[addr];
+	return ram[addr];
+	
+    case 0x0800:
+	if ((addr & 0x0F00) == 0x0A00)    /*FDC*/
+            {
+                if(ramrom_enable && RR_BLKA_enabled())
+                    return ram[addr];
+                else
+                    return read8271(addr);                  /*FDC*/
+            }
 	else
-		readc[addr] = 31;
+	    return ram[addr];
+	
+    case 0xB000:         /*8255 PIA*/
+	return read8255(addr);
+	
+    case 0xB400:
+	return ReadMMC(addr);
+	
+    case 0xB800:         /*6522 VIA*/
+	return readvia(addr);
+        
+    case 0xBC00:
+	if((sndatomsid) && (addr>=0xBDC0) && (addr<=0xBDDF))
+	    return sid_read(addr & 0x1F);
+                
+	if(ramrom_enable)
+            {
+                switch(addr)
+		    {
+                    case 0xBFFF :
+                        return (0xB0 | (RR_bankreg & 0x0F));
 
-	if (!bbcmode)
-	{
-		switch (addr & 0xFC00)
-		{
-		case 0x0000:         /*Block zero RAM*/
-			return ram[addr];
+                    case 0xBFFE :
+                        return (0xB0 | (RR_enables & 0x0F));
+                        
+                    case 0xBFFD :
+                        return (0xB0 | (RR_jumpers & 0x0F));
+                        
+                    default:
+                        return 0xBF;
+		    }
+            }
 
-		case 0x0400: case 0x0C00:
-		case 0x1000: case 0x1400: case 0x1800: case 0x1C00:
-		case 0x2000: case 0x2400:         /*DOS RAM*/
-		case 0x2800: case 0x2C00:
-		case 0x3000: case 0x3400: case 0x3800: case 0x3C00:
-		case 0x4000: case 0x4400: case 0x4800: case 0x4C00:
-		case 0x5000: case 0x5400: case 0x5800: case 0x5C00:
-		case 0x6000: case 0x6400: case 0x6800: case 0x6C00:
-			return ram[addr];
-		
-		case 0x7000: case 0x7400: case 0x7800: case 0x7C00:
-			if(!ramrom_enable || (RR_enables & RAMROM_FLAG_EXTRAM)==0)
-				return ram[addr];
+    case 0xA000: case 0xA400: case 0xA800: case 0xAC00:         /*Utility ROM*/
+	return utility_ptr[addr & 0x0FFF];
 
-		case 0x8000: case 0x8400: case 0x8800: case 0x8C00:         /*Video RAM*/
-		case 0x9000: case 0x9400: case 0x9800: case 0x9C00:
-			if (snow && cycles >= 0 && cycles < 32)
-				fetcheddat[31 - cycles] = ram[addr];
-			return ram[addr];
+    case 0xC000: case 0xC400: case 0xC800: case 0xCC00:         /*BASIC*/
+	return abasic_ptr[addr & 0x0FFF];
 
-		case 0x0800:
-			if ((addr & 0x0F00) == 0x0A00)	/*FDC*/
-			{
-				if(ramrom_enable && RR_BLKA_enabled())
-					return ram[addr];
-				else
-					return read8271(addr);                  /*FDC*/
-			}
-			else
-				return ram[addr];
+    case 0xD000: case 0xD400: case 0xD800: case 0xDC00:         /*Floating point ROM*/
+	return afloat_ptr[addr & 0x0FFF];
 
-		case 0xB000:         /*8255 PIA*/
-			return read8255(addr);
+    case 0xE000: case 0xE400: case 0xE800: case 0xEC00:         /*Disc ROM*/
+	return dosrom_ptr[addr & 0x0FFF];
 
-		case 0xB400:
-			return ReadMMC(addr);
-
-		case 0xB800:         /*6522 VIA*/
-			return readvia(addr);
-			
-		case 0xBC00:
-			if((sndatomsid) && (addr>=0xBDC0) && (addr<=0xBDDF))
-				return sid_read(addr & 0x1F);
-				
-			if(ramrom_enable)
-			{
-				switch(addr)
-				{
-					case 0xBFFF :
-						return (0xB0 | (RR_bankreg & 0x0F));
-
-					case 0xBFFE :
-						return (0xB0 | (RR_enables & 0x0F));
-						
-					case 0xBFFD :
-						return (0xB0 | (RR_jumpers & 0x0F));
-						
-					default:
-						return 0xBF;
-				}
-			}
-
-		case 0xA000: case 0xA400: case 0xA800: case 0xAC00:         /*Utility ROM*/
-			return utility_ptr[addr & 0x0FFF];
-
-		case 0xC000: case 0xC400: case 0xC800: case 0xCC00:         /*BASIC*/
-			return abasic_ptr[addr & 0x0FFF];
-
-		case 0xD000: case 0xD400: case 0xD800: case 0xDC00:         /*Floating point ROM*/
-			return afloat_ptr[addr & 0x0FFF];
-
-		case 0xE000: case 0xE400: case 0xE800: case 0xEC00:         /*Disc ROM*/
-			return dosrom_ptr[addr & 0x0FFF];
-
-		case 0xF000: case 0xF400: case 0xF800: case 0xFC00:         /*Kernel*/
-			return akernel_ptr[addr & 0x0FFF];
-		}
-	}
-	else
-	{
-		switch (addr & 0xFC00)
-		{
-
-/*SP6 CHANGES*/
-
-		case 0x0000: case 0x0400: case 0x0800: case 0x0C00:         /*RAM*/
-		case 0x1000: case 0x1400: case 0x1800: case 0x1C00:
-		case 0x2000: case 0x2400: case 0x2800: case 0x2C00:
-		case 0x3000: case 0x3400: case 0x3800: case 0x3C00:
-		case 0x4000: case 0x4400: case 0x4800: case 0x4C00:
-		case 0x5000: case 0x5400: case 0x5800: case 0x5C00:
-			return ram[addr];
-
-		case 0x6000: case 0x6400: case 0x6800: case 0x6C00:         /*MOSEXT1*/
-			return rom[(addr & 0x0FFF) + ROM_OFS_BBC_EXT1];
-
-		case 0x7000: case 0x7400: case 0x7800: case 0x7C00:         /*MOSEXT2*/
-			return rom[(addr & 0x0FFF) + ROM_OFS_BBC_EXT2];
-
-		case 0x8000: case 0x8400: case 0x8800: case 0x8C00:         /*Video RAM*/
-		case 0x9000: case 0x9400: case 0x9800: case 0x9C00:
-			if (snow && cycles >= 0 && cycles < 32)
-				fetcheddat[31 - cycles] = ram[addr];
-			return ram[addr];
-
-		case 0xA000: case 0xA400: case 0xA800: case 0xAC00:         /*BBC BASIC1*/
-			return rom[(addr & 0x0FFF) + ROM_OFS_BBC_BASIC1];
-
-		case 0xB000:							      /*8255 PIA*/
-			return read8255(addr);
-
-		case 0xB400:							      /*AtoMMC*/
-			return ReadMMC(addr);
-
-		case 0xB800:         /*6522 VIA*/
-			return readvia(addr);
-
-		case 0xBC00:
-			return;
-
-		case 0xC000: case 0xC400: case 0xC800: case 0xCC00:         /*BBC BASIC2*/
-			return rom[(addr & 0x0FFF) + ROM_OFS_BBC_BASIC2];
-		case 0xD000: case 0xD400: case 0xD800: case 0xDC00:
-			return rom[(addr & 0x0FFF) + ROM_OFS_BBC_BASIC3];
-		case 0xE000: case 0xE400: case 0xE800: case 0xEC00:
-			return rom[(addr & 0x0FFF) + ROM_OFS_BBC_BASIC4];
-
-		case 0xF000: case 0xF400: case 0xF800: case 0xFC00:         /*BBC MOS3*/
-			return rom[(addr & 0xFFF) + ROM_OFS_BBC_OS];
-
-/*END SP6*/
-
-		}
-	}
-	return 0;
-//        printf("Error : Bad read from %04X\n",addr);
-//        dumpregs();
-//        exit(-1);
+    case 0xF000: case 0xF400: case 0xF800: case 0xFC00:         /*Kernel*/
+	return akernel_ptr[addr & 0x0FFF];
+    }
+    return 0;
 }
 
 void writememl(uint16_t addr, uint8_t val)
 {
-	if (debugon)
-		debugwrite(addr, val);
-	writec[addr] = 31;
+    if (debugon) {
+        debugwrite(addr, val);
+    }
 
-	if (!bbcmode)
-	{
-		switch (addr & 0xFC00)
-		{
-		case 0x0000:         /*Block zero RAM*/
-			ram[addr] = val;
-			return;
+    writec[addr] = 31;
 
-		case 0x0400:						   case 0x0C00:
-		case 0x1000: case 0x1400: case 0x1800: case 0x1C00:
-		case 0x2000: case 0x2400:         /*DOS RAM*/
-		case 0x2800: case 0x2C00:
-		case 0x3000: case 0x3400: case 0x3800: case 0x3C00:
-		case 0x4000: case 0x4400: case 0x4800: case 0x4C00:
-		case 0x5000: case 0x5400: case 0x5800: case 0x5C00:
-		case 0x6000: case 0x6400: case 0x6800: case 0x6C00:
-			ram[addr] = val;
-			return;
-
-		case 0x7000: case 0x7400: case 0x7800: case 0x7C00:
-			if(!ramrom_enable || (RR_enables & RAMROM_FLAG_EXTRAM)==0)
-			{
-				ram[addr] = val;
-				return;
-			}
-			
-		case 0x8000: case 0x8400: case 0x8800: case 0x8C00:         /*Video RAM*/
-		case 0x9000: case 0x9400: case 0x9800: case 0x9C00:
-			if (snow && cycles >= 0 && cycles < 32)
-				fetcheddat[31 - cycles] = val;
-			ram[addr] = val;
-			return;
-
-		case 0x0800:
-			if ((addr & 0x0F00) == 0xA00)	/*FDC*/
-			{
-				if(ramrom_enable && RR_BLKA_enabled())
-					ram[addr]=val;
-				else
-					write8271(addr, val); 
-				
-				return;
-			}   
-			else
-				ram[addr]=val;
-                                                      
-			return;
-			
-		case 0xB000:         /*8255 PIA*/
-			write8255(addr, val);
-			return;
-
-		case 0xB800:         /*6522 VIA*/
-			if (addr < 0xB810)
-				writevia(addr, val);
-//                        if (addr=0xBFFF) rpclog("Write BFFF %02X\n",val);
-			return;
-		
-		case 0xB400:
-			
-//			debuglog("addr=%04X, val=%02X\n",addr,val);
-			
-			WriteMMC(addr,val);
-			return;
-			
-		case 0xBC00:
-			if((sndatomsid) && (addr>=0xBDC0) && (addr<=0xBDDF))
-			{
-				sid_write(addr & 0x1F,val);
-				return;
-			}
-	
-			if(ramrom_enable)
-			{
-				switch(addr)
-				{
-
-					case 0xBFFF :
-						RR_bankreg = val & 0x0F;
-						set_rr_ptrs();
-						break;
-					
-					case 0xBFFE :
-						RR_enables = val & 0x0F;
-						set_rr_ptrs();
-						break;
-				}
-			}
-		
-		case 0xA000: case 0xA400: case 0xA800: case 0xAC00:             /*Utility ROM*/
-			// Special case of RAM mapped into utility rom space and rom bank 0 selected
-
-			if(ramrom_enable && (RR_enables & RAMROM_FLAG_EXTRAM) && (RR_bankreg==0))
-				utility_ptr[addr & 0x0FFF]=val;
-			break;
-			
-		case 0xC000: case 0xC400: case 0xC800: case 0xCC00:             /*BASIC*/
-		case 0xD000: case 0xD400: case 0xD800: case 0xDC00:             /*Floating point ROM*/
-		case 0xE000: case 0xE400: case 0xE800: case 0xEC00:             /*Disc ROM*/
-		case 0xF000: case 0xF400: case 0xF800: case 0xFC00:             /*Kernel*/
-
-			return;
-		}
-	}
-	else
-	{
-		switch (addr & 0xFC00)
-		{
-
-/*SP6 CHANGES*/
-
-		case 0x0000: case 0x0400: case 0x0800: case 0x0C00:         /*RAM*/
-		case 0x1000: case 0x1400: case 0x1800: case 0x1C00:
-		case 0x2000: case 0x2400: case 0x2800: case 0x2C00:
-		case 0x3000: case 0x3400: case 0x3800: case 0x3C00:
-		case 0x4000: case 0x4400: case 0x4800: case 0x4C00:
-		case 0x5000: case 0x5400: case 0x5800: case 0x5C00:
-			ram[addr] = val;
-			return;
-
-		case 0x6000: case 0x6400: case 0x6800: case 0x6C00:
-		case 0x7000: case 0x7400: case 0x7800: case 0x7C00:
-			return;
-
-		case 0x8000: case 0x8400: case 0x8800: case 0x8C00:         /*Video RAM*/
-		case 0x9000: case 0x9400: case 0x9800: case 0x9C00:
-			if (snow && cycles >= 0 && cycles < 32)
-				fetcheddat[31 - cycles] = val;
-			ram[addr] = val;
-			return;
-
-		case 0xA000: case 0xA400: case 0xA800: case 0xAC00:         /*BBC BASIC1*/
-			return;
-
-		case 0xB000:							      /*8255 PIA*/
-			write8255(addr, val);
-			return;
-
-		case 0xB400:								/*AtoMMC*/
-			WriteMMC(addr,val);
-			return;
-
-		case 0xB800:							      /*6522 VIA - not emulated*/
-			writevia(addr, val);
-			return;
-
-		case 0xBC00:
-			return;
-
-		case 0xC000: case 0xC400: case 0xC800: case 0xCC00:		/*BBC BASIC2*/
-		case 0xD000: case 0xD400: case 0xD800: case 0xDC00:
-		case 0xE000: case 0xE400: case 0xE800: case 0xEC00:
-			return;
-
-		case 0xF000: case 0xF400: case 0xF800: case 0xFC00:         /*Kernel*/
-			return;
-
-/*END SP6*/
-
-		}
-	}
+    switch (addr & 0xFC00) {
+    case 0x0000:         /*Block zero RAM*/
+	ram[addr] = val;
 	return;
+
+    case 0x0400:                           case 0x0C00:
+    case 0x1000: case 0x1400: case 0x1800: case 0x1C00:
+    case 0x2000: case 0x2400:         /*DOS RAM*/
+    case 0x2800: case 0x2C00:
+    case 0x3000: case 0x3400: case 0x3800: case 0x3C00:
+    case 0x4000: case 0x4400: case 0x4800: case 0x4C00:
+    case 0x5000: case 0x5400: case 0x5800: case 0x5C00:
+    case 0x6000: case 0x6400: case 0x6800: case 0x6C00:
+	ram[addr] = val;
+	return;
+
+    case 0x7000: case 0x7400: case 0x7800: case 0x7C00:
+	if(!ramrom_enable || (RR_enables & RAMROM_FLAG_EXTRAM)==0)
+	    {
+		ram[addr] = val;
+		return;
+	    }
+            
+    case 0x8000: case 0x8400: case 0x8800: case 0x8C00:         /*Video RAM*/
+    case 0x9000: case 0x9400: case 0x9800: case 0x9C00:
+	if (snow && cycles >= 0 && cycles < 32)
+	    fetcheddat[31 - cycles] = val;
+	ram[addr] = val;
+	return;
+
+    case 0x0800:
+	if ((addr & 0x0F00) == 0xA00)    /*FDC*/
+	    {
+		if(ramrom_enable && RR_BLKA_enabled())
+		    ram[addr]=val;
+		else
+		    write8271(addr, val); 
+                
+		return;
+	    }   
+	else
+	    ram[addr]=val;
+                                                      
+	return;
+            
+    case 0xB000:         /*8255 PIA*/
+	write8255(addr, val);
+	return;
+
+    case 0xB800:         /*6522 VIA*/
+	if (addr < 0xB810)
+	    writevia(addr, val);
+	//                        if (addr=0xBFFF) rpclog("Write BFFF %02X\n",val);
+	return;
+        
+    case 0xB400:
+            
+	//            debuglog("addr=%04X, val=%02X\n",addr,val);
+            
+	WriteMMC(addr,val);
+	return;
+            
+    case 0xBC00:
+	if((sndatomsid) && (addr>=0xBDC0) && (addr<=0xBDDF))
+	    {
+		sid_write(addr & 0x1F,val);
+		return;
+	    }
+    
+	if(ramrom_enable)
+	    {
+		switch(addr)
+		    {
+
+		    case 0xBFFF :
+			RR_bankreg = val & 0x0F;
+			set_rr_ptrs();
+			break;
+                    
+		    case 0xBFFE :
+			RR_enables = val & 0x0F;
+			set_rr_ptrs();
+			break;
+		    }
+	    }
+        
+    case 0xA000: case 0xA400: case 0xA800: case 0xAC00:             /*Utility ROM*/
+	// Special case of RAM mapped into utility rom space and rom bank 0 selected
+
+	if(ramrom_enable && (RR_enables & RAMROM_FLAG_EXTRAM) && (RR_bankreg==0))
+	    utility_ptr[addr & 0x0FFF]=val;
+	break;
+            
+    case 0xC000: case 0xC400: case 0xC800: case 0xCC00:             /*BASIC*/
+    case 0xD000: case 0xD400: case 0xD800: case 0xDC00:             /*Floating point ROM*/
+    case 0xE000: case 0xE400: case 0xE800: case 0xEC00:             /*Disc ROM*/
+    case 0xF000: case 0xF400: case 0xF800: case 0xFC00:             /*Kernel*/
+
+	return;
+    }
+    return;
 //        printf("Error : Bad write to %04X data %02X\n",addr,val);
 //        dumpregs();
 //        exit(-1);

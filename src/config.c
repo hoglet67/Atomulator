@@ -92,9 +92,8 @@ void loadconfig()
 		sprintf(BaseMMCPath,"%s%s",exedir,DEF_MMC_DIR);
 	
 	colourboard 	= get_config_int(NULL, LABEL_COLOUR, 1);
-	bbcmode 		= get_config_int(NULL, LABEL_BBCBASIC, 0);
 	snow 			= get_config_int(NULL, LABEL_SNOW, 0);
-	ramrom_enable 	= get_config_int(NULL, LABEL_RAMROM, 0);
+	ramrom_enable 	= get_config_int(NULL, LABEL_RAMROM, 1);
 	RR_jumpers 		= get_config_int(NULL, LABEL_RAMROMJMP, 0);
 
 	fasttape 		= get_config_int(NULL, LABEL_FASTTAPE, 0);
@@ -135,7 +134,6 @@ void saveconfig()
 	set_config_string(NULL, LABEL_MMC_PATH,BaseMMCPath);
 
 	set_config_int(NULL, LABEL_COLOUR, colourboard);
-	set_config_int(NULL, LABEL_BBCBASIC, bbcmode);
 	set_config_int(NULL, LABEL_SNOW, snow);
 	set_config_int(NULL, LABEL_RAMROM,ramrom_enable);
 	set_config_int(NULL, LABEL_RAMROMJMP,RR_jumpers);

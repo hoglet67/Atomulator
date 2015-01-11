@@ -80,7 +80,7 @@ void updatelinuxgui()
 	soundmenu[3].flags = (sndddnoise) ? D_SELECTED : 0;
 
 	hardmenu[0].flags = (colourboard) ? D_SELECTED : 0;
-	hardmenu[1].flags = (bbcmode) ? D_SELECTED : 0;
+	hardmenu[1].flags = (RR_jumpers & RAMROM_FLAG_BBCMODE) ? D_SELECTED : 0;
 
 	ddtypemenu[0].flags = (!ddtype) ? D_SELECTED : 0;
 	ddtypemenu[1].flags = (ddtype) ? D_SELECTED : 0;
@@ -457,7 +457,7 @@ int gui_colour()
 
 int gui_bbc()
 {
-	bbcmode = !bbcmode;
+	RR_jumpers ^= RAMROM_FLAG_BBCMODE;
 	resetit = 1;
 	updatelinuxgui();
 	return D_O_K;

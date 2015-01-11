@@ -104,9 +104,9 @@ void initmenu()
 
 	hmenu = GetMenu(ghwnd);
 	CheckMenuItem(hmenu, IDM_HARD_COLOUR, colourboard ? MF_CHECKED : MF_UNCHECKED);
-	CheckMenuItem(hmenu, IDM_HARD_BBC, bbcmode ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(hmenu, IDM_HARD_BBC, (RR_jumpers & RAMROM_FLAG_BBCMODE) ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hmenu, IDM_RAMROM_ENABLE, ramrom_enable ? MF_CHECKED : MF_UNCHECKED);
-	CheckMenuItem(hmenu, IDM_RAMROM_DISKROM, (RR_jumpers & RAMROM_FLAG_JMPDISK) ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(hmenu, IDM_RAMROM_DISKROM, (RR_jumpers & RAMROM_FLAG_DISKROM) ? MF_CHECKED : MF_UNCHECKED);
 
 	CheckMenuItem(hmenu, IDM_VID_SNOW, snow ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hmenu, IDM_TAPES_NORMAL, fasttape ? MF_UNCHECKED : MF_CHECKED);
@@ -656,8 +656,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
 		case IDM_HARD_BBC:
 			atompause=1;
-			bbcmode = !bbcmode;
-			CheckMenuItem(hmenu, LOWORD(wParam), bbcmode ? MF_CHECKED : MF_UNCHECKED);
+			RR_jumpers ^= RAMROM_FLAG_BBCMODE;
+			CheckMenuItem(hmenu, LOWORD(wParam), (RR_jumpers & RAMROM_FLAG_BBCMODE) ? MF_CHECKED : MF_UNCHECKED);
 			atom_reset(1);
 			atompause=0;
 			return 0;
@@ -669,8 +669,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			return 0;
 
 		case IDM_RAMROM_DISKROM:
-			RR_jumpers ^= RAMROM_FLAG_JMPDISK;
-			CheckMenuItem(hmenu, IDM_RAMROM_DISKROM, (RR_jumpers & RAMROM_FLAG_JMPDISK) ? MF_CHECKED : MF_UNCHECKED);
+			RR_jumpers ^= RAMROM_FLAG_DISKROM;
+			CheckMenuItem(hmenu, IDM_RAMROM_DISKROM, (RR_jumpers & RAMROM_FLAG_DISKROM) ? MF_CHECKED : MF_UNCHECKED);
 			atom_reset(1);
 			return 0;
 

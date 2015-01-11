@@ -26,7 +26,6 @@ int cswpoint;
 //#define printf rpclog
 
 int colourboard;
-int bbcmode;
 
 // SP3 FOR JOYSTICK SUPPORT
 

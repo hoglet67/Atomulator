@@ -107,26 +107,16 @@
 // if emuspeed is faster than this then ramrom returns fast speed.
 #define RAMROM_EMU_FAST			6
 
-// RAMROM bitmaps for 0xBFFD
-#define RAMROM_FLAG_JMPDISK		0x04
-#define	RAMROM_FLAG_FAST		0x08
-
-// RAMROM bitmaps for 0xBFFE
+// RAMROM bitmaps for 0xBFFD/0xBFFE
 #define RAMROM_FLAG_EXTRAM		0x01
 #define RAMROM_FLAG_BLKA_RAM		0x02
 #define RAMROM_FLAG_DISKROM		0x04
-
-// SP7 BBC MODE PATCH
-
 #define RAMROM_FLAG_BBCMODE		0x08
 
-// END SP7 BBC MODE PATCH
+#define RR_bit_set(bit)			((RR_enables ^ RR_jumpers) & bit)
 
-// SP8 SPEED/BBC MODE BIT PATCH
-
-#define RR_bit_set(bit)			(0!=((RR_enables ^ (RR_jumpers & 7)) & bit))
-
-// END SP8 SPEED/BBC MODE PATCH
-
-#define RR_BLKA_enabled()		(0!=((RR_jumpers & RAMROM_FLAG_JMPDISK) ^ ((RR_enables & RAMROM_FLAG_BLKA_RAM)<<1)))
-
+// Only enable Block A RAM if requested, and if DISKROM is not enabled
+// Currently there is no GUI option to control BLKA, so the normal value of this bit is 0
+// This can be toggled by setting bit 1 of ?#BFFE
+// I have actually inverted it's meaning, so the default behaviour is to enable the BLKA RAM when DISROM is disabled 
+#define RR_BLKA_enabled()		(!RR_bit_set(RAMROM_FLAG_BLKA_RAM) && !RR_bit_set(RAMROM_FLAG_DISKROM))

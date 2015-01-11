@@ -265,18 +265,10 @@ uint8_t debuglastcommand = 0;
 
 uint8_t dreadmem(uint16_t addr)
 {
-	if (!bbcmode)
-	{
-		if (addr >= 0xA00 && addr < 0xAFF)
-			return 0xFF;
-		if (addr >= 0xB000 && addr < 0xBFFF)
-			return 0xFF;
-	}
-	else
-	{
-		if (addr >= 0x7000 && addr < 0x7FFF)
-			return 0xFF;
-	}
+	if (addr >= 0xA00 && addr < 0xAFF)
+		return 0xFF;
+	if (addr >= 0xB000 && addr < 0xBFFF)
+		return 0xFF;
 	return readmem(addr);
 }
 enum
