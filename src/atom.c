@@ -49,6 +49,30 @@ void rpclog(char *format, ...)
 	fflush(rlog);
 }
 
+/*SP7 CHANGES*/
+
+FILE *plog;
+void prtbuf(char *format, ...)
+{
+	char buf[256];
+
+//   return;
+	
+	sprintf(buf,"%s/pbuf.txt",exedir);
+	
+	if (!plog)
+		plog = fopen(buf, "wt");
+//turn;
+	va_list ap;
+	va_start(ap, format);
+	vsprintf(buf, format, ap);
+	va_end(ap);
+	fputs(buf, plog);
+	fflush(plog);
+}
+
+/*END SP7*/
+
 int tapeon;
 uint8_t *ram;
 char filelist[256][17];

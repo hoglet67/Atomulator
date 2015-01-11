@@ -37,6 +37,12 @@
 
 // END SP3
 
+// SP7 PRINTER BUFFFER
+
+#define IDM_PRINTER         40063 // Printerbuffer support
+
+// END SP7
+
 #define IDM_DDV_33          40070
 #define IDM_DDV_66          40071
 #define IDM_DDV_100         40072

@@ -86,7 +86,7 @@ void updatetimers()
 
 void writevia(uint16_t addr, uint8_t val)
 {
-        rpclog("VIA write %04X %02X %04X\n",addr,val,pc);
+//        rpclog("VIA write %04X %02X %04X\n",addr,val,pc);
 	switch (addr & 0xF)
 	{
 	case ORA:
@@ -95,8 +95,20 @@ void writevia(uint16_t addr, uint8_t val)
 	case ORAnh:
 		via.ora = val;
 		via.porta = (via.porta & ~via.ddra) | (via.ora & via.ddra);
-		break;
 
+/*SP7 CHANGES*/
+
+	switch (val)
+	{
+	case 13:
+		prtbuf("\n");
+		break;
+	default:
+		prtbuf("%C",val);
+	}
+/*END SP7*/
+
+		break;
 	case ORB:
 		via.orb = val;
 		via.portb = (via.portb & ~via.ddrb) | (via.orb & via.ddrb);

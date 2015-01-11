@@ -3,6 +3,13 @@
 #define MAXPATH	512
 
 void rpclog(char *format, ...);
+
+/*SP7 CHANGES*/
+
+void prtbuf(char *format, ...);
+
+/*END SP7*/
+
 extern char exedir[MAXPATH+1];
 
 void startblit();
