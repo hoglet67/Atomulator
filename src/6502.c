@@ -121,7 +121,7 @@ void set_rr_ptrs()
 	int c;
 
 // SP5 CHANGES
-//	utility_ptr = &rom[ROM_OFS_RAMROM + (RR_bankreg * ROM_SIZE_ATOM)];
+	utility_ptr = &rom[ROM_OFS_RAMROM + (RR_bankreg * ROM_SIZE_ATOM)];
 // END SP5
 
 	if (ramrom_enable)

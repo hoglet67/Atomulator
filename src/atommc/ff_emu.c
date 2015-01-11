@@ -217,14 +217,24 @@ FRESULT f_read (
 )
 {
 	DWORD	ptrpos;
-	
+	int	bytesread;
+	int	error;
+
 	ptrpos=fp->fptr;
-	*br=read((int)fp->fs,buff,btr);
-	
-//	rpclog("f_read(%d) offset=%d[%04X],result=%d\n",btr,ptrpos,ptrpos,*br);
+	bytesread=read((int)fp->fs,buff,btr);
+	*br=bytesread;
+
+	debuglog("f_read(%d) offset=%d[%04X],result=%d\n",btr,ptrpos,ptrpos,*br);
 //	HexDumpHead(buff,btr);
 	
 	update_FIL(fp,0,0);
+
+	if(bytesread<0)
+	{
+		error=errno;
+		return error;
+	}
+
 	
 	if(*br>=0)
 	{
@@ -234,7 +244,7 @@ FRESULT f_read (
 
 FRESULT f_write (
 	FIL *fp,			/* Pointer to the file object */
-	const void *buff,	/* Pointer to the data to be written */
+	const void *buff,		/* Pointer to the data to be written */
 	UINT btw,			/* Number of bytes to write */
 	UINT *bw			/* Pointer to number of bytes written */
 )
@@ -244,6 +254,9 @@ FRESULT f_write (
 	int 	error;
 	
 	ptrpos=fp->fptr;
+
+// SP9 START 
+
 	written=write((int)fp->fs,buff,btw);
 	*bw=written;
 
@@ -254,15 +267,17 @@ FRESULT f_write (
 	{
 		error=errno;
 		debuglog("errno: %s [%d]\n",strerror(error),error);
+		return error;		/* Return correct error for RAF */
 	}
 	
 	if(*bw>=0)
 	{
 		update_FIL(fp,0,0);
-		
 		return FR_OK;
 	}
 }
+
+// SP9 END
 
 FRESULT f_close (
 	FIL *fp		/* Pointer to the file object to be closed */
@@ -356,7 +371,7 @@ FRESULT f_lseek (
 )
 {
 	lseek((int)fp->fs,ofs,SEEK_SET);
-	
+	update_FIL(fp,0,0);	
 	return FR_OK;
 }
 

@@ -74,7 +74,7 @@ int createwindow(HINSTANCE hThisInstance, int nFunsterStil)
 
 /*SP8 CHANGES*/
 
-		"Atomulator v1.19",                                                                                                      /* Title Text */
+		"Atomulator v1.20",                                                                                                      /* Title Text */
 
 /*END SP8*/
 
@@ -800,11 +800,13 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			fskipmax = frameskips[emuspeed];
 			CheckMenuItem(hmenu, IDM_SPD_10 + emuspeed, MF_CHECKED);
 			
+/*SP8 CHANGE CORRECTED SPEEDFLAG
+
 			if(emuspeed >= RAMROM_EMU_FAST)
 				RR_jumpers |= RAMROM_FLAG_FAST;
 			else
 				RR_jumpers &= ~RAMROM_FLAG_FAST;
-				
+*SP8 END */				
 			break;
 		}
         if (LOWORD(wParam)>=IDM_SID_TYPE && LOWORD(wParam)<(IDM_SID_TYPE+100))
