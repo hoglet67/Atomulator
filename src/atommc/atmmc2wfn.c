@@ -407,7 +407,7 @@ BYTE tryOpenImage(imgInfo* imginf)
 
 void saveDrivesImpl(void)
 {
-   FIL *fil = &fildata[0];
+   FIL *fil = &fildata[0];
 #if (PLATFORM==PLATFORM_PIC)
    strcpypgm2ram((char*)&globalData[0], (const rom far char*)"BOOTDRV.CFG");
 #elif (PLATFORM==PLATFORM_AVR)
