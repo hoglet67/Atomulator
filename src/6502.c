@@ -1,3 +1,4 @@
+
 /*Atomulator v1.0 by Tom Walker
    6502 emulation*/
 #include <allegro.h>
@@ -394,7 +395,7 @@ void writememl(uint16_t addr, uint8_t val)
 	if (debugon)
 		debugwrite(addr, val);
 	writec[addr] = 31;
-	
+
 	if (!bbcmode)
 	{
 		switch (addr & 0xFC00)
@@ -653,11 +654,13 @@ uint8_t tempb;
 		a = (al & 0xF) | (ah << 4);				 \
 	}
 
+/*SP8 CHANGE SBC(oper,X) */
+
 #define SBC(temp)       if (!p.d)			     \
 	{				   \
 		tempw = a - (temp + (p.c ? 0 : 1));    \
 		tempv = (int16_t)a - (int16_t)(temp + (p.c ? 0 : 1));		 \
-		p.v = ((a ^ (temp + (p.c ? 0 : 1))) & (a ^ (int16_t)tempv) & 0x80); \
+		p.v = (((a ^ temp) & 0x80) && ((a ^ tempw) & 0x80));  \
 		p.c = tempv >= 0; \
 		a = tempw & 0xFF;	       \
 		setzn(a);		   \
@@ -689,6 +692,9 @@ uint8_t tempb;
 		}				    \
 		a = (al & 0xF) | ((ah & 0xF) << 4);		    \
 	}
+
+/*SP8 END */
+
 
 int lns;
 uint8_t opcode;
@@ -1869,6 +1875,18 @@ void exec6502(int linenum, int cpl)
 				p.c = (x >= temp);
 				polltime(3);
 				break;
+
+/*SP8 CHANGE SBC(oper,X) */
+
+			case 0xE1:         /*SBC (,x)*/
+			temp = readmem(pc) + x; pc++;
+			addr = readmem(temp) | (readmem(temp + 1) << 8);
+			temp = readmem(addr);
+			SBC(temp);
+			polltime(6);
+			break;
+
+/*SP8 END */
 
 			case 0xE4:         /*CPX zp*/
 				addr = readmem(pc); pc++;

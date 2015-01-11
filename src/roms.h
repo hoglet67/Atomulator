@@ -75,6 +75,11 @@
 
 // END SP7 BBC MODE PATCH
 
-#define RR_bit_set(bit)			(0!=((RR_enables ^ RR_jumpers) & bit))
+// SP8 SPEED/BBC MODE BIT PATCH
+
+#define RR_bit_set(bit)			(0!=((RR_enables ^ (RR_jumpers & 7)) & bit))
+
+// END SP8 SPEED/BBC MODE PATCH
+
 #define RR_BLKA_enabled()		(0!=((RR_jumpers & RAMROM_FLAG_JMPDISK) ^ ((RR_enables & RAMROM_FLAG_BLKA_RAM)<<1)))
 
