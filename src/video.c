@@ -362,7 +362,7 @@ void drawline(int line)
 			}
 
 			addr = ((line + 1) << 5) | 0x8000;
-rpclog("addr=%04X\n",addr);
+			// rpclog("addr=%04X\n",addr);
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[addr + x];
 

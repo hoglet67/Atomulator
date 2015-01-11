@@ -115,112 +115,76 @@ void loadroms()
 
 }
 
+// Re-written for 1.20 to reflect latest RAMROM ROM Layout - see roms.h
 void set_rr_ptrs()
 {
+    int c;
 
-	int c;
+    // Leave the pointers alone if ramrom is disabled
+    if (ramrom_enable) {        
+        rpclog("Running with Ramoth RAMROM roms\n");
+        rpclog("RR_enables=%2X, RR_bankreg=%2X\n",RR_enables, RR_bankreg);
 
-// SP5 CHANGES
-	utility_ptr = &rom[ROM_OFS_RAMROM + (RR_bankreg * ROM_SIZE_ATOM)];
-// END SP5
-
-	if (ramrom_enable)
-	{
-
-		// Select what is mapped into $A000 block, this allows the 
-		// mapping of rom or ram into the utility block so that a 
-		// rom may be loaded from disk and then mapped in.
-		if ((RR_enables & RAMROM_FLAG_EXTRAM) && (RR_bankreg==0))
-			utility_ptr = &ram[0x7000];
-
-// SP5 CHANGES
-//		else
-			utility_ptr = &rom[ROM_OFS_RAMROM + (RR_bankreg * ROM_SIZE_ATOM)];
-// END SP5
-		
-		rpclog("RR_enables=%2X, RR_bankreg=%2X\n",RR_enables, RR_bankreg);
-		rpclog("utility_ptr set to %X\n\n",utility_ptr);
-
-		// select Kernel and dosrom based on jumper setting.
-		// The kernel needs to be changed as well as the dosrom, as the ramrom 
-		// has a modified kernel to allow the starting of the AtoMMC firmware
-		// when it resides at $E000.
-		// Note as of 2012-06-28 the real ram-rom does not do this (yet).
-		if (ramrom_enable && RR_bit_set(RAMROM_FLAG_DISKROM))
-		{
-			dosrom_ptr      = &rom[ROM_OFS_RR_DOSROM];
-			akernel_ptr     = &rom[ROM_OFS_RR_AKERNEL];
-		}
-		else
-		{
-			dosrom_ptr      = &rom[ROM_OFS_DOSROM];
-			akernel_ptr     = &rom[ROM_OFS_AKERNEL];
-		}
-
-/*SP6 CHANGES*/
-
-		// switch #C/D/E/F into BBC mode
-		// copy MOSEXT1 rom to &6000-&6FFF
-		// copy MOSEXT2 rom to &7000-&7FFF
-		// Note added by Hoglet in Atom GODIL
-		if (ramrom_enable && RR_bit_set(RAMROM_FLAG_BBCMODE))
-		{
-			abasic_ptr      = &rom[ROM_OFS_BBC_BASIC2];
-			afloat_ptr      = &rom[ROM_OFS_BBC_BASIC3];
-			dosrom_ptr      = &rom[ROM_OFS_BBC_BASIC4];
-			akernel_ptr     = &rom[ROM_OFS_BBC_OS];
-			rpclog("Running with BBC mode roms\n");
-			utility_ptr = &rom[ROM_OFS_RAMROM];
-
-			for (c = 0; c < 0x1000; c++)
-				{
-					ram[0x6000 + c] = rom[ROM_OFS_BBC_EXT1 + c];
-					ram[0x7000 + c] = rom[ROM_OFS_BBC_EXT2 + c];
-				}
-		}
-
-/*END SP6*/
-
+        if (RR_bit_set(RAMROM_FLAG_BBCMODE)) {
+            // BBC Mode 
+            rpclog("Running with BBC mode roms\n");
+            utility_ptr     = &rom[ROM_OFS_RR_BBC_BASIC1];
+            abasic_ptr      = &rom[ROM_OFS_RR_BBC_BASIC2];
+            afloat_ptr      = &rom[ROM_OFS_RR_BBC_BASIC3];
+            dosrom_ptr      = &rom[ROM_OFS_RR_BBC_BASIC4];
+            akernel_ptr     = &rom[ROM_OFS_RR_BBC_OS];
+            for (c = 0; c < 0x1000; c++) {
+                ram[0x6000 + c] = rom[ROM_OFS_RR_BBC_EXT1 + c + (RR_bankreg * ROM_SIZE_ATOM)];
+		ram[0x7000 + c] = rom[ROM_OFS_RR_BBC_EXT2 + c];
+            }
+        } else {	    
+	    // Atom Mode
+	    if (RR_bit_set(RAMROM_FLAG_DISKROM)) {
+                // Atom Mode with DISKROM = 1
+                rpclog("Running with Atom mode roms, diskrom flag = 1\n");
+		abasic_ptr      = &rom[ROM_OFS_RR_ABASIC1];
+		afloat_ptr      = &rom[ROM_OFS_RR_AFLOAT1];
+		dosrom_ptr      = &rom[ROM_OFS_RR_DOSROM1];
+		akernel_ptr     = &rom[ROM_OFS_RR_AKERNEL1];
+	    } else {
+	        // Atom Mode with DISKROM = 0
+	        rpclog("Running with Atom mode roms, diskrom flag = 1\n");
+		abasic_ptr      = &rom[ROM_OFS_RR_ABASIC0];
+		afloat_ptr      = &rom[ROM_OFS_RR_AFLOAT0];
+		dosrom_ptr      = &rom[ROM_OFS_RR_DOSROM0];
+		akernel_ptr     = &rom[ROM_OFS_RR_AKERNEL0];
+            }
+	    // Select what is mapped into $A000 block, this allows the 
+	    // mapping of rom or ram into the utility block so that a 
+	    // rom may be loaded from disk and then mapped in.
+	    if ((RR_enables & RAMROM_FLAG_EXTRAM) && (RR_bankreg==0)) {
+	        utility_ptr = &ram[0x7000];
+	    } else {
+                utility_ptr = &rom[ROM_OFS_RR_UTILITY + (RR_bankreg * ROM_SIZE_ATOM)];
+	    }
 	}
+    } else {
+        rpclog("Running with standard roms\n");
+        utility_ptr     = &rom[ROM_OFS_UTILITY];
+        abasic_ptr      = &rom[ROM_OFS_ABASIC];
+        afloat_ptr      = &rom[ROM_OFS_AFLOAT];
+        dosrom_ptr      = &rom[ROM_OFS_DOSROM];
+        akernel_ptr     = &rom[ROM_OFS_AKERNEL];
+    }
+
+    rpclog("utility_ptr = 0x%05x\n", utility_ptr - rom);
+    rpclog(" abasic_ptr = 0x%05x\n", abasic_ptr - rom);
+    rpclog(" afloat_ptr = 0x%05x\n", afloat_ptr - rom);
+    rpclog(" dosrom_ptr = 0x%05x\n", dosrom_ptr - rom);
+    rpclog("akernel_ptr = 0x%05x\n", akernel_ptr - rom);
 }
 
+// Re-written for 1.20 to reflect latest RAMROM ROM Layout - see roms.h
 void reset_rom()
 {
-	debuglog("reset_rom(), ramrom=%d, bbcmode=%d\n",ramrom_enable,bbcmode);
-
-	if (!ramrom_enable)
-	{
-
-// SP5 CHANGES
-//		utility_ptr     = &rom[ROM_OFS_UTILITY];
-// END SP5
-
-		abasic_ptr      = &rom[ROM_OFS_ABASIC];
-		afloat_ptr      = &rom[ROM_OFS_AFLOAT];
-		dosrom_ptr      = &rom[ROM_OFS_DOSROM];
-		akernel_ptr     = &rom[ROM_OFS_AKERNEL];
-		rpclog("Running with standard roms\n");
-	}
-	else
-	{
-		abasic_ptr      = &rom[ROM_OFS_RR_ABASIC];
-		afloat_ptr      = &rom[ROM_OFS_RR_AFLOAT];
-
-// SP5 CHANGES
-//		set_rr_ptrs();
-// END SP5
-
-		rpclog("Running with Ramoth RAMROM roms\n");
-	}
-
-// SP5 CHANGES
-	set_rr_ptrs();
-// END SP5
-
-	rpclog("rom=%X\nkernel=%X\nbasic=%X\n",rom,akernel_ptr,abasic_ptr);
-	rpclog("ROM_OFS_RR_AKERNEL=%5X\n", ROM_OFS_RR_AKERNEL);
-	
-	debuglog("reset_rom():done\n");
+    debuglog("reset_rom(), ramrom=%d, bbcmode=%d\n",ramrom_enable, bbcmode);
+    set_rr_ptrs();    
+    debuglog("reset_rom():done\n");
 }
 
 uint8_t fetcheddat[32];
@@ -290,12 +254,9 @@ uint8_t readmeml(uint16_t addr)
 			{
 				switch(addr)
 				{
+					case 0xBFFF :
+						return (0xB0 | (RR_bankreg & 0x0F));
 
-// SP5 CHANGES
-//					case 0xBFFF :
-//						return (0xB0 | (RR_bankreg & 0x0F));
-// END SP5
-					
 					case 0xBFFE :
 						return (0xB0 | (RR_enables & 0x0F));
 						
@@ -306,11 +267,6 @@ uint8_t readmeml(uint16_t addr)
 						return 0xBF;
 				}
 			}
-
-// SP5 CHANGES
-		case 0xBFFF :
-			return (0xB0 | (RR_bankreg & 0x0F));
-// END SP5
 
 		case 0xA000: case 0xA400: case 0xA800: case 0xAC00:         /*Utility ROM*/
 			return utility_ptr[addr & 0x0FFF];
@@ -473,14 +429,11 @@ void writememl(uint16_t addr, uint8_t val)
 				switch(addr)
 				{
 
-// SP5 CHANGES
-//					case 0xBFFF :
-//						RR_bankreg = val & 0x0F;
-//						set_rr_ptrs();
-//						break;
-//					
-// END SP5
-
+					case 0xBFFF :
+						RR_bankreg = val & 0x0F;
+						set_rr_ptrs();
+						break;
+					
 					case 0xBFFE :
 						RR_enables = val & 0x0F;
 						set_rr_ptrs();
@@ -488,20 +441,10 @@ void writememl(uint16_t addr, uint8_t val)
 				}
 			}
 		
-// SP5 CHANGES
-		case 0xBFFF :
-			RR_bankreg = val & 0x0F;
-			set_rr_ptrs();
-			return;
-// END SP5
-
 		case 0xA000: case 0xA400: case 0xA800: case 0xAC00:             /*Utility ROM*/
 			// Special case of RAM mapped into utility rom space and rom bank 0 selected
 
-// SP5 CHANGES
-//			if(ramrom_enable && (RR_enables & RAMROM_FLAG_EXTRAM) && (RR_bankreg==0))
-			if((RR_enables & RAMROM_FLAG_EXTRAM) && (RR_bankreg==0))
-// END SP5
+			if(ramrom_enable && (RR_enables & RAMROM_FLAG_EXTRAM) && (RR_bankreg==0))
 				utility_ptr[addr & 0x0FFF]=val;
 			break;
 			
