@@ -71,7 +71,13 @@ int createwindow(HINSTANCE hThisInstance, int nFunsterStil)
 	ghwnd = CreateWindowEx(
 		0,                                                                                                                      /* Extended possibilites for variation */
 		szClassName,                                                                                                            /* Classname */
-		"Atomulator v1.10",                                                                                                      /* Title Text */
+
+/* CHANGED FOR SP1 */
+
+		"Atomulator v1.13",                                                                                                      /* Title Text */
+
+/* END SP1 */
+
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,                                                                                       /* default window */
 		CW_USEDEFAULT,                                                                                                          /* Windows decides the position */
 		CW_USEDEFAULT,                                                                                                          /* where the window ends up on the screen */

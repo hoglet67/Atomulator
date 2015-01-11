@@ -254,22 +254,25 @@ void drawline(int line)
 			
 			break;
 
-		case 5:         /*64x96, 4 colours*/
-			for (x = 0; x < 256; x += 16)
+/* SP1 FOR CORRECT CLEAR2a */
+
+		case 5: /*128x64, 4 colours*/
+			for (x = 0; x < 256; x += 8)
 			{
 				temp = fetcheddat[x >> 3];
-				for (xx = 0; xx < 16; xx += 2)
+				for (xx = 0; xx < 8; xx += 2)
 				{
-					b->line[line][x + xx] = b->line[line][x + xx + 1] = b->line[line][x + xx + 2] = b->line[line][x + xx + 3] = semigrcol[(temp >> 6) | (css << 1)];
+					b->line[line][x + xx] = b->line[line][x + xx + 1] = semigrcol[(temp >> 6) |(css << 1)];
 					temp <<= 2;
 				}
 			}
 
-			addr = (((line + 1) >> 1) << 4) | 0x8000;
+			addr = (((line + 1) / 3) << 5) | 0x8000;
 			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[addr + (x >> 1)];
-
+			fetcheddat[x] = ram[addr + x];
 			break;
+
+/* END SP1 */
 
 		case 7:         /*128x96, 2 colours*/
 			for (x = 0; x < 256; x += 16)
@@ -414,14 +417,18 @@ rpclog("addr=%04X\n",addr);
 	{
 		switch (gfxmode)
 		{
+
+/* SP1 FOR CORRECT CLEAR2a */
+
 		case 0: case 2: case 4: case 6:         /*Text mode*/
 		case 8: case 10: case 12: case 14:
-		case 9: case 13: case 15:
+		case 5: case 9: case 13: case 15:
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[0x8000 + x];
 			break;
+/* END SP1 */
 
-		case 1: case 3: case 5: case 7: case 11:         /*16-byte per line*/
+		case 1: case 3: case 7: case 11:         /*16-byte per line*/
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[0x8000 + (x >> 1)];
 			break;
