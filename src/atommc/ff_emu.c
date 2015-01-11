@@ -287,6 +287,11 @@ FRESULT f_unlink (
 {
 	char del_path[PATHSIZE+1];
 	int open_mode=0;
+
+/* SP2 TO CORRECT 'NO PATH' ERROR AT DELETE/SAVE */
+
+	int result=0;
+
 	int newfile;
 	
 	// Get real path of file and check to see if it exists
@@ -294,14 +299,17 @@ FRESULT f_unlink (
 
 	//debuglog("f_unlink(%s)\n",del_path);
 
-	unlink(del_path);
+	result=unlink(del_path);
 
-	return get_result(errno);
+	return get_result(result);
+
+/* END SP2 */
+
 }
 
 FRESULT f_opendir (
 	DIR *dj,			/* Pointer to directory object to create */
-	const XCHAR *path	/* Pointer to the directory path */
+	const XCHAR *path		/* Pointer to the directory path */
 )
 {
 	char	newpath[PATHSIZE+1];

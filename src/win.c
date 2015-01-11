@@ -72,11 +72,11 @@ int createwindow(HINSTANCE hThisInstance, int nFunsterStil)
 		0,                                                                                                                      /* Extended possibilites for variation */
 		szClassName,                                                                                                            /* Classname */
 
-/* CHANGED FOR SP1 */
+/* CHANGED FOR SP2 */
 
-		"Atomulator v1.13",                                                                                                      /* Title Text */
+		"Atomulator v1.14",                                                                                                      /* Title Text */
 
-/* END SP1 */
+/* END SP2 */
 
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,                                                                                       /* default window */
 		CW_USEDEFAULT,                                                                                                          /* Windows decides the position */
