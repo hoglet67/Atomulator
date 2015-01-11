@@ -107,19 +107,27 @@ void loadroms()
 
 void set_rr_ptrs()
 {
+
+// SP5 CHANGES
+	utility_ptr = &rom[ROM_OFS_RAMROM + (RR_bankreg * ROM_SIZE_ATOM)];
+// END SP5
+
 	if (ramrom_enable)
 	{
+
 		// Select what is mapped into $A000 block, this allows the 
 		// mapping of rom or ram into the utility block so that a 
 		// rom may be loaded from disk and then mapped in.
 		if ((RR_enables & RAMROM_FLAG_EXTRAM) && (RR_bankreg==0))
 			utility_ptr = &ram[0x7000];
-		else
-			utility_ptr = &rom[ROM_OFS_RAMROM + (RR_bankreg * ROM_SIZE_ATOM)];
+
+// SP5 CHANGES
+//		else
+//			utility_ptr = &rom[ROM_OFS_RAMROM + (RR_bankreg * ROM_SIZE_ATOM)];
+// END SP5
 		
 		rpclog("RR_enables=%2X, RR_bankreg=%2X\n",RR_enables, RR_bankreg);
 		rpclog("utility_ptr set to %X\n\n",utility_ptr);
-
 
 		// select Kernel and dosrom based on jumper setting.
 		// The kernel needs to be changed as well as the dosrom, as the ramrom 
@@ -145,7 +153,11 @@ void reset_rom()
 	
 	if (!ramrom_enable)
 	{
-		utility_ptr     = &rom[ROM_OFS_UTILITY];
+
+// SP5 CHANGES
+//		utility_ptr     = &rom[ROM_OFS_UTILITY];
+// END SP5
+
 		abasic_ptr      = &rom[ROM_OFS_ABASIC];
 		afloat_ptr      = &rom[ROM_OFS_AFLOAT];
 		dosrom_ptr      = &rom[ROM_OFS_DOSROM];
@@ -156,9 +168,18 @@ void reset_rom()
 	{
 		abasic_ptr      = &rom[ROM_OFS_RR_ABASIC];
 		afloat_ptr      = &rom[ROM_OFS_RR_AFLOAT];
-		set_rr_ptrs();
+
+// SP5 CHANGES
+//		set_rr_ptrs();
+// END SP5
+
 		rpclog("Running with Ramoth RAMROM roms\n");
 	}
+
+// SP5 CHANGES
+	set_rr_ptrs();
+// END SP5
+
 	rpclog("rom=%X\nkernel=%X\nbasic=%X\n",rom,akernel_ptr,abasic_ptr);
 	rpclog("ROM_OFS_RR_AKERNEL=%5X\n", ROM_OFS_RR_AKERNEL);
 	
@@ -232,8 +253,11 @@ uint8_t readmeml(uint16_t addr)
 			{
 				switch(addr)
 				{
-					case 0xBFFF :
-						return (0xB0 | (RR_bankreg & 0x0F));
+
+// SP5 CHANGES
+//					case 0xBFFF :
+//						return (0xB0 | (RR_bankreg & 0x0F));
+// END SP5
 					
 					case 0xBFFE :
 						return (0xB0 | (RR_enables & 0x0F));
@@ -245,6 +269,11 @@ uint8_t readmeml(uint16_t addr)
 						return 0xBF;
 				}
 			}
+
+// SP5 CHANGES
+		case 0xBFFF :
+			return (0xB0 | (RR_bankreg & 0x0F));
+// END SP5
 
 		case 0xA000: case 0xA400: case 0xA800: case 0xAC00:         /*Utility ROM*/
 			return utility_ptr[addr & 0x0FFF];
@@ -382,11 +411,15 @@ void writememl(uint16_t addr, uint8_t val)
 			{
 				switch(addr)
 				{
-					case 0xBFFF :
-						RR_bankreg = val & 0x0F;
-						set_rr_ptrs();
-						break;
-					
+
+// SP5 CHANGES
+//					case 0xBFFF :
+//						RR_bankreg = val & 0x0F;
+//						set_rr_ptrs();
+//						break;
+//					
+// END SP5
+
 					case 0xBFFE :
 						RR_enables = val & 0x0F;
 						set_rr_ptrs();
@@ -394,10 +427,20 @@ void writememl(uint16_t addr, uint8_t val)
 				}
 			}
 		
+// SP5 CHANGES
+		case 0xBFFF :
+			RR_bankreg = val & 0x0F;
+			set_rr_ptrs();
+			return;
+// END SP5
 
 		case 0xA000: case 0xA400: case 0xA800: case 0xAC00:             /*Utility ROM*/
 			// Special case of RAM mapped into utility rom space and rom bank 0 selected
-			if(ramrom_enable && (RR_enables & RAMROM_FLAG_EXTRAM) && (RR_bankreg==0))
+
+// SP5 CHANGES
+//			if(ramrom_enable && (RR_enables & RAMROM_FLAG_EXTRAM) && (RR_bankreg==0))
+			if((RR_enables & RAMROM_FLAG_EXTRAM) && (RR_bankreg==0))
+// END SP5
 				utility_ptr[addr & 0x0FFF]=val;
 			break;
 			
