@@ -89,7 +89,7 @@ static void update_FIL(FIL	*fil,
 
 static FRESULT get_result(int	err_no)
 {
-	//debuglog("errno=%d [%04X]\n",err_no,err_no);
+	debuglog("get_result errno=%d [%04X]\n",err_no,err_no);
 	switch(err_no)
 	{
 		case ENOENT:
@@ -288,7 +288,7 @@ FRESULT f_unlink (
 	char del_path[PATHSIZE+1];
 	int open_mode=0;
 
-/* SP2 TO CORRECT 'NO PATH' ERROR AT DELETE/SAVE */
+/* CHANGED FOR SP4 */
 
 	int result=0;
 
@@ -299,17 +299,21 @@ FRESULT f_unlink (
 
 	//debuglog("f_unlink(%s)\n",del_path);
 
-	result=unlink(del_path);
+      result=unlink(del_path);
 
-	return get_result(result);
+      if (result == 0)
+         return FR_OK;
+      else
 
-/* END SP2 */
+      return get_result(errno);
+
+/* END SP4*/
 
 }
 
 FRESULT f_opendir (
 	DIR *dj,			/* Pointer to directory object to create */
-	const XCHAR *path		/* Pointer to the directory path */
+	const XCHAR *path	/* Pointer to the directory path */
 )
 {
 	char	newpath[PATHSIZE+1];

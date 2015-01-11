@@ -86,7 +86,13 @@ PALETTE atompal =
 	{ 63, 63, 63 }, /*Buff*/
 	{ 0,  63, 63 }, /*Cyan*/
 	{ 63, 0,  63 }, /*Magenta*/
-	{ 63, 0,  0  }, /*Orange - actually red on the Atom*/
+
+/* CHANGED FOR SP4 */
+
+	{ 63, 32,  0  }, /*Orange - actually red on the Atom*/
+
+/* END SP4 */
+
 };
 
 PALETTE monopal =
@@ -254,7 +260,7 @@ void drawline(int line)
 			
 			break;
 
-/* SP1 FOR CORRECT CLEAR2a */
+/* PATCH FOR CORRECT CLEAR2a */
 
 		case 5: /*128x64, 4 colours*/
 			for (x = 0; x < 256; x += 8)
@@ -272,7 +278,7 @@ void drawline(int line)
 			fetcheddat[x] = ram[addr + x];
 			break;
 
-/* END SP1 */
+/* PATCH CHANGES */
 
 		case 7:         /*128x96, 2 colours*/
 			for (x = 0; x < 256; x += 16)
@@ -418,7 +424,7 @@ rpclog("addr=%04X\n",addr);
 		switch (gfxmode)
 		{
 
-/* SP1 FOR CORRECT CLEAR2a */
+/* PATCH FOR CORRECT CLEAR2a */
 
 		case 0: case 2: case 4: case 6:         /*Text mode*/
 		case 8: case 10: case 12: case 14:
@@ -426,7 +432,7 @@ rpclog("addr=%04X\n",addr);
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[0x8000 + x];
 			break;
-/* END SP1 */
+/* END PATCH */
 
 		case 1: case 3: case 7: case 11:         /*16-byte per line*/
 			for (x = 0; x < 32; x++)
