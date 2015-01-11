@@ -1,4 +1,4 @@
-Atomulator v1.0
+Atomulator v1.1
 ~~~~~~~~~~~~~~~
 
 Atomulator is an emulator of an Acorn Atom - the first micro from Acorn in 1980.
@@ -7,6 +7,19 @@ It emulates a 12+16k Atom with colour board, disc pack, and optional BBC BASIC m
 
 Atomulator is licensed under the GPL, see COPYING for more details.
 
+New in version 1.1
+~~~~~~~~~~~~~~~~~~
+
+Support for Ramoth RAM-ROM clockboost board, which extends the ram to 32K and 
+provides paged roms at #A000
+
+Support for the AtoMMC interface, emulated as a folder on the disk Atomulator is on.
+
+Support for the AtomSID interface.
+
+Fixed minor errors in some graphic mode emulations.
+
+Fixed issue with IRQ usage and reset.
 
 Usage
 ~~~~~
@@ -34,6 +47,32 @@ Load the disc image via the menu. To enable the disc you will need to type '*DOS
 then in disc mode. Typing '*.' will give a catalogue. You then need to identify which file you need
 and then LOAD and RUN it as above.
 
+Loading a program off mmc :
+
+Start the machine with ramrom enabled : settings->ramrom->ramrom enabled, and RamRom disk rom 
+enabled : settings->ramrom->ramrom diskrom enabled. When the machine is powered on or break is 
+pressed you should see "ACORN ATOM + ATOMMC2" as the signon.
+
+Once this is enabled, you should be able to do a *CAT and list the files in the mmc folder, you
+can drop files into here as you would do onto the MMC card, and they will be available to 
+manipulate with the standard Atom SAVE/LOAD etc commands. A program can also be loaded by typing
+*PROGRAMNAME
+
+For mor information see documentation at :
+
+Loading a program from emulated disk image on MMC :
+
+The RAMROM image also contains SDDOS by Kees van Oss, this allows disk images to be loaded from 
+the MMC card as if they where real disks. This can be initialised by typing SDDOS (note no 
+preceeding *), with ramrom active. The *DHELP command will give a list of the available commands
+
+Disk images can be mounted with the *DIN command :
+
+*DIN <driveno> <imagename>
+
+Commands are used much like their Atom DOS equivelents.
+
+Further documentation can be found here :
 
 Menu
 ~~~~
@@ -59,16 +98,33 @@ Disc -> Load disc 0/2          - load a disc image into drives 0 and 2.
 Settings ->
 	Video ->    Snow              - emulate authentic Atom snow
 		    Fullscreen	      - switches to full screen mode. Use ALT-ENTER to leave
+
         Hardware -> Colour board      - emulates an Atom colour board. This allows colour in several 
                                         video modes, and slows video refresh from 60hz to 50hz
                     BBC BASIC         - emulates a BBC BASIC language board. This allows a superior
                                         BASIC, but the disc drive is not functional in BBC BASIC mode
 					(this seems to be the case with the real machine also)
+	
+	RamRom ->   RAM/ROM Enabled   - Enables emulation of the Ramoth RAM/ROM clockboost board.
+		    RAM/ROM dosrom Enabled			
+				      - Enables the AtoMMC #E000 rom instead of Atom DOS.
+
 	Sound ->    Atom sound        - enables the sound output from the Atom
                     Tape sound        - enables the sound from tape
-                    Disc noise        - enables disc drive noise simulation
+		    AtomSID           - enables the AtomSID interface.
+
+                    reSID configuration :
+			Model 	      - choose between many different models of SID. Many tunes sound quite 
+					different depending on the model chosen.
+			Sample method - choose between interpolation and resampling. Resampling is in theory 
+					higher quality, but I can't tell the difference.
+                    
+		    Disc noise        - enables disc drive noise simulation
   		    Disc drive type   - choose between sound from 5.25" drive or 3.5" drive.
 		    Disc drive volume - set the relative volume of the disc drive noise.
+
+
+
 	Keyboard -> Redefine keys     - redefine PC -> Atom key mapping
 		    Default mapping   - restore the default keyboard mapping
 
@@ -96,3 +152,5 @@ Notes
 
 Tom Walker
 b-em@bbcmicro.com
+
+Version 1.1 patches by Phill Harvey-Smith.

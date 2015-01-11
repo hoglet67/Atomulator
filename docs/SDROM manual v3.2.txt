@@ -1,0 +1,176 @@
+SDROM v3.2 MANUAL
+
+The SDROM is a utility ROM for managing disk images on a SD-card. The disk 
+images can be accessed by the standard Atom DOS commands. The SDROM consists 
+of 2 parts:
+
+1) SD-card disk-image handling commands
+2) Atom DOS compatible commands. 
+
+The SDROM is started by typing SDDOS on the command line.
+A list of the commands can be displayed by entering *DHELP on the command line.
+
+Parameters:
+
+  <drv>	Drive number (0 to 3)
+  <dnf>	Disk Name Filter specification, i.e. first letter of disk name
+
+Parameters in brackets are optional.
+Note: If disk titles contain spaces they must be enclosed in quotes.
+
+GENERAL COMMANDS:
+
+  SDDOS
+
+Enters the SD-card Operating System.
+
+  *DOS
+
+Enters the standard Atom Disk Operating System.
+
+  *COS
+
+Enters the standard Atom 300 baud Cassette Operating System
+
+COMMANDS TO HANDLE DISK-IMAGES ON SD-CARD:
+
+  *DIN <drv>,”<filename>”
+
+Mounts a diskimagefile on SD-card into drive.
+Example: *DIN 0,”DEMO.DSK”
+
+Note: A disk cannot be in more than one drive at a time. E.g. if Disk 200 is 
+in Drive 0, and the user enters *DIN 2,200, Disk 200 will then be in Drive 2, 
+and “No Disk” will be in Drive 0.
+
+
+  *DOUT <drv>
+	
+	Removes a diskimage from the disklist
+
+  *DCAT (<dnf>)
+
+List *.DSK image files on SD-carder order.
+An optional Disk Name Filter can be specified.
+Example: *DCAT G displays all disk images starting with “G”:
+
+GAMES1.DSK
+GAMES2.DSK
+GAMES3.DSK
+
+DISKS FOUND:    3
+
+The number of disks found matching the specification is given at the bottom of the list.
+
+  *DDISKS
+
+Lists the drives and which disk images are currently “inserted”.
+Example: *DDISKS
+
+0: GAMES1.DSK
+1: DATABASE.DSK
+2:    -
+3:    -
+
+  *DHELP
+
+Display list with *-commands to handle disk-images on SD-card
+
+  *DVER
+
+Displays the AtoMMC firmware and bootloader versions
+
+
+ATOM DOS COMMANDS:
+
+  *CAT <drv>
+
+Displays the catalogue. The first line shows the title of the disc and the 
+current qualifier. The filenames are displayed arranged by qualifier, with '#' 
+indicating that the file is locked. The catalogue is read when there was a 
+disk change, otherwise it is transferred from the catalogue buffer (at #2000).
+
+  *DELETE <filename>
+
+Deletes the named file.
+
+  *DIR <drv>
+
+Reads the catalogue from disc to the buffer but does not display it.
+
+  *DRIVE <drv>
+
+Sets drive number without loading the catalogue
+
+  *INFALL
+
+Displays information about all files on disk. The format is the same as *INFO 
+
+
+  *INFO <filename>
+
+Displays information about the named file. The format is: 
+
+	qualifier lock  filename load    execution length   start
+	          state          address address   in bytes sector
+
+     s:          #   BASIC    C000    C2B2      00100     002
+
+  *LOAD <filename> <loadaddress>
+
+Loads the named file. The file is loaded into memory starting at <loadaddress>,
+or at the file's start address if this is missing.
+
+  *LOCK <filename>
+
+Locks the named file. Locked files cannot be deleted or updated.
+
+  *MON
+
+Turns on messages. Subsequent file operations print out the file's information 
+in the format of *INFO.
+
+  *NOMON
+
+Turns off messages
+
+  *RUN <filename> <string>
+
+Load and run the named file, using the start and execution address. <string> is
+transferred to memory starting at #0140 with a terminating CR, where it can be 
+accessed by the user's program.
+
+  *SAVE <filename> <startaddress> <endaddress> <linkaddress>
+
+Creates a file. The contents of memory from <startaddress> to <endaddress>-1 
+are saved as the named file. If a file with the same name already exists under
+the current qualifier, it is deleted. The address <linkaddress> is an optional 
+execution address and it defaults to <startaddress> if not supplied.
+
+  *SET<qual>
+
+Sets the qualifier for all subsequent operations on files to <qual>. Operations
+that use existing files will only search among those created under the 
+qualifier currently set. The default qualifier is space. When returning to the
+default qualifier, be sure to enter the space after the SET command.
+
+  *TITLE <txt>
+
+Sets the title of the disc to the first 13 characters of title.
+
+  *UNLOCK <filename>
+
+Unlocks the named file 
+
+  *USE<qual>
+
+Temporarily sets the qualifier to <qual>. The system returns to the previous 
+qualifier after the next successful operation. Two successive USE commands are 
+equivalent to a SET.
+
+  *<filename> <string>
+
+Load and run the named file, using the start and execution address. <string>
+is transferred to memory starting at #0100 with a terminating CR, where it can
+be accessed by the user's program.
+

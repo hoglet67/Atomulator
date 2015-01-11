@@ -162,12 +162,44 @@ BEGIN
                         MENUITEM "&Colour Board",          IDM_HARD_COLOUR
                         MENUITEM "&BBC BASIC",             IDM_HARD_BBC
                 END
+				POPUP "&RamRom"
+                BEGIN
+						MENUITEM "&RAM/ROM Enabled",       		IDM_RAMROM_ENABLE
+						MENUITEM "&RAM/ROM Diskrom Enabled",	IDM_RAMROM_DISKROM
+                END
                 POPUP "&Sound"
                 BEGIN
                         MENUITEM "&Internal speaker",   IDM_SOUND_ATOM
+                        MENUITEM "&AtomSID",            IDM_SOUND_ATOMSID
                         MENUITEM "&Tape noise",         IDM_SOUND_TAPE
                         MENUITEM "&Disc drive noise",   IDM_SOUND_DDNOISE
                         MENUITEM SEPARATOR
+                        POPUP "&reSID configuration"
+                        BEGIN
+                                POPUP "&Model"
+                                BEGIN
+                                        MENUITEM "6581",                        IDM_SID_TYPE+SID_MODEL_6581
+                                        MENUITEM "8580",                        IDM_SID_TYPE+SID_MODEL_8580
+                                        MENUITEM "8580 + digi boost",           IDM_SID_TYPE+SID_MODEL_8580D
+                                        MENUITEM "6581R4",                      IDM_SID_TYPE+SID_MODEL_6581R4
+                                        MENUITEM "6581R3 4885",                 IDM_SID_TYPE+SID_MODEL_6581R3_4885
+                                        MENUITEM "6581R3 0486S",                IDM_SID_TYPE+SID_MODEL_6581R3_0486S
+                                        MENUITEM "6581R3 3984",                 IDM_SID_TYPE+SID_MODEL_6581R3_3984
+                                        MENUITEM "6581R4AR 3789",               IDM_SID_TYPE+SID_MODEL_6581R4AR_3789
+                                        MENUITEM "6581R3 4485",                 IDM_SID_TYPE+SID_MODEL_6581R3_4485
+                                        MENUITEM "6581R4 1986S",                IDM_SID_TYPE+SID_MODEL_6581R4_1986S
+                                        MENUITEM "8580R5 3691",                 IDM_SID_TYPE+SID_MODEL_8580R5_3691
+                                        MENUITEM "8580R5 3691 + digi boost",    IDM_SID_TYPE+SID_MODEL_8580R5_3691D
+                                        MENUITEM "8580R5 1489",                 IDM_SID_TYPE+SID_MODEL_8580R5_1489
+                                        MENUITEM "8580R5 1489 + digi boost",    IDM_SID_TYPE+SID_MODEL_8580R5_1489D
+                                END
+                                POPUP "&Sample method"
+                                BEGIN
+                                        MENUITEM "&Interpolating",       IDM_SID_INTERP
+                                        MENUITEM "&Resampling",          IDM_SID_RESAMP
+                                END
+                        END
+						MENUITEM SEPARATOR
                         POPUP "Disc drive &type"
                         BEGIN
                                 MENUITEM "&5.25",IDM_DDT_525
@@ -190,12 +222,13 @@ BEGIN
         BEGIN
                 POPUP "&Speed"
                 BEGIN
-                        MENUITEM "10%", IDM_SPD_10
-                        MENUITEM "25%", IDM_SPD_25
-                        MENUITEM "50%", IDM_SPD_50
-                        MENUITEM "75%", IDM_SPD_75
+                        MENUITEM "10%",  IDM_SPD_10
+                        MENUITEM "25%",  IDM_SPD_25
+                        MENUITEM "50%",  IDM_SPD_50
+                        MENUITEM "75%",  IDM_SPD_75
                         MENUITEM "100%", IDM_SPD_100
                         MENUITEM "150%", IDM_SPD_150
+						MENUITEM "170%", IDM_SPD_170
                         MENUITEM "200%", IDM_SPD_200
                         MENUITEM "300%", IDM_SPD_300
                         MENUITEM "400%", IDM_SPD_400
@@ -204,6 +237,7 @@ BEGIN
                 MENUITEM "&Save screenshot",IDM_MISC_SCRSHOT
                 MENUITEM SEPARATOR
                 MENUITEM "&Debugger",              IDM_MISC_DEBUG
+				MENUITEM "&Debug on BRK",		   IDM_MISC_DEBONBRK
                 MENUITEM "&Break",                 IDM_MISC_BREAK
         END
 END

@@ -1,7 +1,9 @@
 #include <stdint.h>
 
+#define MAXPATH	512
+
 void rpclog(char *format, ...);
-extern char exedir[512];
+extern char exedir[MAXPATH+1];
 
 void startblit();
 void endblit();
@@ -19,35 +21,37 @@ int cswpoint;
 int colourboard;
 int bbcmode;
 int fasttape;
+int ramrom_enable;
+int RR_jumpers;
 
 int interrupt;
 
 typedef struct VIA
 {
-        uint8_t ora,orb,ira,irb;
-        uint8_t ddra,ddrb;
-        uint32_t t1l,t2l;
-        int t1c,t2c;
-        uint8_t acr,pcr,ifr,ier;
-        int t1hit,t2hit;
-        uint8_t porta,portb;
+	uint8_t ora, orb, ira, irb;
+	uint8_t ddra, ddrb;
+	uint32_t t1l, t2l;
+	int t1c, t2c;
+	uint8_t acr, pcr, ifr, ier;
+	int t1hit, t2hit;
+	uint8_t porta, portb;
 } VIA;
 
 VIA via;
 
-int fetchc[65536],readc[65536],writec[65536];
+int fetchc[65536], readc[65536], writec[65536];
 uint16_t pc;
-uint8_t a,x,y,s;
+uint8_t a, x, y, s;
 struct
 {
-        int c,z,i,d,v,n;
+	int c, z, i, d, v, n;
 } p;
 extern int nmi;
-int debug,debugon;
+int debug, debugon;
 
 extern uint8_t opcode;
 
-int spon,tpon;
+int spon, tpon;
 
 
 void (*fdccallback)();
@@ -58,9 +62,9 @@ void (*fdcnotfound)();
 void (*fdcdatacrcerror)();
 void (*fdcheadercrcerror)();
 void (*fdcwriteprotect)();
-int  (*fdcgetdata)(int last);
+int (*fdcgetdata)(int last);
 
-extern int writeprot[2],fwriteprot[2];
+extern int writeprot[2], fwriteprot[2];
 
 void ssd_reset();
 void ssd_load(int drive, char *fn);
@@ -101,7 +105,7 @@ void setejecttext(int drive, char *fn);
 
 void loaddiscsamps();
 void mixddnoise();
-extern int ddvol,ddtype;
+extern int ddvol, ddtype;
 
 extern int motorspin;
 extern int fdctime;
@@ -110,18 +114,20 @@ extern int disctime;
 
 struct
 {
-        void (*seek)(int drive, int track);
-        void (*readsector)(int drive, int sector, int track, int side, int density);
-        void (*writesector)(int drive, int sector, int track, int side, int density);
-        void (*readaddress)(int drive, int track, int side, int density);
-        void (*format)(int drive, int track, int side, int density);
-        void (*poll)();
+	void (*seek)(int drive, int track);
+	void (*readsector)(int drive, int sector, int track, int side, int density);
+	void (*writesector)(int drive, int sector, int track, int side, int density);
+	void (*readaddress)(int drive, int track, int side, int density);
+	void (*format)(int drive, int track, int side, int density);
+	void (*poll)();
 } drives[2];
 
 extern int curdrive;
 
 extern int sndddnoise;
-
+extern int sndatomsid;
+extern int cursid;
+extern int sidmethod;
 
 void opencsw(char *fn);
 void closecsw();
@@ -182,20 +188,21 @@ void killdebug();
 void debugread(uint16_t addr);
 void debugwrite(uint16_t addr, uint8_t val);
 void dodebugger();
+void debuglog(char *format, ...);
 
 void cataddname(char *s);
 
 void atom_init(int argc, char **argv);
 void atom_run();
 void atom_exit();
-void atom_reset();
+void atom_reset(int power_on);
 
 void setquit();
 
 uint8_t readmeml(uint16_t addr);
 void writememl(uint16_t addr, uint8_t val);
 
-extern int winsizex,winsizey;
+extern int winsizex, winsizey;
 
 
 void redefinekeys();
@@ -219,7 +226,7 @@ void entergui();
 #endif
 
 extern char tapefn[260];
-extern int emuspeed,fskipmax;
+extern int emuspeed, fskipmax;
 extern char scrshotname[260];
 extern int savescrshot;
 
