@@ -5,7 +5,13 @@
  */
 
 // Size of ROM memory, and rom blocks
-#define ROM_MEM_SIZE            0xA000
+
+// SP7 BBC MODE PATCH
+
+#define ROM_MEM_SIZE            0xC000
+
+// END SP7 BBC MODE PATCH
+
 #define ROM_SIZE_ATOM           0x1000
 #define ROM_SIZE_BBC_BASIC      0x4000
 
@@ -15,8 +21,18 @@
 #define ROM_OFS_AFLOAT          0x2000
 #define ROM_OFS_DOSROM          0x3000
 #define ROM_OFS_AKERNEL         0x4000
-#define ROM_OFS_BBC_OS          0x5000
-#define ROM_OFS_BBC_BASIC       0x6000
+
+// SP7 BBC MODE PATCH
+
+#define ROM_OFS_BBC_EXT1        0x5000
+#define ROM_OFS_BBC_EXT2        0x6000
+#define ROM_OFS_BBC_BASIC1      0x7000
+#define ROM_OFS_BBC_BASIC2      0x8000
+#define ROM_OFS_BBC_BASIC3      0x9000
+#define ROM_OFS_BBC_BASIC4      0xA000
+#define ROM_OFS_BBC_OS          0xB000
+
+// END SP7 BBC MODE PATCH
 
 // The rom for the RAM ROM board is a 128K rom laid out as follows
 // 0x00000 - 0x0FFFF up to 16 utility roms in slots 00..0F
@@ -27,7 +43,13 @@
 // 0x14000 - 0x1FFFF Unused
 
 #define RAM_ROM_SIZE            0x20000
-#define ROM_OFS_RAMROM          0x0A000
+
+// SP7 BBC MODE PATCH
+
+#define ROM_OFS_RAMROM          0x0C000
+
+// END SP7 BBC MODE PATCH
+
 #define RAM_ROM_ROMS            0x10
 #define RAM_ROM_OFS_SYSROM      (RAM_ROM_ROMS * ROM_SIZE_ATOM)
 #define ROM_OFS_RR_ABASIC       (ROM_OFS_RAMROM + RAM_ROM_OFS_SYSROM + 0x0000)
@@ -44,8 +66,14 @@
 
 // RAMROM bitmaps for 0xBFFE
 #define RAMROM_FLAG_EXTRAM		0x01
-#define RAMROM_FLAG_BLKA_RAM	0x02
+#define RAMROM_FLAG_BLKA_RAM		0x02
 #define RAMROM_FLAG_DISKROM		0x04
+
+// SP7 BBC MODE PATCH
+
+#define RAMROM_FLAG_BBCMODE		0x08
+
+// END SP7 BBC MODE PATCH
 
 #define RR_bit_set(bit)			(0!=((RR_enables ^ RR_jumpers) & bit))
 #define RR_BLKA_enabled()		(0!=((RR_jumpers & RAMROM_FLAG_JMPDISK) ^ ((RR_enables & RAMROM_FLAG_BLKA_RAM)<<1)))

@@ -95,21 +95,32 @@ void load_rom(char	*Name,
 
 void loadroms()
 {
-	load_rom("roms/akernel.rom",			ROM_SIZE_ATOM,          ROM_OFS_AKERNEL);
+	load_rom("roms/akernel.rom",		    ROM_SIZE_ATOM,          ROM_OFS_AKERNEL);
 	load_rom("roms/dosrom.rom",             ROM_SIZE_ATOM,          ROM_OFS_DOSROM);
 	load_rom("roms/afloat.rom",             ROM_SIZE_ATOM,          ROM_OFS_AFLOAT);
 	load_rom("roms/abasic.rom",             ROM_SIZE_ATOM,          ROM_OFS_ABASIC);
 	load_rom("roms/axr1.rom",               ROM_SIZE_ATOM,          ROM_OFS_UTILITY);
-	load_rom("roms/atom_bbc_basic_os.rom",  ROM_SIZE_ATOM,          ROM_OFS_BBC_OS);
-	load_rom("roms/basic1.rom",             ROM_SIZE_BBC_BASIC, 	ROM_OFS_BBC_BASIC);
+
+/*SP6 CHANGES*/
+
+	load_rom("roms/atom_bbc_ext1.rom",      ROM_SIZE_ATOM,	    ROM_OFS_BBC_EXT1);
+	load_rom("roms/atom_bbc_ext2.rom",      ROM_SIZE_ATOM,	    ROM_OFS_BBC_EXT2);
+	load_rom("roms/atom_bbc_basic2.rom",    ROM_SIZE_BBC_BASIC,     ROM_OFS_BBC_BASIC1);
+	load_rom("roms/atom_bbc_mos3.rom",      ROM_SIZE_ATOM,          ROM_OFS_BBC_OS);
+
+/*END SP6*/
+
 	load_rom("roms/ramrom.rom",             RAM_ROM_SIZE,           ROM_OFS_RAMROM);
+
 }
 
 void set_rr_ptrs()
 {
 
+	int c;
+
 // SP5 CHANGES
-	utility_ptr = &rom[ROM_OFS_RAMROM + (RR_bankreg * ROM_SIZE_ATOM)];
+//	utility_ptr = &rom[ROM_OFS_RAMROM + (RR_bankreg * ROM_SIZE_ATOM)];
 // END SP5
 
 	if (ramrom_enable)
@@ -123,7 +134,7 @@ void set_rr_ptrs()
 
 // SP5 CHANGES
 //		else
-//			utility_ptr = &rom[ROM_OFS_RAMROM + (RR_bankreg * ROM_SIZE_ATOM)];
+			utility_ptr = &rom[ROM_OFS_RAMROM + (RR_bankreg * ROM_SIZE_ATOM)];
 // END SP5
 		
 		rpclog("RR_enables=%2X, RR_bankreg=%2X\n",RR_enables, RR_bankreg);
@@ -144,13 +155,38 @@ void set_rr_ptrs()
 			dosrom_ptr      = &rom[ROM_OFS_DOSROM];
 			akernel_ptr     = &rom[ROM_OFS_AKERNEL];
 		}
+
+/*SP6 CHANGES*/
+
+		// switch #C/D/E/F into BBC mode
+		// copy MOSEXT1 rom to &6000-&6FFF
+		// copy MOSEXT2 rom to &7000-&7FFF
+		// Note added by Hoglet in Atom GODIL
+		if (ramrom_enable && RR_bit_set(RAMROM_FLAG_BBCMODE))
+		{
+			abasic_ptr      = &rom[ROM_OFS_BBC_BASIC2];
+			afloat_ptr      = &rom[ROM_OFS_BBC_BASIC3];
+			dosrom_ptr      = &rom[ROM_OFS_BBC_BASIC4];
+			akernel_ptr     = &rom[ROM_OFS_BBC_OS];
+			rpclog("Running with BBC mode roms\n");
+			utility_ptr = &rom[ROM_OFS_RAMROM];
+
+			for (c = 0; c < 0x1000; c++)
+				{
+					ram[0x6000 + c] = rom[ROM_OFS_BBC_EXT1 + c];
+					ram[0x7000 + c] = rom[ROM_OFS_BBC_EXT2 + c];
+				}
+		}
+
+/*END SP6*/
+
 	}
 }
 
 void reset_rom()
 {
 	debuglog("reset_rom(), ramrom=%d, bbcmode=%d\n",ramrom_enable,bbcmode);
-	
+
 	if (!ramrom_enable)
 	{
 
@@ -205,7 +241,7 @@ uint8_t readmeml(uint16_t addr)
 		case 0x0000:         /*Block zero RAM*/
 			return ram[addr];
 
-		case 0x0400:						   case 0x0C00:
+		case 0x0400: case 0x0C00:
 		case 0x1000: case 0x1400: case 0x1800: case 0x1C00:
 		case 0x2000: case 0x2400:         /*DOS RAM*/
 		case 0x2800: case 0x2C00:
@@ -295,32 +331,56 @@ uint8_t readmeml(uint16_t addr)
 	{
 		switch (addr & 0xFC00)
 		{
+
+/*SP6 CHANGES*/
+
 		case 0x0000: case 0x0400: case 0x0800: case 0x0C00:         /*RAM*/
 		case 0x1000: case 0x1400: case 0x1800: case 0x1C00:
 		case 0x2000: case 0x2400: case 0x2800: case 0x2C00:
 		case 0x3000: case 0x3400: case 0x3800: case 0x3C00:
+		case 0x4000: case 0x4400: case 0x4800: case 0x4C00:
+		case 0x5000: case 0x5400: case 0x5800: case 0x5C00:
 			return ram[addr];
 
-		case 0x4000: case 0x4400: case 0x4800: case 0x4C00:         /*Video RAM*/
-		case 0x5000: case 0x5400: case 0x5800: case 0x5C00:
+		case 0x6000: case 0x6400: case 0x6800: case 0x6C00:         /*MOSEXT1*/
+			return rom[(addr & 0x0FFF) + ROM_OFS_BBC_EXT1];
+
+		case 0x7000: case 0x7400: case 0x7800: case 0x7C00:         /*MOSEXT2*/
+			return rom[(addr & 0x0FFF) + ROM_OFS_BBC_EXT2];
+
+		case 0x8000: case 0x8400: case 0x8800: case 0x8C00:         /*Video RAM*/
+		case 0x9000: case 0x9400: case 0x9800: case 0x9C00:
 			if (snow && cycles >= 0 && cycles < 32)
 				fetcheddat[31 - cycles] = ram[addr];
-			return ram[addr + 0x4000];
+			return ram[addr];
 
-		case 0x7000:         /*8255 PIA*/
+		case 0xA000: case 0xA400: case 0xA800: case 0xAC00:         /*BBC BASIC1*/
+			return rom[(addr & 0x0FFF) + ROM_OFS_BBC_BASIC1];
+
+		case 0xB000:							      /*8255 PIA*/
 			return read8255(addr);
 
-		case 0x7800:         /*6522 VIA*/
+		case 0xB400:							      /*AtoMMC*/
+			return ReadMMC(addr);
+
+		case 0xB800:         /*6522 VIA*/
 			return readvia(addr);
 
-		case 0x8000: case 0x8400: case 0x8800: case 0x8C00:
-		case 0x9000: case 0x9400: case 0x9800: case 0x9C00:
-		case 0xA000: case 0xA400: case 0xA800: case 0xAC00:
-		case 0xB000: case 0xB400: case 0xB800: case 0xBC00:
-			return rom[(addr & 0x3FFF) + ROM_OFS_BBC_BASIC];        /*Not implemented*/
+		case 0xBC00:
+			return;
 
-		case 0xF000: case 0xF400: case 0xF800: case 0xFC00:             /*Kernel*/
-			return rom[(addr & 0xFFF) + ROM_OFS_BBC_OS];            /*Not implemented*/
+		case 0xC000: case 0xC400: case 0xC800: case 0xCC00:         /*BBC BASIC2*/
+			return rom[(addr & 0x0FFF) + ROM_OFS_BBC_BASIC2];
+		case 0xD000: case 0xD400: case 0xD800: case 0xDC00:
+			return rom[(addr & 0x0FFF) + ROM_OFS_BBC_BASIC3];
+		case 0xE000: case 0xE400: case 0xE800: case 0xEC00:
+			return rom[(addr & 0x0FFF) + ROM_OFS_BBC_BASIC4];
+
+		case 0xF000: case 0xF400: case 0xF800: case 0xFC00:         /*BBC MOS3*/
+			return rom[(addr & 0xFFF) + ROM_OFS_BBC_OS];
+
+/*END SP6*/
+
 		}
 	}
 	return 0;
@@ -456,36 +516,57 @@ void writememl(uint16_t addr, uint8_t val)
 	{
 		switch (addr & 0xFC00)
 		{
+
+/*SP6 CHANGES*/
+
 		case 0x0000: case 0x0400: case 0x0800: case 0x0C00:         /*RAM*/
 		case 0x1000: case 0x1400: case 0x1800: case 0x1C00:
 		case 0x2000: case 0x2400: case 0x2800: case 0x2C00:
 		case 0x3000: case 0x3400: case 0x3800: case 0x3C00:
+		case 0x4000: case 0x4400: case 0x4800: case 0x4C00:
+		case 0x5000: case 0x5400: case 0x5800: case 0x5C00:
 			ram[addr] = val;
 			return;
 
-		case 0x4000: case 0x4400: case 0x4800: case 0x4C00:         /*Video RAM*/
-		case 0x5000: case 0x5400: case 0x5800: case 0x5C00:
-			if (snow && cycles >= 0 && cycles < 32)
-				fetcheddat[31 - cycles] = val;
-			ram[addr + 0x4000] = val;
+		case 0x6000: case 0x6400: case 0x6800: case 0x6C00:
+		case 0x7000: case 0x7400: case 0x7800: case 0x7C00:
 			return;
 
-		case 0x7000:         /*8255 PIA*/
+		case 0x8000: case 0x8400: case 0x8800: case 0x8C00:         /*Video RAM*/
+		case 0x9000: case 0x9400: case 0x9800: case 0x9C00:
+			if (snow && cycles >= 0 && cycles < 32)
+				fetcheddat[31 - cycles] = val;
+			ram[addr] = val;
+			return;
+
+		case 0xA000: case 0xA400: case 0xA800: case 0xAC00:         /*BBC BASIC1*/
+			return;
+
+		case 0xB000:							      /*8255 PIA*/
 			write8255(addr, val);
 			return;
 
-		case 0x7800:         /*6522 VIA - not emulated*/
+		case 0xB400:								/*AtoMMC*/
+			WriteMMC(addr,val);
+			return;
+
+		case 0xB800:							      /*6522 VIA - not emulated*/
 			writevia(addr, val);
 			return;
 
-		case 0x8000: case 0x8400: case 0x8800: case 0x8C00:
-		case 0x9000: case 0x9400: case 0x9800: case 0x9C00:
-		case 0xA000: case 0xA400: case 0xA800: case 0xAC00:
-		case 0xB000: case 0xB400: case 0xB800: case 0xBC00:
+		case 0xBC00:
+			return;
+
+		case 0xC000: case 0xC400: case 0xC800: case 0xCC00:		/*BBC BASIC2*/
+		case 0xD000: case 0xD400: case 0xD800: case 0xDC00:
+		case 0xE000: case 0xE400: case 0xE800: case 0xEC00:
 			return;
 
 		case 0xF000: case 0xF400: case 0xF800: case 0xFC00:         /*Kernel*/
 			return;
+
+/*END SP6*/
+
 		}
 	}
 	return;
