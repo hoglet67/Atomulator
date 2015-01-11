@@ -5,6 +5,12 @@
 #include "atmmc2def.h"
 #include "atmmc2io.h"
 
+// SP3 JOYSTICK SUPPORT
+
+#include "allegro.h" 
+
+// END SP3
+
 //#include "status.h"
 
 #include <string.h>
@@ -50,6 +56,11 @@ extern /*DSTATUS*/ unsigned char disk_initialize (BYTE);
 //
 BYTE byteValueLatch;
 
+// SP3 JOYSTICK SUPPORT
+
+BYTE JOYSTICK;
+
+// END SP3
 
 void at_process(void)
 {
@@ -264,7 +275,34 @@ void at_process(void)
             }
             else if (received == CMD_READ_PORT) // read portb
             {
-               WriteDataPort(PORTB);
+
+		// SP3 JOYSTICK SUPPORT
+
+			if (joyst)
+			{
+			  JOYSTICK = 255;
+            	  poll_joystick();
+
+			  if (joy_right)
+			     JOYSTICK ^= 1;
+			  if (joy_left)
+			     JOYSTICK ^= 2;
+			  if (joy_down)
+			     JOYSTICK ^= 4;
+			  if (joy_up)
+			     JOYSTICK ^= 8;
+			  if (joy[0].button[0].b) // Fire
+			     JOYSTICK ^= 16;
+
+              	  WriteDataPort(JOYSTICK);
+			}
+			else
+            	{
+		        WriteDataPort(PORTB);
+			}
+
+		// END SP3
+
             }
             else if (received == CMD_WRITE_PORT) // write port B value
             {

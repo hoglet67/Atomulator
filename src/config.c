@@ -32,6 +32,12 @@
 #define LABEL_SND_TAPE 	"snd_tape"
 #define LABEL_SND_DD 	"snd_ddnoise"
 
+// SP3 JOYSTICK SUPPORT
+
+#define LABEL_JOYSTICK  "joystick"
+
+// END SP3
+
 #define LABEL_KEY_DEF	"key_define_"
 #define LABEL_USER_KBD	"user_keyboard"
 
@@ -101,6 +107,12 @@ void loadconfig()
 	tpon 			= get_config_int(NULL, LABEL_SND_TAPE, 0);
 	sndddnoise 		= get_config_int(NULL, LABEL_SND_DD, 1);
 
+// SP3 JOYSTICK SUPPORT
+
+	joyst			= get_config_int(NULL, LABEL_JOYSTICK, 0);
+
+// END SP3
+
 	debug_on_brk	= get_config_int(NULL, LABEL_DEBUG_BRK, 0);
 
 	for (c = 0; c < 128; c++)
@@ -128,6 +140,11 @@ void saveconfig()
 	set_config_int(NULL, LABEL_RAMROM,ramrom_enable);
 	set_config_int(NULL, LABEL_RAMROMJMP,RR_jumpers);
 	
+// SP3 JOYSTICK SUPPORT
+
+	set_config_int(NULL, LABEL_JOYSTICK, joyst);
+
+// END SP3
 	
 	set_config_int(NULL, LABEL_FASTTAPE, fasttape);
 

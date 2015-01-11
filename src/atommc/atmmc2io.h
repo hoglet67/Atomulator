@@ -137,6 +137,12 @@ extern BYTE TRISB;
 extern BYTE LATB;
 extern BYTE PORTB;
 
+// SP3 JOYSTICK SUPPORT
+
+extern int joyst;
+
+// END SP3
+
 #define LatchAddressIn()			{ LatchedAddressLast=LatchedAtomAddr; }
 #define ReadDataPort()				{ LatchedData=Atom_to_MMC; }
 #define WriteDataPort(value)		{ MMC_to_Atom=value; }	

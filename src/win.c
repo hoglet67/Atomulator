@@ -74,7 +74,7 @@ int createwindow(HINSTANCE hThisInstance, int nFunsterStil)
 
 /* CHANGED FOR SP2 */
 
-		"Atomulator v1.14",                                                                                                      /* Title Text */
+		"Atomulator v1.14beta",                                                                                                      /* Title Text */
 
 /* END SP2 */
 
@@ -115,6 +115,12 @@ void initmenu()
 	CheckMenuItem(hmenu, IDM_SOUND_ATOM, spon ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hmenu, IDM_SOUND_TAPE, tpon ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hmenu, IDM_SOUND_DDNOISE, sndddnoise ? MF_CHECKED : MF_UNCHECKED);
+
+// SP3 JOYSTICK SUPPORT
+
+	CheckMenuItem(hmenu, IDM_JOYSTICK, joyst ? MF_CHECKED : MF_UNCHECKED);	// Joystick support
+
+// END SP3
 
 	// AtomSID.
 	CheckMenuItem(hmenu,IDM_SOUND_ATOMSID, sndatomsid ? MF_CHECKED : MF_UNCHECKED);
@@ -745,6 +751,15 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			closeddnoise();
 			loaddiscsamps();
 			break;
+
+// SP3 JOYSTICK SUPPORT
+
+		case IDM_JOYSTICK:
+			joyst = !joyst;
+			CheckMenuItem(hmenu, LOWORD(wParam), joyst ? MF_CHECKED : MF_UNCHECKED);
+			return 0;
+
+// END SP3
 
 		case IDM_VID_FULLSCREEN:
 			fullscreen = 1;

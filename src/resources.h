@@ -30,6 +30,13 @@
 #define IDM_VID_FULLSCREEN  40051
 #define IDM_KEY_REDEFINE    40060
 #define IDM_KEY_DEFAULT     40061
+
+// SP3 JOYSTICK SUPPORT
+
+#define IDM_JOYSTICK        40062 // Joystick support
+
+// END SP3
+
 #define IDM_DDV_33          40070
 #define IDM_DDV_66          40071
 #define IDM_DDV_100         40072

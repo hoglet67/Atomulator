@@ -20,6 +20,13 @@ int cswpoint;
 
 int colourboard;
 int bbcmode;
+
+// SP3 FOR JOYSTICK SUPPORT
+
+int joyst;
+
+// END SP3
+
 int fasttape;
 int ramrom_enable;
 int RR_jumpers;

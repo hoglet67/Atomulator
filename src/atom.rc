@@ -217,6 +217,13 @@ BEGIN
                         MENUITEM "&Redefine keys...",      IDM_KEY_REDEFINE
                         MENUITEM "&Default mapping",       IDM_KEY_DEFAULT
                 END
+
+// SP3 JOYSTICK SUPPORT
+
+                MENUITEM "Joystick PORTB",  IDM_JOYSTICK
+
+// END SP3
+
         END
         POPUP "&Misc"
         BEGIN

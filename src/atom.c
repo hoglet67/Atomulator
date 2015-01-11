@@ -17,6 +17,12 @@ int sndatomsid=1;
 int cursid=0;
 int sidmethod=0;
 
+// SP3 FOR JOYSTICK SUPPORT
+
+int joyst = 0;
+
+// END SP3
+
 int ramrom_enable = 1;
 
 int bbcmode = 0;
@@ -82,6 +88,12 @@ void atom_reset(int power_on)
 	gfxmode=0;
 	reset6502();
 	debuglog("atom_reset():done\n");
+
+      // SP3 FOR JOYSTICK SUPPORT
+
+      install_joystick(JOY_TYPE_AUTODETECT);
+
+      // END SP3
 }
 
 void atom_init(int argc, char **argv)
