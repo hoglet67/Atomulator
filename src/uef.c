@@ -11,7 +11,12 @@ int startchunk;
 int blocks = 0;
 int tapelcount, tapellatch, pps;
 //int intone=0;
+
+#if (ZLIB_VERNUM > 0x1250)
+gzFile uef;
+#else
 gzFile *uef;
+#endif
 
 int infilenames = 0;
 void inituef()

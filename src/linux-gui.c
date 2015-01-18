@@ -4,6 +4,7 @@
 #ifndef WIN32
 #include <string.h>
 #include <allegro.h>
+#include <stdio.h>
 //#include <alleggl.h>
 #include "atom.h"
 #include "roms.h"
@@ -51,7 +52,7 @@ MENU ddvolmenu[4];
 MENU soundmenu[8];
 MENU keymenu[3];
 MENU hardmenu[3];
-MENU settingsmenu[6];
+MENU settingsmenu[7];
 MENU miscmenu[3];
 MENU speedmenu[11];
 MENU mainmenu[6];
@@ -92,6 +93,8 @@ void updatelinuxgui()
 
 	for (x=0;x<14;x++) 
 		sidtypemenu[x].flags=(cursid==(int)sidtypemenu[x].dp)?D_SELECTED:0;
+
+	settingsmenu[5].flags = joyst ? D_SELECTED : 0;
 
 	methodmenu[0].flags=(!sidmethod)?D_SELECTED:0;
     methodmenu[1].flags=(sidmethod)?D_SELECTED:0;
@@ -314,7 +317,7 @@ MENU videomenu[3] =
 int gui_sidtype()
 {
         cursid=(int)active_menu->dp;
-        set_settype(sidmethod, cursid);
+        sid_settype(sidmethod, cursid);
         updatelinuxgui();
         return D_O_K;
 }
@@ -463,6 +466,13 @@ int gui_bbc()
 	return D_O_K;
 }
 
+int gui_joystk_en()
+{
+	joyst = !joyst;
+	updatelinuxgui();
+	return D_O_K;	
+}
+
 MENU hardmenu[3] =
 {
 	{ "&Colour board", gui_colour, NULL, 0, NULL },
@@ -470,13 +480,14 @@ MENU hardmenu[3] =
 	{ NULL,		   NULL,       NULL, 0, NULL }
 };
 
-MENU settingsmenu[6] =
+MENU settingsmenu[7] =
 {
 	{ "&Video",    	NULL, videomenu, 0, NULL },
 	{ "&Hardware", 	NULL, hardmenu,	0, NULL },
 	{ "&RamRom",	NULL, ramrommenu, 0, NULL},	
 	{ "&Sound",    	NULL, soundmenu, 0, NULL },
 	{ "&Keyboard", 	NULL, keymenu,	0, NULL },
+	{ "Joystick PORTB", 	gui_joystk_en, NULL, 0, NULL }, 
 	{ NULL,	       	NULL, NULL,	0, NULL }
 };
 
@@ -562,7 +573,7 @@ MENU mainmenu[6] =
 
 DIALOG bemgui[] =
 {
-	{ d_ctext_proc, 200, 260, 0,   0,  15, 0, 0, 0, 0,     0, "Atomulator V1.01" },
+	{ d_ctext_proc, 200, 260, 0,   0,  15, 0, 0, 0, 0,     0, "Atomulator V1.20" },
 	{ d_menu_proc,	0,   0,	  0,   0,  15, 0, 0, 0, 0,     0, mainmenu	    },
 	{ d_yield_proc },
 	{ 0,		0,   0,	  0,   0,  0,  0, 0, 0, 0,     0, NULL, NULL, NULL  }

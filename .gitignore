@@ -1,0 +1,7 @@
+mmc/
+*.o
+atom.cfg
+rlog.txt
+*~
+\#*
+Atomulator
