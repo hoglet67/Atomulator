@@ -16,9 +16,8 @@ LIBS =  -lalleg -lz -lalut -lopenal -lstdc++ -L/usr/local/lib -lm
 all : ../Atomulator
 
 clean :
-	rm *.o
-	rm Atomulator
-	rm *.res
+	rm -f *.o
+	rm -f ../Atomulator
 
 %.o : %.c
 	$(CC) $(CFLAGS) -c $<
