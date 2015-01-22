@@ -499,13 +499,14 @@ void debugwrite(uint16_t addr, uint8_t val)
 }
 
 uint16_t oldpc, oldoldpc, pc3;
-void dodebugger()
+void dodebugger(int linenum)
 {
 	int c, d, e, f;
 	int params;
 	uint8_t temp;
 	char outs[256];
 	char ins[256];
+	int lines;
 
 	if ((!opcode) && debug_on_brk)
 	{
@@ -546,6 +547,13 @@ void dodebugger()
 		debugdisaddr = pc;
 		debugdisassemble();
 		debugdisaddr = d;
+		// Force the screen to be refreshed before each debug command
+		for (lines = 0; lines < linenum; lines++) {
+			if (lines < 262 || lines == 311) {
+				drawline(lines);
+			}
+		}
+
 		sprintf(outs, "  >");
 		debugout(outs);
 #ifdef WIN32
