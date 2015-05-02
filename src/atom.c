@@ -220,6 +220,13 @@ void atom_run()
 			exec6502(262, 64);
 			
 		poll_keyboard();
+
+// SP10 FOR KEYBOARDJOYSTICK SUPPORT
+
+                poll_joystick();
+
+//SP10 END
+
 		if (tapeon && fasttape)
 			drawscr = 0;
 		else

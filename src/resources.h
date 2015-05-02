@@ -33,28 +33,28 @@
 
 // SP3 JOYSTICK SUPPORT
 
-#define IDM_JOYSTICK        40062 // Joystick support
+#define IDM_JOYSTICK        40070 // Joystick support
 
 // END SP3
 
 // SP10 KEYBOARDJOYSTICK SUPPORT
 
-#define IDM_KEYJOYSTICK     40063 // Keyboardjoystick support
+#define IDM_KEYJOYSTICK     40071 // Keyboardjoystick support
 
 // END SP10
 
-#define IDM_DDV_33          40070
-#define IDM_DDV_66          40071
-#define IDM_DDV_100         40072
-#define IDM_DDT_525         40075
-#define IDM_DDT_35          40076
-#define IDM_MISC_DEBUG      40080
-#define IDM_MISC_DEBONBRK	40081
-#define IDM_MISC_BREAK      40082
-#define IDM_MISC_SCRSHOT    40083
+#define IDM_DDV_33          40080
+#define IDM_DDV_66          40081
+#define IDM_DDV_100         40082
+#define IDM_DDT_525         40085
+#define IDM_DDT_35          40086
+#define IDM_MISC_DEBUG      40090
+#define IDM_MISC_DEBONBRK	40091
+#define IDM_MISC_BREAK      40092
+#define IDM_MISC_SCRSHOT    40093
 
-#define IDM_RAMROM_ENABLE   40084
-#define IDM_RAMROM_DISKROM	40085
+#define IDM_RAMROM_ENABLE   40094
+#define IDM_RAMROM_DISKROM	40095
 
 #define IDM_SOUND_ATOMSID   42000
 #define IDM_WAVE_SID        42001

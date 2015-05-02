@@ -218,16 +218,23 @@ BEGIN
                         MENUITEM "&Default mapping",       IDM_KEY_DEFAULT
                 END
 
+// SP10 KEYBOARDJOYSTICK SUPPORT
+
+                POPUP "&Joystick"
+                BEGIN
+
+// END SP10
+
 // SP3 JOYSTICK SUPPORT
 
-                MENUITEM "Joystick PORTB",  IDM_JOYSTICK
+                        MENUITEM "PORTB",  IDM_JOYSTICK
 
 // END SP3
 
 // SP10 KEYBOARDJOYSTICK SUPPORT
 
-                MENUITEM "Joystick keyboard",  IDM_KEYJOYSTICK
-
+                        MENUITEM "Keyboard matrix",  IDM_KEYJOYSTICK
+                END
 // END SP10
 
         END

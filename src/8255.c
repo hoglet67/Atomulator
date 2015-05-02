@@ -83,7 +83,6 @@ void write8255(uint16_t addr, uint8_t val)
 
                 if (keyjoyst)
                 {
-                  poll_joystick();
                   if (joy_left)  keyrow=0;   // 3-key pressed
                   if (joy_right) keyrow=0;   // G-key pressed
                   if (joy_up)    keyrow=0;   // Q-key pressed
@@ -155,7 +154,6 @@ uint8_t read8255(uint16_t addr)
 // SP10 KEYBOARD JOYSTICK
                 if (keyjoyst)
                 {
-                  poll_joystick();
                   if (joy_left)  temp&=~2;     // 3-key pressed
                   if (joy_right) temp&=~8;     // G-key pressed
                   if (joy_up)    temp&=~0x10;  // Q-key pressed
