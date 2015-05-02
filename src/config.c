@@ -38,6 +38,12 @@
 
 // END SP3
 
+// SP10 KEYBOARDJOYSTICK SUPPORT
+
+#define LABEL_KEYJOYSTICK  "keyjoystick"
+
+// END SP10
+
 #define LABEL_KEY_DEF	"key_define_"
 #define LABEL_USER_KBD	"user_keyboard"
 
@@ -112,6 +118,12 @@ void loadconfig()
 
 // END SP3
 
+// SP10 KEYBOARDJOYSTICK SUPPORT
+
+	keyjoyst		= get_config_int(NULL, LABEL_KEYJOYSTICK, 0);
+
+// END SP10
+
 	debug_on_brk	= get_config_int(NULL, LABEL_DEBUG_BRK, 0);
 
 	for (c = 0; c < 128; c++)
@@ -143,6 +155,12 @@ void saveconfig()
 	set_config_int(NULL, LABEL_JOYSTICK, joyst);
 
 // END SP3
+	
+// SP10 KEYBOARDJOYSTICK SUPPORT
+
+	set_config_int(NULL, LABEL_KEYJOYSTICK, keyjoyst);
+
+// END SP10
 	
 	set_config_int(NULL, LABEL_FASTTAPE, fasttape);
 

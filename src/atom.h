@@ -33,6 +33,12 @@ int joyst;
 
 // END SP3
 
+// SP10 FOR KEYBOARDJOYSTICK SUPPORT
+
+int keyjoyst;
+
+// END SP10
+
 int fasttape;
 int ramrom_enable;
 int RR_jumpers;

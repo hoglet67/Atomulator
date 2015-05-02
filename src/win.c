@@ -72,11 +72,11 @@ int createwindow(HINSTANCE hThisInstance, int nFunsterStil)
 		0,                                                                                                                      /* Extended possibilites for variation */
 		szClassName,                                                                                                            /* Classname */
 
-/*SP8 CHANGES*/
+/*SP10 CHANGES*/
 
-		"Atomulator v1.21",                                                                                                      /* Title Text */
+		"Atomulator v1.22",                                                                                                      /* Title Text */
 
-/*END SP8*/
+/*END SP10*/
 
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,                                                                                       /* default window */
 		CW_USEDEFAULT,                                                                                                          /* Windows decides the position */
@@ -121,6 +121,13 @@ void initmenu()
 	CheckMenuItem(hmenu, IDM_JOYSTICK, joyst ? MF_CHECKED : MF_UNCHECKED);	// Joystick support
 
 // END SP3
+
+
+// SP10 KEYBOARDJOYSTICK SUPPORT
+
+	CheckMenuItem(hmenu, IDM_KEYJOYSTICK, keyjoyst ? MF_CHECKED : MF_UNCHECKED);	// Keyboard joystick support
+
+// END SP10
 
 	// AtomSID.
 	CheckMenuItem(hmenu,IDM_SOUND_ATOMSID, sndatomsid ? MF_CHECKED : MF_UNCHECKED);
@@ -760,6 +767,15 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			return 0;
 
 // END SP3
+
+// SP10 KEYBOARDJOYSTICK SUPPORT
+
+		case IDM_KEYJOYSTICK:
+			keyjoyst = !keyjoyst;
+			CheckMenuItem(hmenu, LOWORD(wParam), keyjoyst ? MF_CHECKED : MF_UNCHECKED);
+			return 0;
+
+// END SP10
 
 		case IDM_VID_FULLSCREEN:
 			fullscreen = 1;

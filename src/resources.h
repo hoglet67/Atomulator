@@ -37,6 +37,12 @@
 
 // END SP3
 
+// SP10 KEYBOARDJOYSTICK SUPPORT
+
+#define IDM_KEYJOYSTICK     40063 // Keyboardjoystick support
+
+// END SP10
+
 #define IDM_DDV_33          40070
 #define IDM_DDV_66          40071
 #define IDM_DDV_100         40072

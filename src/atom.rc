@@ -224,6 +224,12 @@ BEGIN
 
 // END SP3
 
+// SP10 KEYBOARDJOYSTICK SUPPORT
+
+                MENUITEM "Joystick keyboard",  IDM_KEYJOYSTICK
+
+// END SP10
+
         END
         POPUP "&Misc"
         BEGIN
