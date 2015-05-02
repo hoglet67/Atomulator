@@ -78,19 +78,6 @@ void write8255(uint16_t addr, uint8_t val)
 			debuglog("gfxmode changed at PC=%04X from %02X to %02X\n",pc,oldgfx,gfxmode);
 //                printf("GFX mode now %02X %04X\n",val,pc);
 //                printf("Keyrow now %i %04X\n",keyrow,pc);
-
-// SP10 Keyboard joystick
-
-                if (keyjoyst)
-                {
-                  if (joy_left)  keyrow=0;   // 3-key pressed
-                  if (joy_right) keyrow=0;   // G-key pressed
-                  if (joy_up)    keyrow=0;   // Q-key pressed
-                  if (joy_down) keyrow=0;    // --key pressed
-                  if (joy[0].button[0].b) keyrow=0;  // fire pressed
-                }
-// SP10 END
-
 		break;
 	case 2:
 		css = (val & 8) >> 2;
@@ -152,7 +139,7 @@ uint8_t read8255(uint16_t addr)
 //                if (key[keylookup[KEY_LSHIFT]] || key[keylookup[KEY_RSHIFT]]) temp&=~0x80;
 
 // SP10 KEYBOARD JOYSTICK
-                if (keyjoyst)
+                if (keyjoyst && (keyrow ==0))
                 {
                   if (joy_left)  temp&=~2;     // 3-key pressed
                   if (joy_right) temp&=~8;     // G-key pressed
