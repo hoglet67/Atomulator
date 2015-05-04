@@ -322,7 +322,7 @@ void writememl(uint16_t addr, uint8_t val)
 		    write8271(addr, val); 
                 
 		return;
-	    }   
+	    }
 	else
 	    ram[addr]=val;
                                                       
@@ -432,7 +432,6 @@ void dumpregs()
 uint16_t tempw;
 int tempv, hc, al, ah;
 uint8_t tempb;
-
 #define ADC(temp)       if (!p.d)			     \
 	{				   \
 		tempw = (a + temp + (p.c ? 1 : 0));	   \
@@ -444,6 +443,7 @@ uint8_t tempb;
 	else				   \
 	{				   \
 		ah = 0;	       \
+		p.z = p.n = 0;				  \
 		tempb = a + temp + (p.c ? 1 : 0);			     \
 		if (!tempb)					 \
 			p.z = 1;					  \
@@ -467,8 +467,6 @@ uint8_t tempb;
 		a = (al & 0xF) | (ah << 4);				 \
 	}
 
-/*SP8 CHANGE SBC(oper,X) */
-
 #define SBC(temp)       if (!p.d)			     \
 	{				   \
 		tempw = a - (temp + (p.c ? 0 : 1));    \
@@ -481,8 +479,9 @@ uint8_t tempb;
 	else				   \
 	{				   \
 		hc = 0;				      \
-		p.z = p.n = 0;				  \
-		if (!((a - temp) - ((p.c) ? 0 : 1)))		\
+		p.z = p.n = 0;                       \
+                tempb = a - temp - ((p.c) ? 0 : 1); 	  \
+		if (!(tempb))		\
 			p.z = 1;			     \
 		al = (a & 15) - (temp & 15) - ((p.c) ? 0 : 1);	    \
 		if (al & 16)			       \
@@ -495,7 +494,7 @@ uint8_t tempb;
 		if (hc) ah--;			    \
 		if ((a - (temp + ((p.c) ? 0 : 1))) & 0x80)	  \
 			p.n = 1;			     \
-		p.v = (((a - (temp + ((p.c) ? 0 : 1))) ^ temp) & 128) && ((a ^ temp) & 128); \
+		p.v = ((a ^ temp) & 0x80) && ((a ^ tempb) & 0x80); \
 		p.c = 1; \
 		if (ah & 16)			       \
 		{				    \
@@ -505,9 +504,6 @@ uint8_t tempb;
 		}				    \
 		a = (al & 0xF) | ((ah & 0xF) << 4);		    \
 	}
-
-/*SP8 END */
-
 
 int lns;
 uint8_t opcode;
