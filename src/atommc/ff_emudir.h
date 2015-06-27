@@ -31,7 +31,7 @@ typedef struct
 int findfirst(char		path[],
 			  EMUDIR	*dir);
 int findnext(EMUDIR	*dir);
-int findclose(EMUDIR	*dir);
+void findclose(EMUDIR	*dir);
 
 char *saferealpath(const char *path, char *resolved_path); 
 

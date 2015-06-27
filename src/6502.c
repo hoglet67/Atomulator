@@ -394,7 +394,9 @@ void writememl(uint16_t addr, uint8_t val)
 #define writemem(a, v) writememl(a, v)
 //#define readmem(a) ((memstat[(a)>>8]==2)?readmeml(a):mem[(a)>>8][(a)&0xFF])
 //#define writemem(a,b) if (memstat[(a)>>8]==0) mem[(a)>>8][(a)&0xFF]=b; else if (memstat[(a)>>8]==2) writememl(a,b,lines);
-inline uint16_t getsw()
+
+// MH - function needs to be declared static inline to compile on OSX
+static inline uint16_t getsw()
 {
 	uint16_t temp = readmem(pc); pc++;
 
