@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <unistd.h>  // Required for OSX and lseek()
 
 #include "integer.h"
 #include "ff.h"
@@ -139,7 +140,7 @@ FRESULT f_chdir (
 		if(0==strncmp(BaseMMCPath,fullpath,strlen(BaseMMCPath)))
 		{
 			// And that it exists
-			if(0==access(fullpath,F_OK))
+			if(0==access(fullpath,FR_OK))
 			{
 				strcpy(MMCPath,fullpath);
 				result=FR_OK;
@@ -235,11 +236,7 @@ FRESULT f_read (
 		return error;
 	}
 
-	
-	if(*br>=0)
-	{
-		return FR_OK;
-	}
+	return FR_OK;
 }
 
 FRESULT f_write (
@@ -270,11 +267,8 @@ FRESULT f_write (
 		return error;		/* Return correct error for RAF */
 	}
 	
-	if(*bw>=0)
-	{
-		update_FIL(fp,0,0);
-		return FR_OK;
-	}
+	update_FIL(fp,0,0);
+	return FR_OK;
 }
 
 // SP9 END

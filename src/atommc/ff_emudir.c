@@ -42,9 +42,9 @@ int validSFN(char *filename)
 {
 	int	result = 1;	
 	int dotpos = -1;
-	int beforedot;
-	int afterdot;
-	int CharNo;
+	int beforedot = 0;
+	int afterdot = 0;
+	int CharNo = 0;
 	
 	for(CharNo=0; CharNo<strlen(filename); CharNo++)
 	{
@@ -102,7 +102,7 @@ int findnext(EMUDIR	*dir)
 	return (entry!=NULL);
 }
 
-int findclose(EMUDIR	*dir)
+void findclose(EMUDIR	*dir)
 {
 	//rpclog("findclose()\n");
 	
@@ -164,6 +164,7 @@ BYTE get_fat_attribs(int	fid)
 		if(S_ISDIR(statbuf.st_mode))
 			result |= FAT_DIRECTORY;	
 	}
+	return result;
 }
 
 
