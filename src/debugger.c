@@ -654,7 +654,7 @@ void dodebugger(int linenum)
 					break;
 				for (c = 0; c < 8; c++)
 				{
-					if (breakpoints[c] == -1)
+					if (breakr[c] == -1)
 					{
 						sscanf(&ins[d], "%X", &breakr[c]);
 						sprintf(outs, "    Read breakpoint %i set to %04X\n", c, breakr[c]);
@@ -669,7 +669,7 @@ void dodebugger(int linenum)
 					break;
 				for (c = 0; c < 8; c++)
 				{
-					if (breakpoints[c] == -1)
+					if (breakw[c] == -1)
 					{
 						sscanf(&ins[d], "%X", &breakw[c]);
 						sprintf(outs, "    Write breakpoint %i set to %04X\n", c, breakw[c]);
@@ -715,7 +715,7 @@ void dodebugger(int linenum)
 				{
 					if (breakw[c] != -1)
 					{
-						sprintf(outs, "    Write breakpoint %i : %04X\n", c, breakr[c]);
+						sprintf(outs, "    Write breakpoint %i : %04X\n", c, breakw[c]);
 						debugout(outs);
 					}
 				}
