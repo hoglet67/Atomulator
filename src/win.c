@@ -74,7 +74,7 @@ int createwindow(HINSTANCE hThisInstance, int nFunsterStil)
 
 /*SP10 CHANGES*/
 
-		"Atomulator v1.23",                                                                                                      /* Title Text */
+		"Atomulator v1.24",                                                                                                      /* Title Text */
 
 /*END SP10*/
 
@@ -103,12 +103,13 @@ void initmenu()
 	HMENU hmenu;
 
 	hmenu = GetMenu(ghwnd);
-	CheckMenuItem(hmenu, IDM_HARD_COLOUR, colourboard ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hmenu, IDM_HARD_BBC, (RR_jumpers & RAMROM_FLAG_BBCMODE) ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hmenu, IDM_RAMROM_ENABLE, ramrom_enable ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hmenu, IDM_RAMROM_DISKROM, (RR_jumpers & RAMROM_FLAG_DISKROM) ? MF_CHECKED : MF_UNCHECKED);
 
 	CheckMenuItem(hmenu, IDM_VID_SNOW, snow ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(hmenu, IDM_VID_COLOUR, colourboard ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(hmenu, IDM_VID_PALNOTNTSC, palnotntsc ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hmenu, IDM_TAPES_NORMAL, fasttape ? MF_UNCHECKED : MF_CHECKED);
 	CheckMenuItem(hmenu, IDM_TAPES_FAST,  fasttape ? MF_CHECKED : MF_UNCHECKED);
 	
@@ -655,12 +656,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			CheckMenuItem(hmenu, IDM_DISC_WPROT_D, (defaultwriteprot) ? MF_CHECKED : MF_UNCHECKED);
 			break;
 
-		case IDM_HARD_COLOUR:
-			colourboard = !colourboard;
-			CheckMenuItem(hmenu, LOWORD(wParam), colourboard ? MF_CHECKED : MF_UNCHECKED);
-			updatepal();
-			return 0;
-
 		case IDM_HARD_BBC:
 			atompause=1;
 			RR_jumpers ^= RAMROM_FLAG_BBCMODE;
@@ -711,6 +706,17 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 		case IDM_VID_SNOW:
 			snow = !snow;
 			CheckMenuItem(hmenu, LOWORD(wParam), snow ? MF_CHECKED : MF_UNCHECKED);
+			return 0;
+
+		case IDM_VID_COLOUR:
+			colourboard = !colourboard;
+			CheckMenuItem(hmenu, LOWORD(wParam), colourboard ? MF_CHECKED : MF_UNCHECKED);
+			updatepal();
+			return 0;
+
+		case IDM_VID_PALNOTNTSC:
+			palnotntsc = !palnotntsc;
+			CheckMenuItem(hmenu, LOWORD(wParam), palnotntsc ? MF_CHECKED : MF_UNCHECKED);
 			return 0;
 
 		case IDM_SOUND_ATOM:

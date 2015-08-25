@@ -9,6 +9,7 @@
 
 char exedir[MAXPATH+1];
 
+int palnotntsc = 0;
 int colourboard = 1;
 int sndddnoise = 1;
 
@@ -214,7 +215,7 @@ void atom_run()
 {
 	if ((drawscr > 0) || (tapeon && fasttape))
 	{
-		if (colourboard)
+		if (palnotntsc)
 			exec6502(312, 64);
 		else
 			exec6502(262, 64);
@@ -230,7 +231,7 @@ void atom_run()
 		if (tapeon && fasttape)
 			drawscr = 0;
 		else
-			drawscr -= (colourboard) ? 6 : 5;
+			drawscr -= (palnotntsc) ? 6 : 5;
 		
 		if (drawscr > 25)
 			drawscr = 0;

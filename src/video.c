@@ -413,13 +413,13 @@ void drawline(int line)
 		endblit();
 	}
 
-	if (line == 200)
+	if (line == 192)
 		vbl = 1;
 
-	if (line == 261)
+	if (line == 224)
 		vbl = 0;
 
-	if ((line == 261 && !colourboard) || line == 311)
+	if ((line == 261 && !palnotntsc) || line == 311)
 	{
 		switch (gfxmode)
 		{

@@ -17,6 +17,7 @@
 #define LABEL_MMC_PATH	"mmc_path"
 
 #define LABEL_COLOUR	"colourboard"
+#define LABEL_PALNOTNTSC "palnotntsc"
 #define LABEL_BBCBASIC	"bbcbasic"
 #define LABEL_SNOW		"snow"
 #define LABEL_RAMROM	"ramrom_enable"
@@ -96,7 +97,8 @@ void loadconfig()
 	// the default.
 	if((0==strlen(BaseMMCPath)) || (!dir_exists(BaseMMCPath)))
 		sprintf(BaseMMCPath,"%s%s",exedir,DEF_MMC_DIR);
-	
+
+	palnotntsc 	= get_config_int(NULL, LABEL_PALNOTNTSC, 0);
 	colourboard 	= get_config_int(NULL, LABEL_COLOUR, 1);
 	snow 			= get_config_int(NULL, LABEL_SNOW, 0);
 	ramrom_enable 	= get_config_int(NULL, LABEL_RAMROM, 1);
@@ -145,6 +147,7 @@ void saveconfig()
 	set_config_string(NULL, LABEL_DISC1, discfns[1]);
 	set_config_string(NULL, LABEL_MMC_PATH,BaseMMCPath);
 
+	set_config_int(NULL, LABEL_PALNOTNTSC, palnotntsc);
 	set_config_int(NULL, LABEL_COLOUR, colourboard);
 	set_config_int(NULL, LABEL_SNOW, snow);
 	set_config_int(NULL, LABEL_RAMROM,ramrom_enable);

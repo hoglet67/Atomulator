@@ -156,10 +156,11 @@ BEGIN
                 BEGIN
                         MENUITEM "&Snow",                  IDM_VID_SNOW
                         MENUITEM "&Fullscreen",            IDM_VID_FULLSCREEN
+                        MENUITEM "&Colour Board",          IDM_VID_COLOUR
+                        MENUITEM "&PAL (50Hz)",            IDM_VID_PALNOTNTSC
                 END
                 POPUP "&Hardware"
                 BEGIN
-                        MENUITEM "&Colour Board",          IDM_HARD_COLOUR
                         MENUITEM "&BBC BASIC",             IDM_HARD_BBC
                 END
 				POPUP "&RamRom"

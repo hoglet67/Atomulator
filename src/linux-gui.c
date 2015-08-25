@@ -46,12 +46,12 @@ MENU filemenu[4];
 MENU discmenu[8];
 MENU tapespdmenu[3];
 MENU tapemenu[5];
-MENU videomenu[3];
+MENU videomenu[5];
 MENU ddtypemenu[3];
 MENU ddvolmenu[4];
 MENU soundmenu[8];
 MENU keymenu[3];
-MENU hardmenu[3];
+MENU hardmenu[2];
 MENU settingsmenu[7];
 MENU miscmenu[3];
 MENU speedmenu[11];
@@ -74,14 +74,15 @@ void updatelinuxgui()
 
 	videomenu[0].flags = (fullscreen) ? D_SELECTED : 0;
 	videomenu[1].flags = (snow) ? D_SELECTED : 0;
+	videomenu[2].flags = (colourboard) ? D_SELECTED : 0;
+	videomenu[3].flags = (palnotntsc) ? D_SELECTED : 0;
 
 	soundmenu[0].flags = (spon) ? D_SELECTED : 0;
-	soundmenu[1].flags = (sndatomsid)?D_SELECTED:0;    
+	soundmenu[1].flags = (sndatomsid)?D_SELECTED:0;
 	soundmenu[2].flags = (tpon) ? D_SELECTED : 0;
 	soundmenu[3].flags = (sndddnoise) ? D_SELECTED : 0;
 
-	hardmenu[0].flags = (colourboard) ? D_SELECTED : 0;
-	hardmenu[1].flags = (RR_jumpers & RAMROM_FLAG_BBCMODE) ? D_SELECTED : 0;
+	hardmenu[0].flags = (RR_jumpers & RAMROM_FLAG_BBCMODE) ? D_SELECTED : 0;
 
 	ddtypemenu[0].flags = (!ddtype) ? D_SELECTED : 0;
 	ddtypemenu[1].flags = (ddtype) ? D_SELECTED : 0;
@@ -306,11 +307,27 @@ int gui_snow()
 	return D_O_K;
 }
 
+int gui_colour()
+{
+	colourboard = !colourboard;
+	updatelinuxgui();
+	palit = 1;
+	return D_O_K;
+}
 
-MENU videomenu[3] =
+int gui_palnotntsc()
+{
+	palnotntsc = !palnotntsc;
+	updatelinuxgui();
+	return D_O_K;
+}
+
+MENU videomenu[5] =
 {
 	{ "Fullscreen", gui_fullscreen, NULL, 0, NULL },
 	{ "Snow",	gui_snow,	NULL, 0, NULL },
+	{ "&Colour board", gui_colour, NULL, 0, NULL },
+	{ "&Pal (50Hz)", gui_palnotntsc, NULL, 0, NULL },
 	{ NULL,		NULL,		NULL, 0, NULL }
 };
 
@@ -450,14 +467,6 @@ MENU keymenu[3] =
 	{ NULL,		       NULL,	       NULL, 0, NULL }
 };
 
-int gui_colour()
-{
-	colourboard = !colourboard;
-	updatelinuxgui();
-	palit = 1;
-	return D_O_K;
-}
-
 int gui_bbc()
 {
 	RR_jumpers ^= RAMROM_FLAG_BBCMODE;
@@ -470,12 +479,11 @@ int gui_joystk_en()
 {
 	joyst = !joyst;
 	updatelinuxgui();
-	return D_O_K;	
+	return D_O_K;
 }
 
-MENU hardmenu[3] =
+MENU hardmenu[2] =
 {
-	{ "&Colour board", gui_colour, NULL, 0, NULL },
 	{ "&BBC BASIC",	   gui_bbc,    NULL, 0, NULL },
 	{ NULL,		   NULL,       NULL, 0, NULL }
 };
@@ -484,10 +492,10 @@ MENU settingsmenu[7] =
 {
 	{ "&Video",    	NULL, videomenu, 0, NULL },
 	{ "&Hardware", 	NULL, hardmenu,	0, NULL },
-	{ "&RamRom",	NULL, ramrommenu, 0, NULL},	
+	{ "&RamRom",	NULL, ramrommenu, 0, NULL},
 	{ "&Sound",    	NULL, soundmenu, 0, NULL },
 	{ "&Keyboard", 	NULL, keymenu,	0, NULL },
-	{ "Joystick PORTB", 	gui_joystk_en, NULL, 0, NULL }, 
+	{ "Joystick PORTB", 	gui_joystk_en, NULL, 0, NULL },
 	{ NULL,	       	NULL, NULL,	0, NULL }
 };
 
@@ -573,7 +581,7 @@ MENU mainmenu[6] =
 
 DIALOG bemgui[] =
 {
-	{ d_ctext_proc, 200, 260, 0,   0,  15, 0, 0, 0, 0,     0, "Atomulator V1.23" },
+	{ d_ctext_proc, 200, 260, 0,   0,  15, 0, 0, 0, 0,     0, "Atomulator V1.24" },
 	{ d_menu_proc,	0,   0,	  0,   0,  15, 0, 0, 0, 0,     0, mainmenu	    },
 	{ d_yield_proc },
 	{ 0,		0,   0,	  0,   0,  0,  0, 0, 0, 0,     0, NULL, NULL, NULL  }
