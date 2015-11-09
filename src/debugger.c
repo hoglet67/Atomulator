@@ -17,6 +17,7 @@ int debug_on_brk = 0;
 #include <wingdi.h>
 #include <stdio.h>
 #include "atom.h"
+#include "roms.h"
 
 HANDLE debugthread, debugconsolethread;
 HWND dhwnd;
@@ -265,7 +266,7 @@ uint8_t debuglastcommand = 0;
 
 uint8_t dreadmem(uint16_t addr)
 {
-	if (addr >= 0xA00 && addr < 0xAFF)
+	if (addr >= 0xA00 && addr < 0xAFF && RR_bit_set(RAMROM_FLAG_DISKROM))
 		return 0xFF;
 	if (addr >= 0xB000 && addr < 0xBFFF)
 		return 0xFF;

@@ -43,6 +43,7 @@ int keyjoyst;
 int fasttape;
 int ramrom_enable;
 int RR_jumpers;
+int RR_enables;
 
 int interrupt;
 

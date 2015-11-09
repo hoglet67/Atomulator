@@ -74,7 +74,7 @@ int createwindow(HINSTANCE hThisInstance, int nFunsterStil)
 
 /*SP10 CHANGES*/
 
-		"Atomulator v1.24",                                                                                                      /* Title Text */
+		"Atomulator v1.25",                                                                                                      /* Title Text */
 
 /*END SP10*/
 
