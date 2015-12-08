@@ -90,7 +90,7 @@ static void update_FIL(FIL	*fil,
 
 static FRESULT get_result(int	err_no)
 {
-	debuglog("get_result errno=%d [%04X]\n",err_no,err_no);
+	//debuglog("get_result errno=%d [%04X]\n",err_no,err_no);
 	switch(err_no)
 	{
 		case ENOENT:
@@ -225,7 +225,7 @@ FRESULT f_read (
 	bytesread=read((int)fp->fs,buff,btr);
 	*br=bytesread;
 
-	debuglog("f_read(%d) offset=%d[%04X],result=%d\n",btr,ptrpos,ptrpos,*br);
+	//debuglog("f_read(%d) offset=%d[%04X],result=%d\n",btr,ptrpos,ptrpos,*br);
 //	HexDumpHead(buff,btr);
 	
 	update_FIL(fp,0,0);
@@ -257,13 +257,13 @@ FRESULT f_write (
 	written=write((int)fp->fs,buff,btw);
 	*bw=written;
 
-	debuglog("f_write(%d) offset=%d[%04X],result=%d\n",btw,ptrpos,ptrpos,written);
+	//debuglog("f_write(%d) offset=%d[%04X],result=%d\n",btw,ptrpos,ptrpos,written);
 //	HexDumpHead(buff,btw);
 	
 	if(written<0)
 	{
 		error=errno;
-		debuglog("errno: %s [%d]\n",strerror(error),error);
+		//debuglog("errno: %s [%d]\n",strerror(error),error);
 		return error;		/* Return correct error for RAF */
 	}
 	

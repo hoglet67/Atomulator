@@ -6,6 +6,7 @@
 #include <allegro.h>
 #include "atom.h"
 #include "atommc.h"
+#include "1770.h"
 
 char exedir[MAXPATH+1];
 
@@ -29,6 +30,17 @@ int joyst = 0;
 int keyjoyst = 0;
 
 // END SP10
+
+// GDOS2015
+int fdc1770 = 0;
+int GD_bank		= 0;	// Which of the 16 banks is jumpered.
+// end GDOS2015
+
+// RAM config
+int main_ramflag	= 3;	// 25K by default (when RAMROM *DISABLED!*).
+int vid_ramflag		= 7;	// 8K by default
+int vid_top;			//= ((vid_ramflag+1)*0x0400)+0x8000;	// Last video RAM address.
+// RAM config
 
 int ramrom_enable = 1;
 
@@ -113,8 +125,12 @@ void atom_reset(int power_on)
 	sid_reset();
 	debuglog("exedir=%s\n",exedir);
 	InitMMC();
-	
-	reset8271();
+
+	if(fdc1770)
+		reset1770();
+	else
+		reset8271();
+		
 	gfxmode=0;
 	reset6502();
 	debuglog("atom_reset():done\n");

@@ -84,15 +84,15 @@
 // Atom Mode
 #define ROM_OFS_RR_UTILITY      (ROM_OFS_RAMROM + 0x00000)
 
-#define ROM_OFS_RR_ABASIC0      (ROM_OFS_RAMROM + 0x10000)
-#define ROM_OFS_RR_AFLOAT0      (ROM_OFS_RAMROM + 0x11000)
-#define ROM_OFS_RR_DOSROM0      (ROM_OFS_RAMROM + 0x12000)
-#define ROM_OFS_RR_AKERNEL0     (ROM_OFS_RAMROM + 0x13000)
+#define ROM_OFS_RR_ABASIC1      (ROM_OFS_RAMROM + 0x10000)
+#define ROM_OFS_RR_AFLOAT1      (ROM_OFS_RAMROM + 0x11000)
+#define ROM_OFS_RR_DOSROM1      (ROM_OFS_RAMROM + 0x12000)
+#define ROM_OFS_RR_AKERNEL1     (ROM_OFS_RAMROM + 0x13000)
 
-#define ROM_OFS_RR_ABASIC1      (ROM_OFS_RAMROM + 0x14000)
-#define ROM_OFS_RR_AFLOAT1      (ROM_OFS_RAMROM + 0x15000)
-#define ROM_OFS_RR_DOSROM1      (ROM_OFS_RAMROM + 0x16000)
-#define ROM_OFS_RR_AKERNEL1     (ROM_OFS_RAMROM + 0x17000)
+#define ROM_OFS_RR_ABASIC0      (ROM_OFS_RAMROM + 0x14000)
+#define ROM_OFS_RR_AFLOAT0      (ROM_OFS_RAMROM + 0x15000)
+#define ROM_OFS_RR_DOSROM0      (ROM_OFS_RAMROM + 0x16000)
+#define ROM_OFS_RR_AKERNEL0     (ROM_OFS_RAMROM + 0x17000)
 
 // BBC Mode
 
@@ -109,7 +109,7 @@
 
 // RAMROM bitmaps for 0xBFFD/0xBFFE
 #define RAMROM_FLAG_EXTRAM		0x01
-#define RAMROM_FLAG_BLKA_RAM		0x02
+#define RAMROM_FLAG_BLKA_RAM	0x02
 #define RAMROM_FLAG_DISKROM		0x04
 #define RAMROM_FLAG_BBCMODE		0x08
 
@@ -119,4 +119,10 @@
 // Currently there is no GUI option to control BLKA, so the normal value of this bit is 0
 // This can be toggled by setting bit 1 of ?#BFFE
 // I have actually inverted it's meaning, so the default behaviour is to enable the BLKA RAM when DISROM is disabled 
-#define RR_BLKA_enabled()		(!RR_bit_set(RAMROM_FLAG_BLKA_RAM) && !RR_bit_set(RAMROM_FLAG_DISKROM))
+#define RR_BLKA_enabled()		(!RR_bit_set(RAMROM_FLAG_BLKA_RAM) && RR_bit_set(RAMROM_FLAG_DISKROM))
+
+// GDOS2015
+// 16 banks of 4K
+#define ROM_SIZE_GDOS2015		0x10000
+#define ROM_OFS_GDOS2015		(ROM_OFS_RAMROM + RAM_ROM_SIZE)		
+// end GDOS2015

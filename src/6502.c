@@ -8,6 +8,7 @@
 #include "roms.h"
 #include "8271.h"
 #include "atommc.h"
+#include "1770.h"
 
 int tapeon;
 int totcyc = 0;
@@ -60,7 +61,7 @@ void initmem()
 	int c;
 
 	ram = (uint8_t*)malloc(0x10000);
-	rom = (uint8_t*)malloc(ROM_MEM_SIZE + RAM_ROM_SIZE);
+	rom = (uint8_t*)malloc(ROM_MEM_SIZE + RAM_ROM_SIZE + ROM_SIZE_GDOS2015);
 	
 	memset(ram, 0, 0x10000);
 	
@@ -102,7 +103,13 @@ void loadroms()
 	load_rom("roms/abasic.rom",             ROM_SIZE_ATOM,          ROM_OFS_ABASIC);
 	load_rom("roms/axr1.rom",               ROM_SIZE_ATOM,          ROM_OFS_UTILITY);
 	load_rom("roms/ramrom.rom",             RAM_ROM_SIZE,           ROM_OFS_RAMROM);
+	load_rom("roms/gdos2015.rom",			ROM_SIZE_GDOS2015,		ROM_OFS_GDOS2015);
+}
 
+void set_dosrom_ptr()
+{
+	if (!ramrom_enable || (ramrom_enable && !RR_bit_set(RAMROM_FLAG_BBCMODE) && !RR_bit_set(RAMROM_FLAG_DISKROM)))
+		dosrom_ptr		= fdc1770 ? &rom[ROM_OFS_GDOS2015 + (GD_bank * ROM_SIZE_ATOM)] :  &rom[ROM_OFS_DOSROM];
 }
 
 // Re-written for 1.20 to reflect latest RAMROM ROM Layout - see roms.h
@@ -130,20 +137,22 @@ void set_rr_ptrs()
         } else {	    
 	    // Atom Mode
 	    if (RR_bit_set(RAMROM_FLAG_DISKROM)) {
-                // Atom Mode with DISKROM = 1
-                rpclog("Running with Atom mode roms, diskrom flag = 1\n");
-		abasic_ptr      = &rom[ROM_OFS_RR_ABASIC1];
-		afloat_ptr      = &rom[ROM_OFS_RR_AFLOAT1];
-		dosrom_ptr      = &rom[ROM_OFS_RR_DOSROM1];
-		akernel_ptr     = &rom[ROM_OFS_RR_AKERNEL1];
+            // Atom Mode with DISKROM = 1
+            rpclog("Running with Atom mode roms, diskrom flag = 1\n");
+			debuglog("Running with Atom mode roms, diskrom flag = 1\n");	
+			abasic_ptr      = &rom[ROM_OFS_RR_ABASIC1];
+			afloat_ptr      = &rom[ROM_OFS_RR_AFLOAT1];
+			dosrom_ptr      = &rom[ROM_OFS_RR_DOSROM1];
+			akernel_ptr     = &rom[ROM_OFS_RR_AKERNEL1];
 	    } else {
 	        // Atom Mode with DISKROM = 0
-	        rpclog("Running with Atom mode roms, diskrom flag = 1\n");
-		abasic_ptr      = &rom[ROM_OFS_RR_ABASIC0];
-		afloat_ptr      = &rom[ROM_OFS_RR_AFLOAT0];
-		dosrom_ptr      = &rom[ROM_OFS_RR_DOSROM0];
-		akernel_ptr     = &rom[ROM_OFS_RR_AKERNEL0];
-            }
+	        rpclog("Running with Atom mode roms, diskrom flag = 0\n");
+	        debuglog("Running with Atom mode roms, diskrom flag = 0\n");
+			abasic_ptr      = &rom[ROM_OFS_RR_ABASIC0];
+			afloat_ptr      = &rom[ROM_OFS_RR_AFLOAT0];
+			akernel_ptr     = &rom[ROM_OFS_RR_AKERNEL0];
+			set_dosrom_ptr();
+        }
 	    // Select what is mapped into $A000 block, this allows the 
 	    // mapping of rom or ram into the utility block so that a 
 	    // rom may be loaded from disk and then mapped in.
@@ -158,8 +167,8 @@ void set_rr_ptrs()
         utility_ptr     = &rom[ROM_OFS_UTILITY];
         abasic_ptr      = &rom[ROM_OFS_ABASIC];
         afloat_ptr      = &rom[ROM_OFS_AFLOAT];
-        dosrom_ptr      = &rom[ROM_OFS_DOSROM];
         akernel_ptr     = &rom[ROM_OFS_AKERNEL];
+		set_dosrom_ptr();
     }
 
     rpclog("utility_ptr = 0x%05x\n", utility_ptr - rom);
@@ -278,8 +287,30 @@ uint8_t fetcheddat[32];
 //    return 0;
 //}
 
+int RamEnabled(uint16_t addr)
+{
+	int	result;
+		
+	result=		  ((addr < 0x400) ||												// Always RAM 
+				   ((addr >= 0x0400) && (addr < 0x09FF) && (main_ramflag > 3)) ||	// Low ram
+				   ((addr >= 0x0B00) && (addr < 0x1FFF) && (main_ramflag > 3)) ||	// Low ram
+				   ((addr >= 0x0A00) && (addr < 0x0AFF) && (main_ramflag > 4)) ||	// Low ram + RAM in disk area
+				   ((addr >= 0x2800) && (addr < 0x3C00) && (main_ramflag > 0)) ||  	// 5K on motherboard
+				   ((addr >= 0x2000) && (addr < 0x2800) && (main_ramflag > 1)) ||	// DOS additional 3K
+				   ((addr >= 0x3C00) && (addr < 0x4000) && (main_ramflag > 1)) ||
+				   ((addr >= 0x4000) && (addr < 0x8000) && (main_ramflag > 2)) ||	// Extra 16K 
+					ramrom_enable);													// Always enabled for RAMROM.
+
+	return result;
+}
+
 uint8_t readmeml(uint16_t addr)
 {
+	uint8_t addrh	= (addr >> 8);	// It seems all unmapped addresses just return the high byte of the address....
+	int		ram_enabled;
+	
+	ram_enabled = RamEnabled(addr);
+				
     if (debugon) {
         debugread(addr);
     }
@@ -296,28 +327,35 @@ uint8_t readmeml(uint16_t addr)
     {
         if ((addr & 0x0F00) == 0x0A00)	/*FDC*/
         {
-            if(ramrom_enable && RR_BLKA_enabled())
+            if((ramrom_enable && RR_BLKA_enabled()) || 
+			   (!ramrom_enable && ram_enabled))
                 return ram[addr];
             else
                 return read8271(addr);                  /*FDC*/
         }
         else
-            return ram[addr];
+            return ram_enabled ? ram[addr] : addrh;
     }
 
-    if (i <= 0x6C00) return ram[addr]; /* RAM, DOS RAM */
+    if (i <= 0x6C00) 
+		return ram_enabled ? ram[addr] : addrh; /* RAM, DOS RAM */
 
     if (i <= 0x7C00)
     {
         if (!ramrom_enable || (RR_enables & RAMROM_FLAG_EXTRAM)==0) return ram[addr];
-        return 0; // dont let the code execution fall through
+		
+        return ram_enabled ? ram[addr] : addrh;; // dont let the code execution fall through
     }
 
     if (i <= 0x9C00) /* Video RAM */
     {
         if (snow && cycles >= 0 && cycles < 32)
             fetcheddat[31 - cycles] = ram[addr];
-        return ram[addr];
+		
+		if (addr < vid_top)
+			return ram[addr];
+		else
+			return addrh;
     }
 
     if (i == 0xB000) return read8255(addr); /* 8255 PIA */
@@ -325,6 +363,10 @@ uint8_t readmeml(uint16_t addr)
     if (i == 0xB800) return readvia(addr);  /* 6522 VIA */
     if (i == 0xBC00)
     {
+		// GDOS 2015, BC10.
+		if((fdc1770) && (addr>=WDBASE) && (addr <= CTRLREG))
+			return read1770(addr);
+	
         if((sndatomsid) && (addr>=0xBDC0) && (addr<=0xBDDF))
             return sid_read(addr & 0x1F);
 
@@ -343,7 +385,7 @@ uint8_t readmeml(uint16_t addr)
             }
         }
         
-        return 0; // don't let the code execution fall through
+        return addrh; // don't let the code execution fall through
     }
 
     if (i <= 0xAC00) return utility_ptr[addr & 0x0FFF]; /* Utility ROM        */
@@ -473,6 +515,16 @@ uint8_t readmeml(uint16_t addr)
 
 void writememl(uint16_t addr, uint8_t val)
 {
+	int		ram_enabled;
+	
+	ram_enabled = RamEnabled(addr);
+//	ram_enabled = ((addr < 0x400) ||												// Always RAM 
+//				   ((addr >= 0x2800) && (addr < 0x3C00) && (main_ramflag > 0)) ||  	// 5K on motherboard
+//				   ((addr >= 0x2000) && (addr < 0x2800) && (main_ramflag > 1)) ||	// DOS additional 3K
+//				   ((addr >= 0x3C00) && (addr < 0x4000) && (main_ramflag > 1)) ||
+//				   ((addr >= 0x4000) && (addr < 0x8000) && (main_ramflag > 2)) ||	// Extra 16K 
+//					ramrom_enable);													// Always enabled for RAMROM.
+
     if (debugon) {
         debugwrite(addr, val);
     }
@@ -485,29 +537,32 @@ void writememl(uint16_t addr, uint8_t val)
     {
         if ((addr & 0x0F00) == 0x0A00)	/*FDC*/
         {
-            if(ramrom_enable && RR_BLKA_enabled())
-                ram[addr] = val;
+            if((ramrom_enable && RR_BLKA_enabled()) || 
+			   (!ramrom_enable && ram_enabled))
+                if (ram_enabled) ram[addr] = val;
             else
                 write8271(addr, val);                  /*FDC*/
             return;
         }
         else
         {
-            ram[addr] = val;
+            if (ram_enabled) ram[addr] = val;
             return;
         }
     }
 
     if (i <= 0x6C00)
     {
-    	ram[addr] = val; /* RAM, DOS RAM */
+    	if (ram_enabled) ram[addr] = val; /* RAM, DOS RAM */
     	return;
     }
 
     if (i <= 0x7C00)
     {
-        if (!ramrom_enable || (RR_enables & RAMROM_FLAG_EXTRAM)==0)
+        if ((!ramrom_enable || (RR_enables & RAMROM_FLAG_EXTRAM)==0) ||
+		     (ram_enabled && !ramrom_enable))
         	ram[addr] = val;
+		
         return;
     }
 
@@ -515,7 +570,10 @@ void writememl(uint16_t addr, uint8_t val)
     {
     	if (snow && cycles >= 0 && cycles < 32)
     	    fetcheddat[31 - cycles] = val;
-    	ram[addr] = val;
+    
+		if (addr < vid_top)
+			ram[addr] = val;
+
     	return;
     }
 
@@ -539,6 +597,10 @@ void writememl(uint16_t addr, uint8_t val)
     
     if (i == 0xBC00)
     {
+		// GDOS-2015 BC10.
+		if((fdc1770) && (addr>=WDBASE) && (addr <= CTRLREG))
+			write1770(addr, val);
+
         if((sndatomsid) && (addr>=0xBDC0) && (addr<=0xBDDF))
         {
     		sid_write(addr & 0x1F,val);

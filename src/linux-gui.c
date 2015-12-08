@@ -46,13 +46,13 @@ MENU filemenu[4];
 MENU discmenu[8];
 MENU tapespdmenu[3];
 MENU tapemenu[5];
-MENU videomenu[5];
+MENU videomenu[3];
 MENU ddtypemenu[3];
 MENU ddvolmenu[4];
 MENU soundmenu[8];
 MENU keymenu[3];
-MENU hardmenu[2];
-MENU settingsmenu[7];
+MENU hardmenu[3];
+MENU settingsmenu[9];
 MENU miscmenu[3];
 MENU speedmenu[11];
 MENU mainmenu[6];
@@ -60,6 +60,16 @@ MENU mainmenu[6];
 MENU sidtypemenu[15];
 MENU methodmenu[3];
 MENU ramrommenu[2];
+
+// RAM config
+MENU rammenu[3];
+MENU mainrammenu[7];
+MENU vidrammenu[9];
+// end RAM config
+// GDOS2015
+MENU floppymenu[3];
+MENU floppybankmenu[17];
+// end GDOS2015
 
 void updatelinuxgui()
 {
@@ -74,15 +84,14 @@ void updatelinuxgui()
 
 	videomenu[0].flags = (fullscreen) ? D_SELECTED : 0;
 	videomenu[1].flags = (snow) ? D_SELECTED : 0;
-	videomenu[2].flags = (colourboard) ? D_SELECTED : 0;
-	videomenu[3].flags = (palnotntsc) ? D_SELECTED : 0;
 
 	soundmenu[0].flags = (spon) ? D_SELECTED : 0;
-	soundmenu[1].flags = (sndatomsid)?D_SELECTED:0;
+	soundmenu[1].flags = (sndatomsid)?D_SELECTED:0;    
 	soundmenu[2].flags = (tpon) ? D_SELECTED : 0;
 	soundmenu[3].flags = (sndddnoise) ? D_SELECTED : 0;
 
-	hardmenu[0].flags = (RR_jumpers & RAMROM_FLAG_BBCMODE) ? D_SELECTED : 0;
+	hardmenu[0].flags = (colourboard) ? D_SELECTED : 0;
+	hardmenu[1].flags = (RR_jumpers & RAMROM_FLAG_BBCMODE) ? D_SELECTED : 0;
 
 	ddtypemenu[0].flags = (!ddtype) ? D_SELECTED : 0;
 	ddtypemenu[1].flags = (ddtype) ? D_SELECTED : 0;
@@ -95,13 +104,27 @@ void updatelinuxgui()
 	for (x=0;x<14;x++) 
 		sidtypemenu[x].flags=(cursid==(int)sidtypemenu[x].dp)?D_SELECTED:0;
 
-	settingsmenu[5].flags = joyst ? D_SELECTED : 0;
+	settingsmenu[7].flags = joyst ? D_SELECTED : 0;
 
 	methodmenu[0].flags=(!sidmethod)?D_SELECTED:0;
     methodmenu[1].flags=(sidmethod)?D_SELECTED:0;
 	
 	ramrommenu[0].flags=(ramrom_enable) ? D_SELECTED : 0;
 	ramrommenu[1].flags=(RR_jumpers & RAMROM_FLAG_DISKROM) ? D_SELECTED : 0;	
+
+// RAM config	
+	for(x=0; x < 6; x++)
+		mainrammenu[x].flags=(main_ramflag == (int)mainrammenu[x].dp) ? D_SELECTED : 0;
+		
+	for(x=0; x < 8; x++)
+		vidrammenu[x].flags=(vid_ramflag == (int)vidrammenu[x].dp) ? D_SELECTED : 0;
+// end RAM config
+// GDOS2015
+	floppymenu[0].flags=fdc1770 ? D_SELECTED : 0;
+	
+	for(x=0; x < 15; x++)
+		floppybankmenu[x].flags=(GD_bank == (int)floppybankmenu[x].dp) ? D_SELECTED : 0;
+// end GDOS2015
 }
 
 int gui_keydefine();
@@ -307,27 +330,11 @@ int gui_snow()
 	return D_O_K;
 }
 
-int gui_colour()
-{
-	colourboard = !colourboard;
-	updatelinuxgui();
-	palit = 1;
-	return D_O_K;
-}
 
-int gui_palnotntsc()
-{
-	palnotntsc = !palnotntsc;
-	updatelinuxgui();
-	return D_O_K;
-}
-
-MENU videomenu[5] =
+MENU videomenu[3] =
 {
 	{ "Fullscreen", gui_fullscreen, NULL, 0, NULL },
 	{ "Snow",	gui_snow,	NULL, 0, NULL },
-	{ "&Colour board", gui_colour, NULL, 0, NULL },
-	{ "&Pal (50Hz)", gui_palnotntsc, NULL, 0, NULL },
 	{ NULL,		NULL,		NULL, 0, NULL }
 };
 
@@ -467,6 +474,14 @@ MENU keymenu[3] =
 	{ NULL,		       NULL,	       NULL, 0, NULL }
 };
 
+int gui_colour()
+{
+	colourboard = !colourboard;
+	updatelinuxgui();
+	palit = 1;
+	return D_O_K;
+}
+
 int gui_bbc()
 {
 	RR_jumpers ^= RAMROM_FLAG_BBCMODE;
@@ -479,23 +494,26 @@ int gui_joystk_en()
 {
 	joyst = !joyst;
 	updatelinuxgui();
-	return D_O_K;
+	return D_O_K;	
 }
 
-MENU hardmenu[2] =
+MENU hardmenu[3] =
 {
+	{ "&Colour board", gui_colour, NULL, 0, NULL },
 	{ "&BBC BASIC",	   gui_bbc,    NULL, 0, NULL },
 	{ NULL,		   NULL,       NULL, 0, NULL }
 };
 
-MENU settingsmenu[7] =
+MENU settingsmenu[9] =
 {
 	{ "&Video",    	NULL, videomenu, 0, NULL },
 	{ "&Hardware", 	NULL, hardmenu,	0, NULL },
-	{ "&RamRom",	NULL, ramrommenu, 0, NULL},
+	{ "&RamRom",	NULL, ramrommenu, 0, NULL},	
+	{ "R&am",		NULL, rammenu, 0, NULL },
+	{ "&Floppy",	NULL, floppymenu, 0, NULL },
 	{ "&Sound",    	NULL, soundmenu, 0, NULL },
 	{ "&Keyboard", 	NULL, keymenu,	0, NULL },
-	{ "Joystick PORTB", 	gui_joystk_en, NULL, 0, NULL },
+	{ "Joystick PORTB", 	gui_joystk_en, NULL, 0, NULL }, 
 	{ NULL,	       	NULL, NULL,	0, NULL }
 };
 
@@ -520,6 +538,97 @@ MENU ramrommenu[2] =
 	{ "RAM/ROM enabled",			gui_ramrom_en,		NULL,	0,	NULL},
 	{ "RAM/ROM disk rom enabled",	gui_ramromdsk_en,	NULL,	0,	NULL},
 };
+
+// RAM config
+
+int gui_mainmem()
+{
+	main_ramflag=(int)active_menu->dp;
+    updatelinuxgui();
+    return D_O_K;
+}
+int gui_vidram()
+{
+	vid_ramflag=(int)active_menu->dp;
+    updatelinuxgui();
+    return D_O_K;
+}
+
+MENU mainrammenu[7] =
+{
+	{ "Minimum 1K in base",						gui_mainmem, NULL, 0, (void *)0},
+	{ "Minimum 1K in base + 5K",				gui_mainmem, NULL, 0, (void *)1},	
+	{ "6K on motherboard + 3K DOS",				gui_mainmem, NULL, 0, (void *)2},
+	{ "6K motherboard + 3K DOS + 16K expansion",gui_mainmem, NULL, 0, (void *)3},
+	{ "6K motherboard + 3K DOS + 22K expansion (hole at A00)",gui_mainmem, NULL, 0, (void *)4},
+	{ "6K motherboard + 3K DOS + 23K expansion",gui_mainmem, NULL, 0, (void *)5},
+	{ NULL,									   	NULL,		 NULL, 0, NULL }	
+};
+
+MENU vidrammenu[9] = 
+{
+	{ "1K Video RAM",	gui_vidram,	NULL,	0, 	(void *)0},
+	{ "2K Video RAM",	gui_vidram,	NULL,	0, 	(void *)1},
+	{ "3K Video RAM",	gui_vidram,	NULL,	0, 	(void *)2},
+	{ "4K Video RAM",	gui_vidram,	NULL,	0, 	(void *)3},
+	{ "5K Video RAM",	gui_vidram,	NULL,	0, 	(void *)4},
+	{ "6K Video RAM",	gui_vidram,	NULL,	0, 	(void *)5},
+	{ "7K Video RAM",	gui_vidram,	NULL,	0, 	(void *)6},
+	{ "8K Video RAM",	gui_vidram,	NULL,	0, 	(void *)7},
+	{ NULL,				NULL,		NULL,	0,	NULL}
+};
+
+MENU rammenu[3] =
+{
+	{ "Main RAM",		NULL,		mainrammenu, 	0,	NULL},
+	{ "Video RAM",		NULL,		vidrammenu,		0, 	NULL},
+	{ NULL,				NULL,		NULL,			0,	NULL}
+}; 
+
+// end RAM config
+
+// GDOS2015
+int gui_gdenable()
+{
+	fdc1770 = !fdc1770;
+    updatelinuxgui();
+    return D_O_K;
+}
+int gui_gdbank()
+{
+	GD_bank=(int)active_menu->dp;
+    updatelinuxgui();
+    set_dosrom_ptr();
+    return D_O_K;  
+}
+MENU floppymenu[3] = 
+{
+	{ "&GDOS/ADOS 2015 (1770 based) Enabled",	gui_gdenable,	NULL, 	0, 	NULL},
+	{ "&Rombank",								NULL,			floppybankmenu,	0,	NULL},
+	{ NULL,				NULL,		NULL,			0,	NULL}
+};
+
+MENU floppybankmenu[17] =
+{
+	{ "Bank 00",	gui_gdbank,	NULL,	0,	(void *)0 },
+	{ "Bank 01",	gui_gdbank,	NULL,	0,	(void *)1 },
+	{ "Bank 02",	gui_gdbank,	NULL,	0,	(void *)2 },
+	{ "Bank 03",	gui_gdbank,	NULL,	0,	(void *)3 },
+	{ "Bank 04",	gui_gdbank,	NULL,	0,	(void *)4 },
+	{ "Bank 05",	gui_gdbank,	NULL,	0,	(void *)5 },
+	{ "Bank 06",	gui_gdbank,	NULL,	0,	(void *)6 },
+	{ "Bank 07",	gui_gdbank,	NULL,	0,	(void *)7 },
+	{ "Bank 08",	gui_gdbank,	NULL,	0,	(void *)8 },
+	{ "Bank 09",	gui_gdbank,	NULL,	0,	(void *)9 },
+	{ "Bank 10",	gui_gdbank,	NULL,	0,	(void *)10 },
+	{ "Bank 11",	gui_gdbank,	NULL,	0,	(void *)11 },
+	{ "Bank 12",	gui_gdbank,	NULL,	0,	(void *)12 },
+	{ "Bank 13",	gui_gdbank,	NULL,	0,	(void *)13 },
+	{ "Bank 14",	gui_gdbank,	NULL,	0,	(void *)14 },
+	{ "Bank 15",	gui_gdbank,	NULL,	0,	(void *)15 },
+	{ NULL,			NULL,		NULL,	0,	NULL}
+};
+// end GDOS2015
 
 int gui_scrshot()
 {
@@ -581,7 +690,7 @@ MENU mainmenu[6] =
 
 DIALOG bemgui[] =
 {
-	{ d_ctext_proc, 200, 260, 0,   0,  15, 0, 0, 0, 0,     0, "Atomulator V1.24" },
+	{ d_ctext_proc, 200, 260, 0,   0,  15, 0, 0, 0, 0,     0, "Atomulator V1.26" },
 	{ d_menu_proc,	0,   0,	  0,   0,  15, 0, 0, 0, 0,     0, mainmenu	    },
 	{ d_yield_proc },
 	{ 0,		0,   0,	  0,   0,  0,  0, 0, 0, 0,     0, NULL, NULL, NULL  }

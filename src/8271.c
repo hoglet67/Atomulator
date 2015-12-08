@@ -67,7 +67,7 @@ static void NMI8271()
 	else
 		nmi = 0;
 		
-	debuglog("FDC:NMI=%d\n",nmi);
+//	debuglog("FDC:NMI=%d\n",nmi);
 }
 
 

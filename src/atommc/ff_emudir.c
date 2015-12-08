@@ -86,7 +86,7 @@ int findnext(EMUDIR	*dir)
 		strncpy(dir->filename,entry->d_name,FNAMELEN);
 		snprintf(filename,PATHSIZE,"%s/%s",dir->path,dir->filename);
 		
-		debuglog("%s\n",filename);
+		//debuglog("%s\n",filename);
 		if(0==stat(filename, &statbuf))
 		{
 			dir->fsize=statbuf.st_size;

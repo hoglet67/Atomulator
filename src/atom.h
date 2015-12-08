@@ -45,6 +45,8 @@ int ramrom_enable;
 int RR_jumpers;
 int RR_enables;
 
+void set_dosrom_ptr();
+
 int interrupt;
 
 typedef struct VIA
@@ -74,6 +76,18 @@ extern uint8_t opcode;
 
 int spon, tpon;
 
+/* For 1770 based GDOS */
+//#define WD1770 1
+extern int fdc1770;
+extern int GD_bank;
+/* end */
+
+// RAM Config
+extern int main_ramflag;
+extern int vid_ramflag;
+extern int vid_top;
+#define SET_VID_TOP()	{vid_top=((vid_ramflag+1)*0x0400)+0x8000;}	// Last video RAM address.
+// end RAM Config
 
 void (*fdccallback)();
 void (*fdcdata)(uint8_t dat);

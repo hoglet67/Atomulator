@@ -45,6 +45,16 @@
 
 // END SP10
 
+// GDOS2015
+#define LABEL_FDC1770	"fdc1770"
+#define LABEL_GDBANK	"gdbank"
+// END GDOS2015
+
+// RAM config
+#define LABEL_MAINRAM	"mainram"
+#define LABEL_VIDRAM	"vidram"
+// end RAM config
+
 #define LABEL_KEY_DEF	"key_define_"
 #define LABEL_USER_KBD	"user_keyboard"
 
@@ -126,6 +136,17 @@ void loadconfig()
 
 // END SP10
 
+// GDOS2015
+	fdc1770			= get_config_int(NULL, LABEL_FDC1770, 0);
+	GD_bank			= get_config_int(NULL, LABEL_GDBANK, 0);
+// end GDOS2015
+
+// RAM config
+	main_ramflag	= get_config_int(NULL, LABEL_MAINRAM, 0);
+	vid_ramflag		= get_config_int(NULL, LABEL_VIDRAM, 0);
+	SET_VID_TOP();
+// end RAM config
+
 	debug_on_brk	= get_config_int(NULL, LABEL_DEBUG_BRK, 0);
 
 	for (c = 0; c < 128; c++)
@@ -165,6 +186,16 @@ void saveconfig()
 
 // END SP10
 	
+// GDOS2015
+	set_config_int(NULL, LABEL_FDC1770, fdc1770);
+	set_config_int(NULL, LABEL_GDBANK, GD_bank);
+// end GDOS2015
+
+// RAM config
+	set_config_int(NULL, LABEL_MAINRAM, main_ramflag);
+	set_config_int(NULL, LABEL_VIDRAM, vid_ramflag);
+// end RAM config
+
 	set_config_int(NULL, LABEL_FASTTAPE, fasttape);
 
 	set_config_int(NULL, LABEL_DEF_WP, defaultwriteprot);

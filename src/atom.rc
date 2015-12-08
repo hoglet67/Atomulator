@@ -168,6 +168,52 @@ BEGIN
 						MENUITEM "&RAM/ROM Enabled",       		IDM_RAMROM_ENABLE
 						MENUITEM "&RAM/ROM Diskrom Enabled",	IDM_RAMROM_DISKROM
                 END
+				POPUP "&R&am"
+				BEGIN
+					POPUP "&Main RAM"
+					BEGIN
+						MENUITEM "Minimum 1K in base",						IDM_MAIN_RAM+0
+						MENUITEM "Minimum 1K in base + 5K",					IDM_MAIN_RAM+1
+						MENUITEM "6K on motherboard + 3K DOS",				IDM_MAIN_RAM+2
+						MENUITEM "6K motherboard + 3K DOS + 16K expansion",	IDM_MAIN_RAM+3
+						MENUITEM "6K motherboard + 3K DOS + 22K expansion (hole at A00)",	IDM_MAIN_RAM+4
+						MENUITEM "6K motherboard + 3K DOS + 23K expansion",	IDM_MAIN_RAM+5
+					END
+					POPUP "&Video RAM"
+					BEGIN
+						MENUITEM "1K Video RAM",							IDM_VIDEO_RAM+0
+						MENUITEM "2K Video RAM",							IDM_VIDEO_RAM+1
+						MENUITEM "3K Video RAM",							IDM_VIDEO_RAM+2
+						MENUITEM "4K Video RAM",							IDM_VIDEO_RAM+3
+						MENUITEM "5K Video RAM",							IDM_VIDEO_RAM+4
+						MENUITEM "6K Video RAM",							IDM_VIDEO_RAM+5
+						MENUITEM "7K Video RAM",							IDM_VIDEO_RAM+6					
+						MENUITEM "8K Video RAM",							IDM_VIDEO_RAM+7
+					END
+				END
+				POPUP "&Floppy"
+				BEGIN
+						MENUITEM "&GDOS/ADOS 2015 (1770 based) Enabled",	IDM_GDOS2015_ENABLE
+						POPUP "&Rombank"
+						BEGIN
+							MENUITEM "Bank 00",	IDM_GDOS_BANK+0
+							MENUITEM "Bank 01",	IDM_GDOS_BANK+1
+							MENUITEM "Bank 02",	IDM_GDOS_BANK+2
+							MENUITEM "Bank 03",	IDM_GDOS_BANK+3
+							MENUITEM "Bank 04",	IDM_GDOS_BANK+4
+							MENUITEM "Bank 05",	IDM_GDOS_BANK+5
+							MENUITEM "Bank 06",	IDM_GDOS_BANK+6
+							MENUITEM "Bank 07",	IDM_GDOS_BANK+7
+							MENUITEM "Bank 08",	IDM_GDOS_BANK+8
+							MENUITEM "Bank 09",	IDM_GDOS_BANK+9
+							MENUITEM "Bank 10",	IDM_GDOS_BANK+10
+							MENUITEM "Bank 11",	IDM_GDOS_BANK+11
+							MENUITEM "Bank 12",	IDM_GDOS_BANK+12
+							MENUITEM "Bank 13",	IDM_GDOS_BANK+13
+							MENUITEM "Bank 14",	IDM_GDOS_BANK+14
+							MENUITEM "Bank 15",	IDM_GDOS_BANK+15
+						END
+                END
                 POPUP "&Sound"
                 BEGIN
                         MENUITEM "&Internal speaker",   IDM_SOUND_ATOM

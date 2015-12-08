@@ -74,7 +74,7 @@ int createwindow(HINSTANCE hThisInstance, int nFunsterStil)
 
 /*SP10 CHANGES*/
 
-		"Atomulator v1.25",                                                                                                      /* Title Text */
+		"Atomulator v1.26",                                                                                                      /* Title Text */
 
 /*END SP10*/
 
@@ -135,7 +135,17 @@ void initmenu()
     CheckMenuItem(hmenu,IDM_SID_TYPE+cursid,MF_CHECKED);
     CheckMenuItem(hmenu,IDM_SID_INTERP+sidmethod,MF_CHECKED);
 	
-        
+	// GDOS2015
+	CheckMenuItem(hmenu,IDM_GDOS2015_ENABLE, fdc1770 ? MF_CHECKED : MF_UNCHECKED);	
+	CheckMenuItem(hmenu,IDM_GDOS_BANK+GD_bank,MF_CHECKED);	
+	set_dosrom_ptr();
+	// End GDOS2015
+
+	// RAM config
+	CheckMenuItem(hmenu,IDM_MAIN_RAM+main_ramflag,MF_CHECKED);
+	CheckMenuItem(hmenu,IDM_VIDEO_RAM+vid_ramflag,MF_CHECKED);
+	// end RAM config
+	
 	CheckMenuItem(hmenu, IDM_DISC_WPROT_0, (writeprot[0]) ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hmenu, IDM_DISC_WPROT_1, (writeprot[1]) ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hmenu, IDM_DISC_WPROT_D, (defaultwriteprot) ? MF_CHECKED : MF_UNCHECKED);
@@ -783,6 +793,13 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
 // END SP10
 
+// GDOS2015
+		case IDM_GDOS2015_ENABLE:
+			fdc1770 = !fdc1770;
+			CheckMenuItem(hmenu,IDM_GDOS2015_ENABLE, fdc1770 ? MF_CHECKED : MF_UNCHECKED);	
+			break;
+// end GDOS2015
+			
 		case IDM_VID_FULLSCREEN:
 			fullscreen = 1;
 			EnterCriticalSection(&cs);
@@ -838,6 +855,33 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             CheckMenuItem(hmenu,IDM_SID_TYPE+cursid,MF_CHECKED);
             sid_settype(sidmethod, cursid);
         }
+// GDOS2015
+        if (LOWORD(wParam)>=IDM_GDOS_BANK && LOWORD(wParam)<(IDM_GDOS_BANK+16))
+        {
+			CheckMenuItem(hmenu,IDM_GDOS_BANK + GD_bank,MF_UNCHECKED);
+            GD_bank=LOWORD(wParam)-IDM_GDOS_BANK;
+            CheckMenuItem(hmenu,IDM_GDOS_BANK + GD_bank,MF_CHECKED);
+            set_dosrom_ptr();
+		}
+// end GDOS2015
+
+// RAM config
+        if (LOWORD(wParam)>=IDM_MAIN_RAM && LOWORD(wParam)<(IDM_MAIN_RAM+6))
+        {
+			CheckMenuItem(hmenu,IDM_MAIN_RAM + main_ramflag,MF_UNCHECKED);
+            main_ramflag=LOWORD(wParam)-IDM_MAIN_RAM;
+            CheckMenuItem(hmenu,IDM_MAIN_RAM + main_ramflag,MF_CHECKED);
+		}
+
+        if (LOWORD(wParam)>=IDM_VIDEO_RAM && LOWORD(wParam)<(IDM_VIDEO_RAM+8))
+        {
+			CheckMenuItem(hmenu,IDM_VIDEO_RAM + vid_ramflag,MF_UNCHECKED);
+            vid_ramflag=LOWORD(wParam)-IDM_VIDEO_RAM;
+            CheckMenuItem(hmenu,IDM_VIDEO_RAM + vid_ramflag,MF_CHECKED);
+			SET_VID_TOP();
+		}
+		
+// end RAM config
         return 0;
 
 	case WM_SIZE:

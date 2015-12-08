@@ -64,6 +64,12 @@
 
 #define IDM_SID_TYPE        43000
 
+#define IDM_GDOS2015_ENABLE	43100
+#define IDM_GDOS_BANK		43200
+
+#define IDM_MAIN_RAM		43300
+#define IDM_VIDEO_RAM		43400
+
 #define IDM_SPD_10          41080
 #define IDM_SPD_25          41081
 #define IDM_SPD_50          41082

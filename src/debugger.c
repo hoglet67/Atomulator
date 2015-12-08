@@ -266,8 +266,8 @@ uint8_t debuglastcommand = 0;
 
 uint8_t dreadmem(uint16_t addr)
 {
-	if (addr >= 0xA00 && addr < 0xAFF && RR_bit_set(RAMROM_FLAG_DISKROM))
-		return 0xFF;
+	//if (addr >= 0xA00 && addr < 0xAFF && RR_bit_set(RAMROM_FLAG_DISKROM))
+	//	return 0xFF;
 	if (addr >= 0xB000 && addr < 0xBFFF)
 		return 0xFF;
 	return readmem(addr);
