@@ -31,6 +31,7 @@ int main(int argc, char **argv)
 	char *p;
 
 	allegro_init();
+	set_window_title(ATOMULATOR_VERSION);
 	get_executable_name(exedir, 511);
 	p = get_filename(exedir);
 	p[0] = 0;

@@ -151,7 +151,7 @@ void atom_init(int argc, char **argv)
 	{
 		if (!strcasecmp(argv[c], "--help"))
 		{
-			printf("Atomulator v1.10 command line options :\n\n");
+			printf("%s command line options :\n\n",ATOMULATOR_VERSION);
 			printf("-disc disc.ssd  - load disc.ssd into drives :0/:2\n");
 			printf("-disc1 disc.ssd - load disc.ssd into drives :1/:3\n");
 			printf("-tape tape.uef  - load tape.uef\n");

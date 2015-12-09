@@ -518,12 +518,6 @@ void writememl(uint16_t addr, uint8_t val)
 	int		ram_enabled;
 	
 	ram_enabled = RamEnabled(addr);
-//	ram_enabled = ((addr < 0x400) ||												// Always RAM 
-//				   ((addr >= 0x2800) && (addr < 0x3C00) && (main_ramflag > 0)) ||  	// 5K on motherboard
-//				   ((addr >= 0x2000) && (addr < 0x2800) && (main_ramflag > 1)) ||	// DOS additional 3K
-//				   ((addr >= 0x3C00) && (addr < 0x4000) && (main_ramflag > 1)) ||
-//				   ((addr >= 0x4000) && (addr < 0x8000) && (main_ramflag > 2)) ||	// Extra 16K 
-//					ramrom_enable);													// Always enabled for RAMROM.
 
     if (debugon) {
         debugwrite(addr, val);

@@ -10,6 +10,7 @@
 #include "atom.h"
 #include "atommc.h"
 #include "debugger.h"
+#include "roms.h"
 
 #define LABEL_DISC0		"disc0"
 #define LABEL_DISC1		"disc1"
@@ -111,8 +112,8 @@ void loadconfig()
 	palnotntsc 	= get_config_int(NULL, LABEL_PALNOTNTSC, 0);
 	colourboard 	= get_config_int(NULL, LABEL_COLOUR, 1);
 	snow 			= get_config_int(NULL, LABEL_SNOW, 0);
-	ramrom_enable 	= get_config_int(NULL, LABEL_RAMROM, 1);
-	RR_jumpers 		= get_config_int(NULL, LABEL_RAMROMJMP, 0);
+	ramrom_enable 	= get_config_int(NULL, LABEL_RAMROM, 1);	// Default RAMROM enable
+	RR_jumpers 		= get_config_int(NULL, LABEL_RAMROMJMP, RAMROM_FLAG_DISKROM);	// RAMROM diskrom enabled
 
 	fasttape 		= get_config_int(NULL, LABEL_FASTTAPE, 0);
 
@@ -137,13 +138,13 @@ void loadconfig()
 // END SP10
 
 // GDOS2015
-	fdc1770			= get_config_int(NULL, LABEL_FDC1770, 0);
-	GD_bank			= get_config_int(NULL, LABEL_GDBANK, 0);
+	fdc1770			= get_config_int(NULL, LABEL_FDC1770, 0);	// Default disabled
+	GD_bank			= get_config_int(NULL, LABEL_GDBANK, 0);	// Default bank 0
 // end GDOS2015
 
 // RAM config
-	main_ramflag	= get_config_int(NULL, LABEL_MAINRAM, 0);
-	vid_ramflag		= get_config_int(NULL, LABEL_VIDRAM, 0);
+	main_ramflag	= get_config_int(NULL, LABEL_MAINRAM, 5);	// Default Max RAM
+	vid_ramflag		= get_config_int(NULL, LABEL_VIDRAM, 7);	// Default max video RAM
 	SET_VID_TOP();
 // end RAM config
 
