@@ -532,9 +532,9 @@ void writememl(uint16_t addr, uint8_t val)
         if ((addr & 0x0F00) == 0x0A00)	/*FDC*/
         {
             if((ramrom_enable && RR_BLKA_enabled()) || 
-			   (!ramrom_enable && ram_enabled))
+			   (!ramrom_enable && ram_enabled)) {
                 if (ram_enabled) ram[addr] = val;
-            else
+            } else
                 write8271(addr, val);                  /*FDC*/
             return;
         }
