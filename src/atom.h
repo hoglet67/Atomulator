@@ -211,7 +211,7 @@ void init8255();
 void write8255(uint16_t addr, uint8_t val);
 uint8_t read8255(uint16_t addr);
 void receive(uint8_t dat);
-void dcd();
+void dcd(int cycles);
 void dcdlow();
 
 void writevia(uint16_t addr, uint8_t val);

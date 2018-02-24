@@ -226,9 +226,11 @@ void dcdlow()
 //        printf("High tone off\n");
 }
 
-void dcd()
+void dcd(int cycles)
 {
-	hightone = 15000;
+	// the parameter is the number of cycles of 2400Hz high tone
+	// hightone is decremented at twice this rate
+	hightone = cycles * 2;
 //        printf("High tone on\n");
 }
 

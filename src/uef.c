@@ -88,6 +88,7 @@ void receiveuef(uint8_t val)
 
 void polluef()
 {
+	int hicycles;
 	int c;
 	uint32_t templ;
 	float *tempf;
@@ -170,18 +171,20 @@ void polluef()
 		return;
 
 	case 0x110:         /*High tone*/
+		hicycles=gzgetc(uef);
+		hicycles|=(gzgetc(uef)<<8);
 		if (!infilenames)
-			dcd();
-		gzgetc(uef); gzgetc(uef);
+			dcd(hicycles);
 		if (infilenames)
 			inchunk = 0;
 		return;
 
+// DMB: The handling of chunk 0x111 is currently very broken
 	case 0x111:         /*High tone with dummy byte*/
 //                if (!intone)
 //                {
 		if (!infilenames)
-			dcd();
+			dcd(15000);
 /*                        intone=3;
                 }
                 else
