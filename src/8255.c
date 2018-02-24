@@ -250,7 +250,7 @@ void pollsound()
 	if (sndatomsid)
 	{
 //		sid_fillbuf(&sndbuffer[sndpos << 1],2);
-		sid_fillbuf(&temp,2);
+		sid_fillbuf(&temp, 1);
 	}
 
 	if (spon)
@@ -261,7 +261,6 @@ void pollsound()
 
 	if (0!=temp)
 	{
-		sndbuffer[sndpos++] = temp;
 		sndbuffer[sndpos++] = temp;
 	}
 

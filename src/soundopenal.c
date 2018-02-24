@@ -76,7 +76,7 @@ void inital()
 	memset(tempbuf, 0, BUFLEN);
 
 	for (c = 0; c < 4; c++)
-		alBufferData(buffers[c], AL_FORMAT_STEREO16, tempbuf, BUFLEN, 31200);
+		alBufferData(buffers[c], AL_FORMAT_STEREO16, tempbuf, BUFLEN, FREQ);
 	alSourceQueueBuffers(source[0], 4, buffers);
 	check();
 	alSourcePlay(source[0]);
