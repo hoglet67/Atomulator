@@ -70,6 +70,7 @@ void opencsw(char *fn)
 
 void closecsw()
 {
+	cswena = 0;
 	if (cswf)
 		fclose(cswf);
 	if (cswdat)
