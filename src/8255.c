@@ -88,10 +88,10 @@ void write8255(uint16_t addr, uint8_t val)
 		switch (val & 0xE)
 		{
 		case 0x4: 
-			speaker = val & 1;                 
+			speaker = val & 1;
 			//rpclog("Speaker %i\n", (val & 4) >> 2); 
 			break;
-			
+
 		case 0x6: 
 			css = (val & 1) ? 2 : 0; 
 			break;
@@ -183,7 +183,7 @@ void polltape()
 	}
 	else
 	{
-		tapecyc += 794;
+		tapecyc += 832; // As per the Atom: 4,000,000 / 13 / 64  (2403.8Hz high tone)
 		intone ^= 0x10;
 		if (tapeon)
 		{
