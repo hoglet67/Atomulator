@@ -88,10 +88,10 @@ void write8255(uint16_t addr, uint8_t val)
 		switch (val & 0xE)
 		{
 		case 0x4: 
-			speaker = val & 1;                 
+			speaker = val & 1;
 			//rpclog("Speaker %i\n", (val & 4) >> 2); 
 			break;
-			
+
 		case 0x6: 
 			css = (val & 1) ? 2 : 0; 
 			break;
@@ -183,7 +183,7 @@ void polltape()
 	}
 	else
 	{
-		tapecyc += 794;
+		tapecyc += 832; // As per the Atom: 4,000,000 / 13 / 64  (2403.8Hz high tone)
 		intone ^= 0x10;
 		if (tapeon)
 		{
@@ -226,9 +226,11 @@ void dcdlow()
 //        printf("High tone off\n");
 }
 
-void dcd()
+void dcd(int cycles)
 {
-	hightone = 15000;
+	// the parameter is the number of cycles of 2400Hz high tone
+	// hightone is decremented at twice this rate
+	hightone = cycles * 2;
 //        printf("High tone on\n");
 }
 
@@ -248,7 +250,7 @@ void pollsound()
 	if (sndatomsid)
 	{
 //		sid_fillbuf(&sndbuffer[sndpos << 1],2);
-		sid_fillbuf(&temp,2);
+		sid_fillbuf(&temp, 1);
 	}
 
 	if (spon)
@@ -259,7 +261,6 @@ void pollsound()
 
 	if (0!=temp)
 	{
-		sndbuffer[sndpos++] = temp;
 		sndbuffer[sndpos++] = temp;
 	}
 

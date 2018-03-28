@@ -57,7 +57,8 @@ void opencsw(char *fn)
 	free(tempin);
 	/*Reset data pointer*/
 	cswpoint = 0;
-	dcd();
+	// DMB: dcd() is not needed for csw handling (look at 8255.c)
+	// dcd();
 	tapellatch = (1000000 / (1200 / 10)) / 64;
 	tapelcount = 0;
 	pps = 120;
@@ -70,6 +71,7 @@ void opencsw(char *fn)
 
 void closecsw()
 {
+	cswena = 0;
 	if (cswf)
 		fclose(cswf);
 	if (cswdat)

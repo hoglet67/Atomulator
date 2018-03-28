@@ -86,8 +86,8 @@ void updatelinuxgui()
 	videomenu[1].flags = (snow) ? D_SELECTED : 0;
 
 	soundmenu[0].flags = (spon) ? D_SELECTED : 0;
-	soundmenu[1].flags = (sndatomsid)?D_SELECTED:0;    
-	soundmenu[2].flags = (tpon) ? D_SELECTED : 0;
+	soundmenu[1].flags = (tpon) ? D_SELECTED : 0;
+	soundmenu[2].flags = (sndatomsid) ? D_SELECTED : 0;
 	soundmenu[3].flags = (sndddnoise) ? D_SELECTED : 0;
 
 	hardmenu[0].flags = (colourboard) ? D_SELECTED : 0;

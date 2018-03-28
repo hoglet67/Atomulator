@@ -493,7 +493,7 @@ BOOL CALLBACK catdlgproc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		case IDCANCEL: 
+		case IDCANCEL:
 		case IDOK: 
 			return TRUE;
 		}
@@ -548,10 +548,10 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 				closeuef();
 //                                rpclog("CloseCSW\n");
 				closecsw();
-//                                rpclog("loadtape\n");
-				loadtape(tapefn);
 //                                rpclog("clearcatwindow\n");
 				clearcatwindow();
+//                                rpclog("loadtape\n");
+				loadtape(tapefn);
 //                                rpclog("findfilenames\n");
 //                                if (cswena) findfilenamescsw();
 //                                else        findfilenamesuef();
@@ -564,14 +564,26 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			return 0;
 
 		case IDM_TAPE_EJECT:
+			startblit();
+			Sleep(50);
 			closeuef();
 			closecsw();
+			clearcatwindow();
+			tapefn[0] = 0;
+			endblit();
 			return 0;
 
 		case IDM_TAPE_REW:
-			closeuef();
-			closecsw();
-			loadtape(tapefn);
+			if (tapefn[0]) {
+				startblit();
+				Sleep(50);
+				closeuef();
+				closecsw();
+				clearcatwindow();
+				loadtape(tapefn);
+				catupdatewindow();
+				endblit();
+			}
 			return 0;
 
 		case IDM_TAPE_CAT:
