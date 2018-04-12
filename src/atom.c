@@ -14,6 +14,10 @@ int palnotntsc = 0;
 int colourboard = 1;
 int sndddnoise = 1;
 
+// Flag to force autoboot on power on break
+int autoboot = 0;
+extern unsigned char configByte;
+
 // SID
 int sndatomsid=1;
 int cursid=0;
@@ -126,6 +130,12 @@ void atom_reset(int power_on)
 	debuglog("exedir=%s\n",exedir);
 	InitMMC();
 
+	// If autoboot has been set (via the command line)
+	// clear bit 6 of the configByte
+	if (power_on && autoboot) {
+		configByte &= ~0x40;
+	}
+
 	if(fdc1770)
 		reset1770();
 	else
@@ -156,6 +166,7 @@ void atom_init(int argc, char **argv)
 			printf("-disc1 disc.ssd - load disc.ssd into drives :1/:3\n");
 			printf("-tape tape.uef  - load tape.uef\n");
 			printf("-fasttape       - set tape speed to fast\n");
+			printf("-autoboot       - cause atommc to auto boot on power on reset\n");
 			printf("-debug          - start debugger\n");
 			exit(-1);
 		}
@@ -175,6 +186,10 @@ void atom_init(int argc, char **argv)
 		else if (!strcasecmp(argv[c], "-fasttape"))
 		{
 			fasttape = 1;
+		}
+		else if (!strcasecmp(argv[c], "-autoboot"))
+		{
+			autoboot = 1;
 		}
 		else if (!strcasecmp(argv[c], "-debug"))
 		{
