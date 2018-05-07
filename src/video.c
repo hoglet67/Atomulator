@@ -3,7 +3,11 @@
 
 #include <stdio.h>
 #include <allegro.h>
+#include <zlib.h>
 #include "atom.h"
+
+void saveframe();
+void stopmovie();
 
 int fullscreen = 0;
 int winsizex = 512, winsizey = 384;
@@ -136,6 +140,9 @@ void initvideo()
 //		set_palette(monopal);
 	updatepal();
 	set_color_depth(depth);
+
+        /* Clear the sound stream buffer before we start filling it. */
+        memset(sndstreambuf, 0, sizeof(sndstreambuf));
 }
 
 void updatepal()
@@ -157,6 +164,14 @@ int fskipcount = 0;
 
 char scrshotname[260];
 int savescrshot = 0;
+
+char moviename[260];
+uint8_t sndstreambuf[626];
+int sndstreamindex = 0;
+int sndstreamcount = 0;
+int wantmovieframe=0;
+FILE *moviefile;
+BITMAP *moviebitmap;
 
 uint8_t fetcheddat[32];
 
@@ -410,6 +425,7 @@ void drawline(int line)
 
 			frmcount = 0;
 		}
+                if (wantmovieframe) saveframe();
 		endblit();
 	}
 
@@ -508,6 +524,103 @@ void leavefullscreen()
 //	else
 //		set_palette(monopal);
 	updatewindowsize(512, 384);
+}
+
+void startmovie()
+{
+    stopmovie();
+
+    wantmovieframe = 1;
+    moviefile = fopen(moviename, "wb");
+    if (moviefile == NULL)
+        return;
+
+    moviebitmap = create_bitmap_ex(8, 512, 384);
+    sndstreamindex = 0;
+    sndstreamcount = 0;
+}
+
+void stopmovie()
+{
+    wantmovieframe = 0;
+    if (moviefile != NULL) {
+        fclose(moviefile);
+        destroy_bitmap(moviebitmap);
+        moviefile = NULL;
+    }
+}
+
+#define DEFLATE_CHUNK_SIZE 262144
+
+int deflate_bitmap(int level)
+{
+    unsigned int have;
+    z_stream strm;
+    unsigned char in[DEFLATE_CHUNK_SIZE];
+    unsigned char out[DEFLATE_CHUNK_SIZE];
+
+    /* Allocate the deflate state. */
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    if (deflateInit(&strm, level) != Z_OK)
+        return Z_ERRNO;
+
+    /* Compress the bitmap buffer. */
+    strm.avail_in = 512*384;
+    strm.next_in = moviebitmap->dat;
+
+    /* Run deflate() on the bitmap buffer, finishing the compression. */
+    strm.avail_out = DEFLATE_CHUNK_SIZE;
+    strm.next_out = out;
+    if (deflate(&strm, Z_FINISH) == Z_STREAM_ERROR)
+        return Z_ERRNO;
+
+    /* Write the length of the data. */
+    have = DEFLATE_CHUNK_SIZE - strm.avail_out;
+    fwrite(&have, sizeof(unsigned int), 1, moviefile);
+
+    if (fwrite(out, 1, have, moviefile) != have || ferror(moviefile)) {
+        deflateEnd(&strm);
+        return Z_ERRNO;
+    }
+
+    /* clean up and return */
+    deflateEnd(&strm);
+    return Z_OK;
+}
+
+void saveframe()
+{
+    if (moviefile == NULL)
+        return;
+
+    int start;
+    if (sndstreamcount == 624) {
+        /* Take the last 625 samples. */
+        start = (sndstreamindex + 1) % sizeof(sndstreambuf);
+    } else if (sndstreamcount == 626) {
+        /* Take the first 625 samples from the 626 obtained and leave the last
+           one for the next frame. */
+        start = sndstreamindex;
+    }
+
+    stretch_blit(b, moviebitmap, 0, 0, 256, 192, 0, 0, 512, 384);
+
+    if (deflate_bitmap(6) != Z_OK) {
+        stopmovie();
+        return;
+    }
+
+    int remaining = sizeof(sndstreambuf) - start;
+    if (remaining >= 625)
+        fwrite(&sndstreambuf[start], 1, 625, moviefile);
+    else {
+        fwrite(&sndstreambuf[start], 1, remaining, moviefile);
+        fwrite(sndstreambuf, 1, 625 - remaining, moviefile);
+    }
+
+    sndstreamcount = 0;
 }
 
 void clearscreen()
