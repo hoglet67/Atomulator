@@ -154,7 +154,7 @@ if __name__ == "__main__":
         
         allow_non_integer_scaling = find_option(args, "-s")
         
-        width, height = 854, 480
+        width, height = 512, 384
         d, dim = find_option(args, "-d", 1)
         if d:
             width, height = map(int, dim.split("x"))
@@ -249,31 +249,31 @@ if __name__ == "__main__":
     avi.end_chunk()                 #
     avi.end_list()                # strl
     
-    avi.begin_list("strl")        # strl
-    avi.begin_chunk("strh")         # strh
-    avi.write_str("auds")             # (stream type)
-    avi.write_int(0)
-    avi.write_int(0)                  # flags
-    avi.write_int(0)                  # priority and language
-    avi.write_int(0)                  # initial frame
-    avi.write_int(1)                  # time scale
-    avi.write_int(60)                 # frames per second
-    avi.write_int(0)                  # starting time
-    placeholders.append(avi.f.tell())
-    avi.write_int(0)                  # length
-    avi.write_int(0)                  # suggested buffer size
-    avi.write_int(0)                  # quality
-    avi.write_int(0)                  # sample size (variable)
-    avi.write_int(0)                  # frame
-    avi.write_int(0)                  # frame
-    avi.end_chunk()
-    avi.begin_chunk("strf")         # strf
-    avi.write_int(0x00010001)         # format (PCM), channels
-    avi.write_int(31250)
-    avi.write_int(31250)
-    avi.write_int(0x00100002)         # block align (channels * bits)/8 (2), bits (16)
-    avi.end_chunk()
-    avi.end_list()                # strl
+    #avi.begin_list("strl")        # strl
+    #avi.begin_chunk("strh")         # strh
+    #avi.write_str("auds")             # (stream type)
+    #avi.write_int(0)
+    #avi.write_int(0)                  # flags
+    #avi.write_int(0)                  # priority and language
+    #avi.write_int(0)                  # initial frame
+    #avi.write_int(1)                  # time scale
+    #avi.write_int(60)                 # frames per second
+    #avi.write_int(0)                  # starting time
+    #placeholders.append(avi.f.tell())
+    #avi.write_int(0)                  # length
+    #avi.write_int(0)                  # suggested buffer size
+    #avi.write_int(0)                  # quality
+    #avi.write_int(0)                  # sample size (variable)
+    #avi.write_int(0)                  # frame
+    #avi.write_int(0)                  # frame
+    #avi.end_chunk()
+    #avi.begin_chunk("strf")         # strf
+    #avi.write_int(0x00010001)         # format (PCM), channels
+    #avi.write_int(31250)
+    #avi.write_int(31250)
+    #avi.write_int(0x00100002)         # block align (channels * bits)/8 (2), bits (16)
+    #avi.end_chunk()
+    #avi.end_list()                # strl
 
     avi.end_list()              # hdrl
     avi.end_header()
@@ -355,11 +355,12 @@ if __name__ == "__main__":
                       "\x00\xff\xff"
                       "\xff\x00\xff")
         
-        avi.begin_chunk("01wb")     # 01wb
+        # Read and discard invalid audio data for now.
+        #avi.begin_chunk("01wb")     # 01wb
         audio_data = f.read(625)
-        audio_data = audio_data.replace("\x7f", "\x61\x0f").replace("\x00", "\x00\x00")
-        avi.f.write(audio_data)
-        avi.end_chunk()
+        #audio_data = audio_data.replace("\x7f", "\x61\x0f").replace("\x00", "\x00\x00")
+        #avi.f.write(audio_data)
+        #avi.end_chunk()
         
         avi.begin_chunk("00dc")     # 00dc
         #im.save(avi.f, "BMP")
