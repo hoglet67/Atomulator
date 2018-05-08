@@ -53,9 +53,11 @@
 #define IDM_MISC_DEBONBRK       40091
 #define IDM_MISC_BREAK          40092
 #define IDM_MISC_SCRSHOT        40093
+#define IDM_MISC_START_MOVIE    40094
+#define IDM_MISC_STOP_MOVIE     40095
 
-#define IDM_RAMROM_ENABLE       40094
-#define IDM_RAMROM_DISKROM      40095
+#define IDM_RAMROM_ENABLE       40096
+#define IDM_RAMROM_DISKROM      40097
 
 #define IDM_SOUND_ATOMSID       42000
 #define IDM_WAVE_SID            42001

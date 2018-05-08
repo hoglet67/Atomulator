@@ -300,6 +300,8 @@ BEGIN
             MENUITEM "500%", IDM_SPD_500
         END
         MENUITEM "&Save screenshot", IDM_MISC_SCRSHOT
+        MENUITEM "&Start movie",     IDM_MISC_START_MOVIE
+        MENUITEM "&Stop movie",      IDM_MISC_STOP_MOVIE
         MENUITEM SEPARATOR
         MENUITEM "&Debugger",        IDM_MISC_DEBUG
         MENUITEM "&Debug on BRK",    IDM_MISC_DEBONBRK

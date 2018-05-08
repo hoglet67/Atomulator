@@ -834,7 +834,15 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 				savescrshot = 1;
 			}
 			break;
-
+		case IDM_MISC_START_MOVIE:
+			if (!getsfile(hwnd, "Video capture file (*.VID)\0*.VID\0All files (*.*)\0*.*\0", moviename, "VID"))
+			{
+				startmovie(moviename);
+			}
+			break;
+		case IDM_MISC_STOP_MOVIE:
+			stopmovie(moviename);
+			break;
 		case IDM_SPD_10:
 		case IDM_SPD_25:
 		case IDM_SPD_50:
