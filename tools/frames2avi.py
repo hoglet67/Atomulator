@@ -139,7 +139,7 @@ def find_option(args, label, number = 0):
 
 def usage():
 
-    sys.stderr.write("Usage: %s [-u] [-d <width>x<height>] [-t <begin>,<end>] <movie data file> <AVI file>\n" % sys.argv[0])
+    sys.stderr.write("Usage: %s [-u] [-s] [-d <width>x<height>] [-t <begin>,<end>] <movie data file> <AVI file>\n" % sys.argv[0])
     sys.stderr.write("The time span is specified as [first],[last] in frames.\n")
     sys.exit(1)
 
@@ -152,7 +152,9 @@ if __name__ == "__main__":
         uncompressed = find_option(args, "-u")
         compressed = not uncompressed
         
-        width, height = 512, 384
+        allow_non_integer_scaling = find_option(args, "-s")
+        
+        width, height = 854, 480
         d, dim = find_option(args, "-d", 1)
         if d:
             width, height = map(int, dim.split("x"))
@@ -279,10 +281,30 @@ if __name__ == "__main__":
     avi.begin_list("movi")      # movi
     
     frame = 0
-    if width < 160 or height < 256:
+    if width < 512 or height < 384:
         resize_mode = Image.ANTIALIAS
     else:
         resize_mode = Image.NEAREST
+    
+    # Calculate the size of the image within the target size.
+    image_width = 512
+    image_height = 384
+    
+    if width != 512 or height != 384:
+    
+        xscale = width/512.0
+        yscale = height/384.0
+        scale = min(xscale, yscale)
+        
+        if allow_non_integer_scaling or int(scale) == scale:
+            image_width = int(scale * 512)
+            image_height = int(scale * 384)
+    else:
+        image_width = width
+        image_height = height
+    
+    print "Generating images of size %i x %i within frames of size %i x %i." % (
+        image_width, image_height, width, height)
     
     while True:
     
@@ -313,6 +335,17 @@ if __name__ == "__main__":
         avi.begin_list("rec ")    # rec
         
         im = Image.fromstring("P", (512, 384), data)
+        
+        # Resize the image if its size does not match the target image size.
+        if image_width != 512 or image_height != 384:
+            im = im.resize((image_width, image_height), resize_mode)
+        
+        # Pad the image so that it fits within the target image.
+        if image_width != width or image_height != height:
+            target = Image.new("P", (width, height), 0)
+            target.paste(im, ((width - image_width)/2, (height - image_height)/2))
+            im = target
+        
         im.putpalette("\x00\x00\x00"
                       "\x00\xff\x00"
                       "\xff\xff\x00"
@@ -321,8 +354,6 @@ if __name__ == "__main__":
                       "\xff\xff\xff"
                       "\x00\xff\xff"
                       "\xff\x00\xff")
-        if width != 512 or height != 384:
-            im = im.resize((width, height), resize_mode)
         
         avi.begin_chunk("01wb")     # 01wb
         audio_data = f.read(625)
