@@ -53,7 +53,7 @@ MENU soundmenu[8];
 MENU keymenu[3];
 MENU hardmenu[3];
 MENU settingsmenu[9];
-MENU miscmenu[3];
+MENU miscmenu[5];
 MENU speedmenu[11];
 MENU mainmenu[6];
 
@@ -656,6 +656,27 @@ int gui_speed()
 	return D_O_K;
 }
 
+int gui_startmovie()
+{
+        char tempname[260];
+        int ret;
+        int xsize=windx-32,ysize=windy-16;
+        tempname[0]=0;
+        ret=file_select_ex("Please enter filename",tempname,"VID",260,xsize,ysize);
+        if (ret)
+        {
+                memcpy(moviename,tempname,260);
+                startmovie(moviename);
+        }
+        return D_O_K;
+}
+
+int gui_stopmovie()
+{
+        stopmovie(moviename);
+        return D_O_K;
+}
+
 MENU speedmenu[11] =
 {
 	{ "&10%",  gui_speed, NULL, 0, (void*)0 },
@@ -671,11 +692,13 @@ MENU speedmenu[11] =
 	{ NULL,	   NULL,      NULL, 0, NULL	}
 };
 
-MENU miscmenu[3] =
+MENU miscmenu[5] =
 {
-	{ "&Speed",	     NULL,	  speedmenu, 0, NULL },
-	{ "Save screenshot", gui_scrshot, NULL,	     0, NULL },
-	{ NULL,		     NULL,	  NULL,	     0, NULL }
+	{"&Speed",	    NULL,		speedmenu, 	0, NULL},
+	{"Save screenshot", gui_scrshot,	NULL,		0, NULL},
+        {"Start movie",     gui_startmovie,	NULL,		0, NULL},
+        {"Stop movie",      gui_stopmovie,	NULL,		0, NULL},
+	{NULL,		    NULL,		NULL,		0, NULL}
 };
 
 MENU mainmenu[6] =

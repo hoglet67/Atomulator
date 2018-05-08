@@ -284,6 +284,7 @@ void atom_run()
 
 void atom_exit()
 {
+	stopmovie();
 	saveconfig();
 	closeddnoise();
 	FinalizeMMC();

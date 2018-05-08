@@ -266,5 +266,8 @@ extern char tapefn[260];
 extern int emuspeed, fskipmax;
 extern char scrshotname[260];
 extern int savescrshot;
+extern char moviename[260];
+extern uint8_t sndstreambuf[626];
+extern int sndstreamptr;
 
 void changetimerspeed(int i);
