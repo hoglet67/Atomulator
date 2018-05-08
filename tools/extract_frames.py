@@ -119,7 +119,7 @@ if __name__ == "__main__":
     f = open(movie_file, "rb")
     
     frame = 0
-    if width < 160 or height < 256:
+    if width < 512 or height < 384:
         resize_mode = Image.ANTIALIAS
     else:
         resize_mode = Image.NEAREST
