@@ -292,9 +292,9 @@ int RamEnabled(uint16_t addr)
 	int	result;
 		
 	result=		  ((addr < 0x400) ||												// Always RAM 
-				   ((addr >= 0x0400) && (addr < 0x09FF) && (main_ramflag > 3)) ||	// Low ram
-				   ((addr >= 0x0B00) && (addr < 0x1FFF) && (main_ramflag > 3)) ||	// Low ram
-				   ((addr >= 0x0A00) && (addr < 0x0AFF) && (main_ramflag > 4)) ||	// Low ram + RAM in disk area
+				   ((addr >= 0x0400) && (addr < 0x0A00) && (main_ramflag > 3)) ||	// Low ram
+				   ((addr >= 0x0B00) && (addr < 0x2000) && (main_ramflag > 3)) ||	// Low ram
+				   ((addr >= 0x0A00) && (addr < 0x0B00) && (main_ramflag > 4)) ||	// Low ram + RAM in disk area
 				   ((addr >= 0x2800) && (addr < 0x3C00) && (main_ramflag > 0)) ||  	// 5K on motherboard
 				   ((addr >= 0x2000) && (addr < 0x2800) && (main_ramflag > 1)) ||	// DOS additional 3K
 				   ((addr >= 0x3C00) && (addr < 0x4000) && (main_ramflag > 1)) ||
