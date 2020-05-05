@@ -9,6 +9,12 @@
 
 #include <string.h>
 
+#include "platform.h"
+#if (PLATFORM==PLATFORM_EMU)
+// SP3 JOYSTICK SUPPORT
+#include "allegro.h"
+BYTE JOYSTICK;
+#endif
 
 extern unsigned char configByte;
 extern unsigned char blVersion;
@@ -21,7 +27,7 @@ extern int filenum;
 
 #if (PLATFORM==PLATFORM_PIC)
 #define LatchedData		PORTD
-#elif (PLATFORM==PLATFORM_AVR)
+#else
 static BYTE LatchedData;
 #endif
 
@@ -39,8 +45,13 @@ extern imgInfo driveInfo[];
 
 #endif
 
+#if (PLATFORM==PLATFORM_EMU)
+unsigned char CardType = 1; // Always return MMC
+#define disk_initialize(drive)	{}
+#else
 extern unsigned char CardType;
 extern /*DSTATUS*/ unsigned char disk_initialize (BYTE);
+#endif
 
 
 // cache of the value written to port 0x0e
@@ -54,7 +65,7 @@ void at_process(void)
    void (*worker)(void) = NULL;
 
    static unsigned char heartbeat = 0x55;
-    	
+
    ACTIVITYSTROBE(0);
 
    // port a holds the latched contents of the address bus a0-a3
@@ -62,9 +73,9 @@ void at_process(void)
    LatchAddressIn();
    if (WASWRITE)
 		LatchedAddress=LatchedAddressLast;
-		
+
    //log0("%02X\n",LatchedAddress & ADDRESS_MASK);
-			
+
    switch (LatchedAddress & ADDRESS_MASK)
    {
    case CMD_REG:
@@ -81,7 +92,7 @@ void at_process(void)
 	      filenum = (received >> 5) & 3;
 	      received &= 0x9F;
 	    }
-	    
+
 	    // Data Group 0x20-0x23, 0x24-0x27, 0x28-0x2B, 0x2C-0x2F
 	    // filenum = bits 3,2
 	    // mask1 = 11110000 (test for data group command)
@@ -92,7 +103,7 @@ void at_process(void)
 	    }
             WriteDataPort(STATUS_BUSY);
 			//log0("%02X\n",LatchedData);
-			
+
 			// Directory group, moved here 2011-05-29 PHS.
 			//
             if (received == CMD_DIR_OPEN)
@@ -134,7 +145,7 @@ void at_process(void)
                //
                worker = WFN_Rename;
             }
-			
+
 			// File group.
 			//
             else if (received == CMD_FILE_CLOSE)
@@ -191,7 +202,7 @@ void at_process(void)
             else if (received == CMD_INIT_READ)
             {
 			   // All data read requests must send CMD_INIT_READ before beggining reading
-			   // data from READ_DATA_PORT. After execution of this command the first byte 
+			   // data from READ_DATA_PORT. After execution of this command the first byte
 			   // of data may be read from the READ_DATA_PORT.
 			   //
                WriteDataPort(globalData[0]);
@@ -200,15 +211,15 @@ void at_process(void)
             }
 			else if (received == CMD_INIT_WRITE)
             {
-               // all data write requests must send CMD_INIT_WRITE here before poking data at 
-			   // WRITE_DATA_REG	
+               // all data write requests must send CMD_INIT_WRITE here before poking data at
+			   // WRITE_DATA_REG
                // globalDataPresent is a flag to indicate whether data is present in the bfr.
                //
                globalIndex = 0;
                globalDataPresent = 0;
             }
 			else if (received == CMD_READ_BYTES)
-			{	
+			{
 				// Replaces READ_BYTES_REG
 				// Must be previously written to latch reg.
 				globalAmount = byteValueLatch;
@@ -218,11 +229,11 @@ void at_process(void)
 			{
 				// replaces WRITE_BYTES_REG
 				// Must be previously written to latch reg.
-				globalAmount = byteValueLatch;	
+				globalAmount = byteValueLatch;
 				worker = WFN_FileWrite;
 			}
 
-			// 
+			//
 			// Exec a packet in the data buffer.
             else if (received == CMD_EXEC_PACKET)
             {
@@ -308,7 +319,32 @@ void at_process(void)
             }
             else if (received == CMD_READ_PORT) // read portb
             {
+#if (PLATFORM==PLATFORM_EMU)
+               // SP3 JOYSTICK SUPPORT
+               if (joyst) {
+                  JOYSTICK = 255;
+            	  poll_joystick();
+
+                  if (joy_right) {
+                     JOYSTICK ^= 1;
+                  }
+                  if (joy_left) {
+                     JOYSTICK ^= 2;
+                  }
+                  if (joy_down) {
+                     JOYSTICK ^= 4;
+                  }
+                  if (joy_up) {
+                     JOYSTICK ^= 8;
+                  }
+                  if (joy[0].button[0].b) { // Fire
+                     JOYSTICK ^= 16;
+                  }
+              	  WriteDataPort(JOYSTICK);
+               }
+#else
                WriteDataPort(PORTB);
+#endif
             }
             else if (received == CMD_WRITE_PORT) // write port B value
             {
@@ -389,7 +425,7 @@ void at_process(void)
          }
       }
       break;
-#endif 
+#endif
 
    case READ_DATA_REG:
       {
@@ -398,7 +434,7 @@ void at_process(void)
          // any data read requests must be primed by writing CMD_INIT_READ (0x3f) here
          // before the 1st read.
          //
-		 // this has to be done this way as the PIC hardware only latches the address 
+		 // this has to be done this way as the PIC hardware only latches the address
 		 // on a WRITE.
 //         if (WASWRITE)
 //         {

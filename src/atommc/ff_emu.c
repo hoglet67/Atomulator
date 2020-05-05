@@ -1,15 +1,15 @@
 /*
 	ff_emu.c
-	
+
 	Functions to emulate the FatFilesystem routines as used by AtoMMC.
-	
-	Note this is by no means a complete emulation of FATFS, but 
+
+	Note this is by no means a complete emulation of FATFS, but
 	replicates / emulates enough of the functionality to allow emulation
 	of the AtoMMC interface firmware.
-	
-	I had to split the emulation over two files because of a clash of 
+
+	I had to split the emulation over two files because of a clash of
 	structure names used by fatfs calls and the underlying os.
-	
+
 	2012-06-12, Phill Harvey-Smith.
 */
 
@@ -47,11 +47,11 @@ FIL		*openfil;
 char	openname[SHORT_NAME_LEN+1];
 
 #ifdef DEBUGFF
-void HexDump(const void 	*Buff, 
-					   int 		Length); 
+void HexDump(const void 	*Buff,
+					   int 		Length);
 
-void HexDumpHead(const void 	*Buff, 
-					   int 		Length); 
+void HexDumpHead(const void 	*Buff,
+					   int 		Length);
 
 #endif
 
@@ -61,7 +61,7 @@ static BYTE file_exists(char	name[])
 
 rpclog("file_exists(%s)\n",name);
 
-	if(0==stat(name,&statbuf))
+	if(0==stat(name,&statbuf) && !S_ISDIR(statbuf.st_mode) )
 		return FR_OK;
 	else
 		return FR_NO_PATH;
@@ -72,21 +72,21 @@ static void update_FIL(FIL	*fil,
 					   int	updatefp)
 {
 	struct stat statbuf;
-	
+
 	if((fp) || (0==updatefp))
 	{
 		if(updatefp)
 			fil->fs=(FATFS *)fp;
 		else
 			fp=(int)fil->fs;
-		
+
 		if(0==fstat(fp,&statbuf))
 		{
 			fil->fsize=statbuf.st_size;
 		}
 		fil->fptr=lseek(fp, 0, SEEK_CUR);
 	}
-}	
+}
 
 static FRESULT get_result(int	err_no)
 {
@@ -102,7 +102,7 @@ static FRESULT get_result(int	err_no)
 		case EFAULT :
 		case EIO :
 			return FR_DISK_ERR;
-		
+
 		default :
 			return FR_OK;
 	}
@@ -129,11 +129,11 @@ FRESULT f_chdir (
 	char	newpath[PATHSIZE+1];
 	char	fullpath[PATHSIZE+1];
 	FRESULT	result = FR_NO_PATH;
-	
+
 	// add new directory to current
 	snprintf(newpath,PATHSIZE,"%s/%s",MMCPath,path);
-	
-	// Resolve the newpath 
+
+	// Resolve the newpath
 	if(NULL!=saferealpath(newpath,fullpath))
 	{
 		// Check that the new path is BELOW the base mmcpath
@@ -149,7 +149,7 @@ FRESULT f_chdir (
 	}
 
 	//rpclog("f_chdir(path)\nnewpath=%s\nfullpath=%s\nbasepath=%s\n",path,newpath,fullpath,BaseMMCPath);
-	
+
 	return result;
 }
 
@@ -163,20 +163,20 @@ FRESULT f_open (
 	char open_path[PATHSIZE+1];
 	int open_mode=0;
 	int newfile;
-	
+
 	// Get real path of file and check to see if it exists
 	snprintf(open_path,PATHSIZE,"%s/%s",MMCPath,path);
 	exists=file_exists(open_path);
 
 	//debuglog("f_open(%s,%02X):exists=%d\n",open_path,mode,exists);
-	
+
 	mode &= (FA_READ | FA_WRITE | FA_CREATE_ALWAYS | FA_OPEN_ALWAYS | FA_CREATE_NEW);
 
 	if(FR_OK==exists)
 	{
 		if(mode & FA_CREATE_NEW)
 			return FR_EXIST;
-		
+
 		if(mode & FA_CREATE_ALWAYS)
 			open_mode=O_CREAT;
 
@@ -189,7 +189,7 @@ FRESULT f_open (
 		}
 	}
 	else
-	{	
+	{
 		if(mode & (FA_OPEN_ALWAYS | FA_CREATE_NEW | FA_CREATE_ALWAYS))
 			open_mode=O_CREAT | O_RDWR;
 		else
@@ -198,9 +198,9 @@ FRESULT f_open (
 
 	newfile=open(open_path,open_mode | O_BINARY,S_IRWXU);
 	update_FIL(fp,newfile,1);
-	
+
 	//debuglog("Openmode:%04X\n",open_mode);
-	
+
 	if (newfile>0)
 	{
 		openfil=fp;
@@ -227,7 +227,7 @@ FRESULT f_read (
 
 	//debuglog("f_read(%d) offset=%d[%04X],result=%d\n",btr,ptrpos,ptrpos,*br);
 //	HexDumpHead(buff,btr);
-	
+
 	update_FIL(fp,0,0);
 
 	if(bytesread<0)
@@ -249,24 +249,24 @@ FRESULT f_write (
 	DWORD	ptrpos;
 	int		written;
 	int 	error;
-	
+
 	ptrpos=fp->fptr;
 
-// SP9 START 
+// SP9 START
 
 	written=write((int)fp->fs,buff,btw);
 	*bw=written;
 
 	//debuglog("f_write(%d) offset=%d[%04X],result=%d\n",btw,ptrpos,ptrpos,written);
 //	HexDumpHead(buff,btw);
-	
+
 	if(written<0)
 	{
 		error=errno;
 		//debuglog("errno: %s [%d]\n",strerror(error),error);
 		return error;		/* Return correct error for RAF */
 	}
-	
+
 	update_FIL(fp,0,0);
 	return FR_OK;
 }
@@ -278,15 +278,15 @@ FRESULT f_close (
 )
 {
 	int result=0;
-	
+
 	if(0!=(int)fp->fs)
 		result=close((int)fp->fs);
-	
+
 	//debuglog("f_close():result=%d\n",result);
-	
+
 	fp->fs=NULL;
 	openfil=NULL;
-	
+
 	return FR_OK;
 }
 
@@ -302,7 +302,7 @@ FRESULT f_unlink (
 	int result=0;
 
 	int newfile;
-	
+
 	// Get real path of file and check to see if it exists
 	snprintf(del_path,PATHSIZE,"%s/%s",MMCPath,path);
 
@@ -326,11 +326,11 @@ FRESULT f_opendir (
 )
 {
 	char	newpath[PATHSIZE+1];
-	
+
 	rpclog("f_opendir(%s)\n",path);
-	
+
 	snprintf(newpath,PATHSIZE,"%s/%s",MMCPath,path);
-	
+
 	if(findfirst(newpath,&emu))
 		return FR_OK;
 	else
@@ -354,7 +354,7 @@ FRESULT f_readdir (
 		fno->fsize=0;
 		fno->fname[0]=0;
 	}
-	
+
 	return FR_OK;
 }
 
@@ -365,8 +365,52 @@ FRESULT f_lseek (
 )
 {
 	lseek((int)fp->fs,ofs,SEEK_SET);
-	update_FIL(fp,0,0);	
+	update_FIL(fp,0,0);
 	return FR_OK;
+}
+
+
+FRESULT f_sync (
+    FIL* fp
+)
+{
+   // There is no need to call fflush here because f_write uses write()
+   // which is unbuffered.
+}
+
+FRESULT f_rename (
+	const XCHAR *path_old,	/* Pointer to the old name */
+	const XCHAR *path_new	/* Pointer to the new name */
+)
+{
+   char full_path_old[PATHSIZE+1];
+   char full_path_new[PATHSIZE+1];
+   snprintf(full_path_old, PATHSIZE, "%s/%s", MMCPath, path_old);
+   snprintf(full_path_new, PATHSIZE, "%s/%s", MMCPath, path_new);
+   rpclog("f_rename(%s, %s)\n", full_path_old, full_path_new);
+   if (rename(full_path_old, full_path_new) == 0) {
+      return FR_OK;
+   } else {
+      return get_result(errno);
+   }
+}
+
+FRESULT f_mkdir (
+	const XCHAR *path		/* Pointer to the directory path */
+)
+{
+   char full_path[PATHSIZE+1];
+   snprintf(full_path, PATHSIZE, "%s/%s", MMCPath, path);
+   rpclog("f_mkdir(%s)\n", full_path);
+#ifdef WIN32
+   if (mkdir(full_path) == 0) {
+#else
+   if (mkdir(full_path, 0755) == 0) {
+#endif
+      return FR_OK;
+   } else {
+      return get_result(errno);
+   }
 }
 
 static
@@ -384,18 +428,18 @@ void get_fileinfo_special(FILINFO *fno)
 rpclog("get_fileinfo_special()\n");
 	if(NULL!=openfil)
 	{
-		
+
 		fno->fsize	= openfil->fsize;
 //		fno->fptr	= openfil->fptr;
 		fno->fdate	= 0;
 		fno->ftime	= 0;
 		fno->fattrib= get_fat_attribs((int)openfil->fs);
 rpclog("size=%d, attr=%d\n",fno->fsize,fno->fattrib);
-	}	
+	}
 }
 
 #ifdef DEBUGFF
-void HexDump(const void 	*Buff, 
+void HexDump(const void 	*Buff,
 				   int 		Length)
 {
 	char		LineBuff[80];
@@ -403,14 +447,14 @@ void HexDump(const void 	*Buff,
 	int			LineOffset;
 	int			CharOffset;
 	BYTE		*BuffPtr;
-	
+
 	BuffPtr=Buff;
-	
+
 	for(LineOffset=0;LineOffset<Length;LineOffset+=16, BuffPtr+=16)
 	{
 		LineBuffPos=LineBuff;
 		LineBuffPos+=sprintf(LineBuffPos,"%4.4X ",LineOffset);
-		
+
 		for(CharOffset=0;CharOffset<16;CharOffset++)
 		{
 			if((LineOffset+CharOffset)<Length)
@@ -418,7 +462,7 @@ void HexDump(const void 	*Buff,
 			else
 			    LineBuffPos+=sprintf(LineBuffPos,"   ");
 		}
-		
+
 		for(CharOffset=0;CharOffset<16;CharOffset++)
 		{
 			if((LineOffset+CharOffset)<Length)
@@ -431,13 +475,13 @@ void HexDump(const void 	*Buff,
 			else
 				LineBuffPos+=sprintf(LineBuffPos,".");
 		}
-		rpclog("%s\n",LineBuff); 
+		rpclog("%s\n",LineBuff);
 	}
 	rpclog("\n\n");
 }
 
-void HexDumpHead(const void 	*Buff, 
-					   int 		Length) 
+void HexDumpHead(const void 	*Buff,
+					   int 		Length)
 {
 	rpclog("Addr 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F ASCII\n");
 	rpclog("----------------------------------------------------------\n");

@@ -1,6 +1,6 @@
-/* 
+/*
 	platform.h platforms supported by AtoMMC.
-	
+
 	2011-05-25, Phill Harvey-SMith
 */
 
@@ -11,6 +11,6 @@
 #define PLATFORM_AVR	2
 #define PLATFORM_EMU	3
 
-#define PLATFORM 		PLATFORM_PIC
+#define PLATFORM 		PLATFORM_EMU
 
 #endif

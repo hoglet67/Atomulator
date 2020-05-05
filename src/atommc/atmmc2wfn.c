@@ -67,7 +67,7 @@ void at_initprocessor(void)
 
   f_chdrive(0);
   f_mount(0, &fatfs);
-  
+
   for (i = 0; i < 4; i++) {
     fildata[i].fs = NULL;
   }
@@ -79,24 +79,24 @@ void GetWildcard(void)
 	int	Idx			= 0;
 	int	WildPos		= -1;
 	int	LastSlash	= -1;
-	
+
 	//log0("GetWildcard() %s\n",(const char *)globalData);
-	
-	while ((Idx<strlen((const char*)globalData)) && (WildPos<0)) 
+
+	while ((Idx<strlen((const char*)globalData)) && (WildPos<0))
 	{
 		// Check for wildcard character
-		if((globalData[Idx]=='?') || (globalData[Idx]=='*')) 
+		if((globalData[Idx]=='?') || (globalData[Idx]=='*'))
 			WildPos=Idx;
 
 		// Check for path seperator
 		if((globalData[Idx]=='\\') || (globalData[Idx]=='/'))
 			LastSlash=Idx;
-			
+
 		Idx++;
 	}
-	
+
 	//log0("GetWildcard() Idx=%d, WildPos=%d, LastSlash=%d\n",Idx,WildPos,LastSlash);
-	
+
 	if(WildPos>-1)
 	{
 		if(LastSlash>-1)
@@ -121,17 +121,19 @@ void GetWildcard(void)
 		strcpypgm2ram((char*)&WildPattern[0], (const rom far char*)"*");
 #elif (PLATFORM==PLATFORM_AVR)
 		strncpy_P(WildPattern,PSTR("*"),WILD_LEN);
+#else
+		strncpy(WildPattern,"*",WILD_LEN);
 #endif
 	}
-	
-	//log0("GetWildcard() globalData=%s WildPattern=%s\n",(const char*)globalData,WildPattern); 
+
+	//log0("GetWildcard() globalData=%s WildPattern=%s\n",(const char*)globalData,WildPattern);
 }
 
 void wfnDirectoryOpen(void)
 {
-	// Separate wildcard and path 
+	// Separate wildcard and path
 	GetWildcard();
-   
+
 	res = f_opendir(&dir, (const char*)globalData);
    if (FR_OK != res)
    {
@@ -171,7 +173,7 @@ void wfnDirectoryRead(void)
 		{
 			len = (char)strlen(filinfo->fname);
 
-			if (filinfo->fattrib & AM_DIR)	
+			if (filinfo->fattrib & AM_DIR)
 			{
 				n = 1;
 				globalData[0] = '<';
@@ -279,14 +281,14 @@ static BYTE fileOpen(BYTE mode)
     }
     if (filenum > 0) {
       ret = f_open(&fildata[filenum], (const char*)globalData, mode);
-      if (!ret) { 
+      if (!ret) {
 	// No error, so update the return value to indicate the file num
 	ret = FILENUM_OFFSET | filenum;
       }
     } else {
       // All files are open, return too many open files
       ret = ERROR_TOO_MANY_OPEN;
-    } 
+    }
   }
   return STATUS_COMPLETE | ret;
 }
@@ -294,7 +296,7 @@ static BYTE fileOpen(BYTE mode)
 void wfnFileOpenRead(void)
 {
    res = fileOpen(FA_OPEN_EXISTING|FA_READ);
-   if (filenum < 4) { 
+   if (filenum < 4) {
      FILINFO *filinfo = &filinfodata[filenum];
      get_fileinfo_special(filinfo);
    }
@@ -406,11 +408,11 @@ void wfnFileSeek(void)
       char byte[4];
    }
    dwb;
-   
-   dwb.byte[0] = globalData[0]; 
-   dwb.byte[1] = globalData[1]; 
-   dwb.byte[2] = globalData[2]; 
-   dwb.byte[3] = globalData[3]; 
+
+   dwb.byte[0] = globalData[0];
+   dwb.byte[1] = globalData[1];
+   dwb.byte[2] = globalData[2];
+   dwb.byte[3] = globalData[3];
 
    WriteDataPort(STATUS_COMPLETE | f_lseek(fil, dwb.dword));
 }
@@ -484,7 +486,7 @@ void saveDrivesImpl(void)
    strcpypgm2ram((char*)&globalData[0], (const rom far char*)"BOOTDRV.CFG");
 #elif (PLATFORM==PLATFORM_AVR)
 	strcpy_P((char*)&globalData[0],PSTR("BOOTDRV.CFG"));
-#elif (PLATFORM==PLATFORM_ATMU)
+#else
 	strcpy((char*)&globalData[0],"BOOTDRV.CFG");
 #endif
    res = f_open(fil, (const XCHAR*)globalData, FA_OPEN_ALWAYS|FA_WRITE);
@@ -564,7 +566,7 @@ void wfnWriteSDDOSSect(void)
 {
    BYTE returnCode = STATUS_COMPLETE | ERROR_INVALID_DRIVE;
    UINT bytes_written;
-   
+
    if (driveInfo[globalCurDrive].attribs != 0xff)
    {
       if (driveInfo[globalCurDrive].attribs & 1)
@@ -574,7 +576,7 @@ void wfnWriteSDDOSSect(void)
          WriteDataPort(STATUS_COMPLETE | ERROR_READ_ONLY);
          return;
       }
-      
+
       switchDrive(globalCurDrive);
 
       if(FR_OK==SDDOS_seek())
@@ -613,6 +615,8 @@ void wfnValidateSDDOSDrives(void)
    strcpypgm2ram((char*)globalData, (const rom far char*)"BOOTDRV.CFG");
 #elif (PLATFORM==PLATFORM_AVR)
    strcpy_P((char*)&globalData[0],PSTR("BOOTDRV.CFG"));
+#else
+   strcpy((char*)&globalData[0],"BOOTDRV.CFG");
 #endif
 
 
@@ -657,7 +661,7 @@ extern BYTE byteValueLatch;
 
 void wfnUnmountSDDOSImg(void)
 {
-   int driveNo = byteValueLatch & 3; 
+   int driveNo = byteValueLatch & 3;
    imgInfo* image = &driveInfo[driveNo];
    switchDrive(driveNo);
    f_close(&fildata[SDDOS_FILE]);

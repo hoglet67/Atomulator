@@ -21,7 +21,7 @@
 
 #define LatchAddressIn()		{ LatchedAddressLast=PORTA; }
 #define ReadDataPort()
-#define WriteDataPort(value)	{ LATD=value; }	
+#define WriteDataPort(value)	{ LATD=value; }
 
 extern void redSignal(char);
 
@@ -53,7 +53,7 @@ extern void redSignal(char);
 
 /* OE line from input latch */
 #define	OEPORT	PORTB
-#define	OE		0		
+#define	OE		0
 #define OEMASK	(1 << OE)
 #define OEDDR	DDRB
 
@@ -62,7 +62,7 @@ extern void redSignal(char);
 
 /* LE line for output latch */
 #define	LEPORT		PORTB
-#define	LE			1		
+#define	LE			1
 #define LEMASK		(1 << LE)
 #define LEDDR		DDRB
 
@@ -83,12 +83,12 @@ extern void redSignal(char);
 
 #define LatchAddressIn()			{ SelectAddr(); SetIORead(); AssertOE(); LatchedAddressLast=DATAPIN; ClearOE(); }
 #define ReadDataPort()				{ SelectData(); SetIORead(); AssertOE(); LatchedData=DATAPIN; ClearOE(); }
-#define WriteDataPort(value)		{ SelectData(); SetIOWrite(); DATAPORT=value; AssertLE(); ClearLE(); }	
-#define AddressPORT	
+#define WriteDataPort(value)		{ SelectData(); SetIOWrite(); DATAPORT=value; AssertLE(); ClearLE(); }
+#define AddressPORT
 
-#define WASWRITE		((LatchedAddressLast & AtomRWMask)==0) 
+#define WASWRITE		((LatchedAddressLast & AtomRWMask)==0)
 
-#define ReadEEPROM(addr)		eeprom_read_byte ((const uint8_t *)(addr))	
+#define ReadEEPROM(addr)		eeprom_read_byte ((const uint8_t *)(addr))
 #define WriteEEPROM(addr, val)	eeprom_write_byte ((uint8_t *)(addr), (uint8_t)(val))
 
 #elif (PLATFORM==PLATFORM_EMU)
@@ -110,6 +110,31 @@ extern void redSignal(char);
 #define STKPTR 0
 
 #define redSignal(x)
+
+// These things are specific to Atomulator
+
+#include "integer.h"
+
+extern BYTE	WASWRITE;
+extern BYTE	MMC_to_Atom;
+extern BYTE	Atom_to_MMC;
+extern BYTE	LatchedAtomAddr;
+extern BYTE eeprom[1024];
+
+extern BYTE TRISB;
+extern BYTE LATB;
+extern BYTE PORTB;
+
+extern int joyst;
+
+extern void SaveEE(void);
+
+#define LatchAddressIn()			{ LatchedAddressLast=LatchedAtomAddr; }
+#define ReadDataPort()				{ LatchedData=Atom_to_MMC; }
+#define WriteDataPort(value)		{ MMC_to_Atom=value; }
+
+#define ReadEEPROM(addr)			eeprom[addr]
+#define WriteEEPROM(addr, val)		{ eeprom[addr]=val; SaveEE(); }
 
 #endif
 
