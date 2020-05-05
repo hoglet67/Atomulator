@@ -1,15 +1,9 @@
-#include "ff.h"
-#include "platform.h"
 #include "atmmc2.h"
+
+#include "atmmc2io.h"
 #include "atmmc2wfn.h"
 #include "atmmc2def.h"
-#include "atmmc2io.h"
-
-// SP3 JOYSTICK SUPPORT
-
-#include "allegro.h" 
-
-// END SP3
+#include "ff.h"
 
 //#include "status.h"
 
@@ -27,7 +21,7 @@ extern int filenum;
 
 #if (PLATFORM==PLATFORM_PIC)
 #define LatchedData		PORTD
-#elif ((PLATFORM==PLATFORM_AVR) || (PLATFORM==PLATFORM_ATMU))
+#elif (PLATFORM==PLATFORM_AVR)
 static BYTE LatchedData;
 #endif
 
@@ -45,23 +39,14 @@ extern imgInfo driveInfo[];
 
 #endif
 
-#if (PLATFORM==PLATFORM_ATMU)
-unsigned char CardType = 1; // Always return MMC
-#define disk_initialize(drive)	{}
-#else
 extern unsigned char CardType;
 extern /*DSTATUS*/ unsigned char disk_initialize (BYTE);
-#endif
+
 
 // cache of the value written to port 0x0e
 //
 BYTE byteValueLatch;
 
-// SP3 JOYSTICK SUPPORT
-
-BYTE JOYSTICK;
-
-// END SP3
 
 void at_process(void)
 {
@@ -77,10 +62,10 @@ void at_process(void)
    LatchAddressIn();
    if (WASWRITE)
 		LatchedAddress=LatchedAddressLast;
-
-   //log0("%02X\n",LatchedAddress & 0x0F);
+		
+   //log0("%02X\n",LatchedAddress & ADDRESS_MASK);
 			
-   switch (LatchedAddress & 0x0f)
+   switch (LatchedAddress & ADDRESS_MASK)
    {
    case CMD_REG:
       {
@@ -131,6 +116,24 @@ void at_process(void)
                //
                worker = WFN_SetCWDirectory;
             }
+            else if (received == CMD_DIR_MKDIR)
+            {
+               // create directory
+               //
+               worker = WFN_DirectoryCreate;
+            }
+            else if (received == CMD_DIR_RMDIR)
+            {
+               // delete directory
+               //
+               worker = WFN_DirectoryDelete;
+            }
+            else if (received == CMD_RENAME)
+            {
+               // delete directory
+               //
+               worker = WFN_Rename;
+            }
 			
 			// File group.
 			//
@@ -161,27 +164,18 @@ void at_process(void)
                //
                worker = WFN_FileOpenWrite;
             }
-
-// SP9 START
-
             else if (received == CMD_FILE_OPEN_RAF)
             {
                // open the file with name in global data buffer for write/append
                //
                worker = WFN_FileOpenRAF;
             }
-
-// SP9 END
-
             else if (received == CMD_FILE_DELETE)
             {
                // delete the file with name in global data buffer
                //
                worker = WFN_FileDelete;
             }
-
-// SP9 START
-
             else if (received == CMD_FILE_GETINFO)
             {
                // return file's status byte
@@ -194,9 +188,6 @@ void at_process(void)
                //
                worker = WFN_FileSeek;
             }
-
-// SP9 END
-
             else if (received == CMD_INIT_READ)
             {
 			   // All data read requests must send CMD_INIT_READ before beggining reading
@@ -302,8 +293,8 @@ void at_process(void)
                disk_initialize(0);
                WriteDataPort(CardType);
             }
-#if (PLATFORM!=PLATFORM_AVR) 
-// AVR / Atomulator don't currently have spare port so don't compile it !
+#if (PLATFORM!=PLATFORM_AVR)
+// AVR doesn't currently have spare port so don't compile it !
             else if (received == CMD_GET_PORT_DDR) // get portb direction register
             {
 				WriteDataPort(TRISB);
@@ -317,34 +308,7 @@ void at_process(void)
             }
             else if (received == CMD_READ_PORT) // read portb
             {
-
-		// SP3 JOYSTICK SUPPORT
-
-			if (joyst)
-			{
-			  JOYSTICK = 255;
-            	  poll_joystick();
-
-			  if (joy_right)
-			     JOYSTICK ^= 1;
-			  if (joy_left)
-			     JOYSTICK ^= 2;
-			  if (joy_down)
-			     JOYSTICK ^= 4;
-			  if (joy_up)
-			     JOYSTICK ^= 8;
-			  if (joy[0].button[0].b) // Fire
-			     JOYSTICK ^= 16;
-
-              	  WriteDataPort(JOYSTICK);
-			}
-			else
-            	{
-		        WriteDataPort(PORTB);
-			}
-
-		// END SP3
-
+               WriteDataPort(PORTB);
             }
             else if (received == CMD_WRITE_PORT) // write port B value
             {

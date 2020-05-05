@@ -6,16 +6,21 @@
 
 // Register definitions, these are offsets from 0xB400 on the Atom side.
 
-#define CMD_REG			0x00
-#define LATCH_REG		0x01
+#define CMD_REG				0x00
+#define LATCH_REG			0x01
 #define READ_DATA_REG		0x02
 #define WRITE_DATA_REG		0x03
-#define STATUS_REG		0x04
+#define STATUS_REG			0x04
 
 // DIR_CMD_REG commands
 #define CMD_DIR_OPEN		0x00
 #define CMD_DIR_READ		0x01
-#define CMD_DIR_CWD		0x02
+#define CMD_DIR_CWD			0x02
+#define CMD_DIR_GETCWD		0x03
+#define CMD_DIR_MKDIR		0x04
+#define CMD_DIR_RMDIR		0x05
+
+#define CMD_RENAME			0x08
 
 // CMD_REG_COMMANDS
 #define CMD_FILE_CLOSE		0x10
@@ -62,12 +67,12 @@
 
 
 // Status codes
-#define STATUS_OK		0x3F
+#define STATUS_OK			0x3F
 #define STATUS_COMPLETE		0x40
 #define STATUS_EOF		0x60
-#define	STATUS_BUSY		0x80
+#define	STATUS_BUSY			0x80
 
-#define ERROR_MASK		0x3F
+#define ERROR_MASK			0x3F
 
 // To be or'd with STATUS_COMPLETE
 #define ERROR_NO_DATA		0x08

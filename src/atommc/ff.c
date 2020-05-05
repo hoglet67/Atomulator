@@ -197,7 +197,7 @@ int mem_cmp (const void* dst, const void* src, int cnt) {
 	return r;
 }
 
-#if ((PLATFORM==PLATFORM_AVR) || (PLATFORM==PLATFORM_ATMU))
+#if (PLATFORM==PLATFORM_AVR)
 #define rom
 #endif
 /* Check if chr is contained in the string */
@@ -2490,7 +2490,6 @@ FRESULT f_unlink (
 /*-----------------------------------------------------------------------*/
 /* Create a Directory                                                    */
 /*-----------------------------------------------------------------------*/
-#if 0
 FRESULT f_mkdir (
 	const XCHAR *path		/* Pointer to the directory path */
 )
@@ -2568,7 +2567,7 @@ FRESULT f_mkdir (
 /*-----------------------------------------------------------------------*/
 /* Change File Attribute                                                 */
 /*-----------------------------------------------------------------------*/
-
+#if 0
 FRESULT f_chmod (
 	const XCHAR *path,	/* Pointer to the file path */
 	BYTE value,			/* Attribute bits */
@@ -2639,8 +2638,7 @@ FRESULT f_utime (
 
 	LEAVE_FF(dj.fs, res);
 }
-
-
+#endif
 
 
 /*-----------------------------------------------------------------------*/
@@ -2706,7 +2704,6 @@ FRESULT f_rename (
 
 	LEAVE_FF(dj_old.fs, res);
 }
-#endif
 
 #endif /* !_FS_READONLY */
 #endif /* _FS_MINIMIZE == 0 */

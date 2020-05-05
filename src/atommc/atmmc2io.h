@@ -1,5 +1,8 @@
 #ifndef _IO
 
+// Mask applied to register address bits.
+#define ADDRESS_MASK	0x07
+
 #if (PLATFORM==PLATFORM_PIC)
 
 #define LEDPINSOUT() TRISCbits.TRISC0 = 0; TRISCbits.TRISC1 = 0;
@@ -20,7 +23,7 @@
 #define ReadDataPort()
 #define WriteDataPort(value)	{ LATD=value; }	
 
-extern void redSignal(unsigned char);
+extern void redSignal(char);
 
 #elif (PLATFORM==PLATFORM_AVR)
 #include <avr/io.h>
@@ -108,47 +111,6 @@ extern void redSignal(unsigned char);
 
 #define redSignal(x)
 
-#elif (PLATFORM==PLATFORM_ATMU)
-// it's for an Atomulator!
-
-#define LEDPINSOUT()
-
-#define REDLEDON()
-#define REDLEDOFF()
-#define GREENLEDON()
-#define GREENLEDOFF()
-
-#define ASSERTIRQ()
-#define RELEASEIRQ()
-
-#define ACTIVITYSTROBE(x)
-
-#define STKPTR 0
-
-#define redSignal(x)
-
-extern BYTE	WASWRITE;
-extern BYTE	MMC_to_Atom;
-extern BYTE	Atom_to_MMC;
-extern BYTE	LatchedAtomAddr;
-extern BYTE eeprom[1024];
-
-extern BYTE TRISB;
-extern BYTE LATB;
-extern BYTE PORTB;
-
-// SP3 JOYSTICK SUPPORT
-
-extern int joyst;
-
-// END SP3
-
-#define LatchAddressIn()			{ LatchedAddressLast=LatchedAtomAddr; }
-#define ReadDataPort()				{ LatchedData=Atom_to_MMC; }
-#define WriteDataPort(value)		{ MMC_to_Atom=value; }	
-
-#define ReadEEPROM(addr)			eeprom[addr]
-#define WriteEEPROM(addr, val)		{ eeprom[addr]=val; SaveEE(); }
 #endif
 
 #define _IO

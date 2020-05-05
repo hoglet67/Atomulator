@@ -10,8 +10,7 @@
 #define PLATFORM_PIC	1
 #define PLATFORM_AVR	2
 #define PLATFORM_EMU	3
-#define PLATFORM_ATMU	4
 
-#define PLATFORM 		PLATFORM_ATMU
+#define PLATFORM 		PLATFORM_PIC
 
 #endif
