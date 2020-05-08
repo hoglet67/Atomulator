@@ -56,7 +56,7 @@ int d_getkey(int msg, DIALOG *d, int cd)
 
 	if (ret == D_EXIT)
 	{
-		k = (int)d->dp2;
+		k = (intptr_t)d->dp2;
 		x = (SCREEN_W / 2) - 100;
 		y = (SCREEN_H / 2) - 36;
 		b = create_bitmap(200, 72);
@@ -83,7 +83,7 @@ int d_getkey(int msg, DIALOG *d, int cd)
 			}
 		}
 
-		textprintf_ex(screen, font, x + 8, y + 40, makecol(255, 255, 255), 0, s);
+		textprintf_ex(screen, font, x + 8, y + 40, makecol(255, 255, 255), 0, "%s", s);
 
 		textprintf_ex(screen, font, x + 8, y + 56, makecol(255, 255, 255), 0, "Please press new key...");
  getnewkey:
@@ -176,7 +176,7 @@ int gui_keydefine()
 		{ d_getkey,	 410 + 24, 138, 28,  28,   15, 15, 0, D_EXIT,  0,     0, "SHF",	   (void*)KEY_RSHIFT,	  NULL	       },
 		{ d_getkey,	 442 + 24, 138, 28,  28,   15, 15, 0, D_EXIT,  0,     0, "RPT",	   (void*)KEY_DEL,	  "REPEAT"     },
 		{ d_getkey,	 122 + 24, 170, 256, 28,   15, 15, 0, D_EXIT,  0,     0, "SPACE",  (void*)KEY_SPACE,	  NULL	       },
-	
+
 		{ d_yield_proc },
 		{ 0,		 0,	   0,	0,   0,	   0,  0,  0, 0,       0,     0, NULL,	   NULL,		  NULL	       }
 	};

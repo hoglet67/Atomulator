@@ -6,9 +6,6 @@
 #include <zlib.h>
 #include "atom.h"
 
-void saveframe();
-void stopmovie();
-
 int fullscreen = 0;
 int winsizex = 512, winsizey = 384;
 
@@ -183,7 +180,7 @@ void drawline(int line)
 
 	if (!line)
 		vbl = cy = sy = 0;
-		
+
 	if (line < 192)
 	{
 		switch (gfxmode)
@@ -239,7 +236,7 @@ void drawline(int line)
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[addr++];
 			break;
-		
+
 		/* Propper graphics modes */
 		case 1:         /*64x64, 4 colours*/
 			for (x = 0; x < 256; x += 16)
@@ -251,13 +248,13 @@ void drawline(int line)
 					temp <<= 2;
 				}
 			}
-			
+
 			addr = (((line + 1) / 3) << 4) | 0x8000;
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[addr + (x >> 1)];
-			
+
 			break;
-			
+
 		case 3:         /*128x64, 2 colours*/
 			for (x = 0; x < 256; x += 16)
 			{
@@ -268,11 +265,11 @@ void drawline(int line)
 					temp <<= 1;
 				}
 			}
-			
+
 			addr = (((line + 1) / 3) << 4) | 0x8000;
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[addr + (x >> 1)];
-			
+
 			break;
 
 /* PATCH FOR CORRECT CLEAR2a */

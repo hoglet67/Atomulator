@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include "atom.h"
 
 /* IF UAE */
 /*#include "sysconfig.h"
@@ -2278,7 +2279,9 @@ FDI *fdi2raw_header(FILE *f)
 	fdi->file = f;
 	oldseek = ftell(fdi->file);
 	fseek(fdi->file, 0, SEEK_SET);
-	fread(fdi->header, 2048, 1, fdi->file);
+	if (fread(fdi->header, 2048, 1, fdi->file) != 1) {
+		rpclog("Failed to fread() in fdi2raw_header\n");
+	}
 	fseek(fdi->file, oldseek, SEEK_SET);
 	if (memcmp(fdiid, fdi->header, strlen(fdiid)) )
 	{
@@ -2383,7 +2386,9 @@ int fdi2raw_loadtrack(FDI *fdi, uae_u16 *mfmbuf, uae_u16 *tracktiming, int track
 	fdi->err = 0;
 	fdi->track_src_len = fdi->track_offsets[track + 1] - fdi->track_offsets[track];
 	fseek(fdi->file, fdi->track_offsets[track], SEEK_SET);
-	fread(fdi->track_src_buffer, fdi->track_src_len, 1, fdi->file);
+	if (fread(fdi->track_src_buffer, fdi->track_src_len, 1, fdi->file) != 1) {
+		rpclog("Failed to fread() in fdi2raw_header\n");
+	}
 	memset(fdi->track_dst_buffer, 0, MAX_DST_BUFFER);
 	fdi->track_dst_buffer_timing[0] = 0;
 
@@ -2464,4 +2469,3 @@ int fdi2raw_loadtrack(FDI *fdi, uae_u16 *mfmbuf, uae_u16 *tracktiming, int track
 	}
 	return outlen;
 }
-

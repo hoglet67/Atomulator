@@ -7,6 +7,7 @@
 #include "atom.h"
 #include "atommc.h"
 #include "1770.h"
+#include "sid_atom.h"
 
 char exedir[MAXPATH+1];
 
@@ -57,9 +58,9 @@ void rpclog(char *format, ...)
 	char buf[256];
 
 //   return;
-	
+
 	sprintf(buf,"%s/rlog.txt",exedir);
-	
+
 	if (!rlog)
 		rlog = fopen(buf, "wt");
 //turn;
@@ -79,9 +80,9 @@ void prtbuf(char *format, ...)
 	char buf[256];
 
 //   return;
-	
+
 	sprintf(buf,"%s/pbuf.txt",exedir);
-	
+
 	if (!plog)
 		plog = fopen(buf, "wt");
 //turn;
@@ -120,7 +121,7 @@ void atom_reset(int power_on)
 		ram[9] = rand();
 		ram[10] = rand();
 		ram[11] = rand();
-		
+
 		// Clear BBC basic workspace.
 		// if(bbcmode)
 		//	memset(&ram[0], 0, 0x10000);
@@ -140,7 +141,7 @@ void atom_reset(int power_on)
 		reset1770();
 	else
 		reset8271();
-		
+
 	gfxmode=0;
 	reset6502();
 	debuglog("atom_reset():done\n");
@@ -250,7 +251,7 @@ void atom_run()
 			exec6502(312, 64);
 		else
 			exec6502(262, 64);
-			
+
 		poll_keyboard();
 
 // SP10 FOR KEYBOARDJOYSTICK SUPPORT
@@ -263,19 +264,19 @@ void atom_run()
 			drawscr = 0;
 		else
 			drawscr -= (palnotntsc) ? 6 : 5;
-		
+
 		if (drawscr > 25)
 			drawscr = 0;
-		
+
 		if (ddframes >= 25)
 		{
 			ddframes -= 25;
 			mixddnoise();
 		}
-		
+
 		if (key[KEY_F12] && !oldf12)
 			atom_reset(0);
-		
+
 		oldf12 = key[KEY_F12];
 	}
 	else
@@ -291,4 +292,3 @@ void atom_exit()
 //        dumpregs();
 //        dumpram();
 }
-

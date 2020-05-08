@@ -76,9 +76,9 @@ static void update_FIL(FIL	*fil,
 	if((fp) || (0==updatefp))
 	{
 		if(updatefp)
-			fil->fs=(FATFS *)fp;
+			fil->fs=(FATFS *)(intptr_t)fp;
 		else
-			fp=(int)fil->fs;
+			fp=(intptr_t)fil->fs;
 
 		if(0==fstat(fp,&statbuf))
 		{
@@ -222,7 +222,7 @@ FRESULT f_read (
 	int	error;
 
 	ptrpos=fp->fptr;
-	bytesread=read((int)fp->fs,buff,btr);
+	bytesread=read((intptr_t)fp->fs,buff,btr);
 	*br=bytesread;
 
 	//debuglog("f_read(%d) offset=%d[%04X],result=%d\n",btr,ptrpos,ptrpos,*br);
@@ -254,7 +254,7 @@ FRESULT f_write (
 
 // SP9 START
 
-	written=write((int)fp->fs,buff,btw);
+	written=write((intptr_t)fp->fs,buff,btw);
 	*bw=written;
 
 	//debuglog("f_write(%d) offset=%d[%04X],result=%d\n",btw,ptrpos,ptrpos,written);
@@ -279,8 +279,8 @@ FRESULT f_close (
 {
 	int result=0;
 
-	if(0!=(int)fp->fs)
-		result=close((int)fp->fs);
+	if(fp->fs)
+		result=close((intptr_t)fp->fs);
 
 	//debuglog("f_close():result=%d\n",result);
 
@@ -364,7 +364,7 @@ FRESULT f_lseek (
 	DWORD ofs		/* File pointer from top of file */
 )
 {
-	lseek((int)fp->fs,ofs,SEEK_SET);
+	lseek((intptr_t)fp->fs,ofs,SEEK_SET);
 	update_FIL(fp,0,0);
 	return FR_OK;
 }
@@ -433,7 +433,7 @@ rpclog("get_fileinfo_special()\n");
 //		fno->fptr	= openfil->fptr;
 		fno->fdate	= 0;
 		fno->ftime	= 0;
-		fno->fattrib= get_fat_attribs((int)openfil->fs);
+		fno->fattrib= get_fat_attribs((intptr_t)openfil->fs);
 rpclog("size=%d, attr=%d\n",fno->fsize,fno->fattrib);
 	}
 }

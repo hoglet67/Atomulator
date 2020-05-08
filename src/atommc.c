@@ -1,6 +1,6 @@
 /*
 	AtoMMC interface functions for Atomulator.
-	
+
 	2012-06-11, P.Harvey-Smith.
 */
 
@@ -76,22 +76,24 @@ void WriteMMC(uint16_t	addr,
 	WASWRITE=1;
 	LatchedAtomAddr=(addr & 0x0F);
 	Atom_to_MMC=data;
-	
+
 	at_process();
 }
 
 void LoadEE(void)
 {
 	FILE	*EEFile;
-	
+
 	// Make sure EEPROM initialised to 0xFF if file not present
 	memset(eeprom,0xFF,EESIZE);
-	
+
 	// Load EEPROM from file
 	EEFile=fopen(EEPath,"rb");
 	if(EEFile!=NULL)
 	{
-		fread(eeprom,1,EESIZE,EEFile);
+		if (fread(eeprom,1,EESIZE,EEFile) != EESIZE) {
+			rpclog("Failed to read %s\n", EEPath);
+		}
 		fclose(EEFile);
 	}
 }
@@ -99,7 +101,7 @@ void LoadEE(void)
 void SaveEE(void)
 {
 	FILE	*EEFile;
-	
+
 	EEFile=fopen(EEPath,"wb");
 	if(EEFile!=NULL)
 	{

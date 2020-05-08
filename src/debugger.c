@@ -245,7 +245,7 @@ void debuglog(char *format, ...)
 
 void debugout(char *s)
 {
-	printf(s);
+	printf("%s", s);
 	fflush(stdout);
 }
 
@@ -569,7 +569,9 @@ void dodebugger(int linenum)
 		c = ReadConsoleA(cinf, ins, 255, (LPDWORD)&d, NULL);
 		ins[d] = 0;
 #else
-		d = (int)fgets(ins, 255, stdin);
+		if (!fgets(ins, 255, stdin)) {
+			rpclog("Failed to fgets() from stdin\n");
+		}
 //                gets(ins);
 #endif
 //printf("Got %s %i\n",ins,d);

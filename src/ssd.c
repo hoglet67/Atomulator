@@ -84,13 +84,19 @@ void ssd_seek(int drive, int track)
 	if (dsd[drive])
 	{
 		fseek(ssdf[drive], track * 20 * 256, SEEK_SET);
-		fread(trackinfo[drive][0], 10 * 256, 1, ssdf[drive]);
-		fread(trackinfo[drive][1], 10 * 256, 1, ssdf[drive]);
+		if (fread(trackinfo[drive][0], 10 * 256, 1, ssdf[drive]) != 1) {
+			rpclog("Failed to fread() in ssd_seek dsd side 0\n");
+		}
+		if (fread(trackinfo[drive][1], 10 * 256, 1, ssdf[drive]) != 1) {
+			rpclog("Failed to fread() in ssd_seek dsd side 2\n");
+		}
 	}
 	else
 	{
 		fseek(ssdf[drive], track * 10 * 256, SEEK_SET);
-		fread(trackinfo[drive][0], 10 * 256, 1, ssdf[drive]);
+		if (fread(trackinfo[drive][0], 10 * 256, 1, ssdf[drive]) != 1) {
+			rpclog("Failed to fread() in ssd_seek ssd\n");
+		}
 	}
 }
 

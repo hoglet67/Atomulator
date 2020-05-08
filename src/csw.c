@@ -40,7 +40,9 @@ void opencsw(char *fn)
 	end = ftell(cswf);
 	fseek(cswf, 0, SEEK_SET);
 	/*Read header*/
-	fread(cswhead, 0x34, 1, cswf);
+	if (fread(cswhead, 0x34, 1, cswf) != 1) {
+		rpclog("Failed to fread() %s (header) in opencsw\n", fn);
+	}
 	for (c = 0; c < cswhead[0x23]; c++)
 		getc(cswf);
 	cswrate = cswhead[0x19] | (cswhead[0x1A] << 8) | (cswhead[0x1B] << 16) | (cswhead[0x1C] << 24);
@@ -50,7 +52,9 @@ void opencsw(char *fn)
 	/*Allocate temporary memory and read file into memory*/
 	end -= ftell(cswf);
 	tempin = malloc(end);
-	fread(tempin, end, 1, cswf);
+	if (fread(tempin, end, 1, cswf) != 1) {
+		rpclog("Failed to fread() %s (body) in opencsw\n", fn);
+	}
 	fclose(cswf);
 	/*Decompress*/
 	uncompress(cswdat, (uLongf*)&destlen, tempin, end);

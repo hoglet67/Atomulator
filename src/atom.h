@@ -17,6 +17,10 @@ extern char exedir[MAXPATH+1];
 void startblit();
 void endblit();
 
+void startmovie();
+void saveframe();
+void stopmovie();
+
 int vbl;
 int gfxmode;
 int css;

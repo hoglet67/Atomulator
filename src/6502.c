@@ -9,6 +9,7 @@
 #include "8271.h"
 #include "atommc.h"
 #include "1770.h"
+#include "sid_atom.h"
 
 int tapeon;
 int totcyc = 0;
@@ -62,12 +63,12 @@ void initmem()
 
 	ram = (uint8_t*)malloc(0x10000);
 	rom = (uint8_t*)malloc(ROM_MEM_SIZE + RAM_ROM_SIZE + ROM_SIZE_GDOS2015);
-	
+
 	memset(ram, 0, 0x10000);
-	
+
 	for (c = 0; c < 0x100; c++)
 		memstat[c] = 2;
-	
+
 	ram[8] = rand() & 255;
 	ram[9] = rand() & 255;
 	ram[10] = rand() & 255;
@@ -118,12 +119,12 @@ void set_rr_ptrs()
     int c;
 
     // Leave the pointers alone if ramrom is disabled
-    if (ramrom_enable) {        
+    if (ramrom_enable) {
         rpclog("Running with Ramoth RAMROM roms\n");
         rpclog("RR_enables=%2X, RR_bankreg=%2X\n",RR_enables, RR_bankreg);
 
         if (RR_bit_set(RAMROM_FLAG_BBCMODE)) {
-            // BBC Mode 
+            // BBC Mode
             rpclog("Running with BBC mode roms\n");
             utility_ptr     = &rom[ROM_OFS_RR_BBC_BASIC1];
             abasic_ptr      = &rom[ROM_OFS_RR_BBC_BASIC2];
@@ -134,12 +135,12 @@ void set_rr_ptrs()
                 ram[0x6000 + c] = rom[ROM_OFS_RR_BBC_EXT1 + c + (RR_bankreg * ROM_SIZE_ATOM)];
 		ram[0x7000 + c] = rom[ROM_OFS_RR_BBC_EXT2 + c];
             }
-        } else {	    
+        } else {
 	    // Atom Mode
 	    if (RR_bit_set(RAMROM_FLAG_DISKROM)) {
             // Atom Mode with DISKROM = 1
             rpclog("Running with Atom mode roms, diskrom flag = 1\n");
-			debuglog("Running with Atom mode roms, diskrom flag = 1\n");	
+			debuglog("Running with Atom mode roms, diskrom flag = 1\n");
 			abasic_ptr      = &rom[ROM_OFS_RR_ABASIC1];
 			afloat_ptr      = &rom[ROM_OFS_RR_AFLOAT1];
 			dosrom_ptr      = &rom[ROM_OFS_RR_DOSROM1];
@@ -153,8 +154,8 @@ void set_rr_ptrs()
 			akernel_ptr     = &rom[ROM_OFS_RR_AKERNEL0];
 			set_dosrom_ptr();
         }
-	    // Select what is mapped into $A000 block, this allows the 
-	    // mapping of rom or ram into the utility block so that a 
+	    // Select what is mapped into $A000 block, this allows the
+	    // mapping of rom or ram into the utility block so that a
 	    // rom may be loaded from disk and then mapped in.
 	    if ((RR_enables & RAMROM_FLAG_EXTRAM) && (RR_bankreg==0)) {
 	        utility_ptr = &ram[0x7000];
@@ -182,7 +183,7 @@ void set_rr_ptrs()
 void reset_rom()
 {
     debuglog("reset_rom(), ramrom=%d, bbcmode=%d\n",ramrom_enable, RR_bit_set(RAMROM_FLAG_BBCMODE));
-    set_rr_ptrs();    
+    set_rr_ptrs();
     debuglog("reset_rom():done\n");
 }
 
@@ -290,15 +291,15 @@ uint8_t fetcheddat[32];
 int RamEnabled(uint16_t addr)
 {
 	int	result;
-		
-	result=		  ((addr < 0x400) ||												// Always RAM 
+
+	result=		  ((addr < 0x400) ||												// Always RAM
 				   ((addr >= 0x0400) && (addr < 0x0A00) && (main_ramflag > 3)) ||	// Low ram
 				   ((addr >= 0x0B00) && (addr < 0x2000) && (main_ramflag > 3)) ||	// Low ram
 				   ((addr >= 0x0A00) && (addr < 0x0B00) && (main_ramflag > 4)) ||	// Low ram + RAM in disk area
 				   ((addr >= 0x2800) && (addr < 0x3C00) && (main_ramflag > 0)) ||  	// 5K on motherboard
 				   ((addr >= 0x2000) && (addr < 0x2800) && (main_ramflag > 1)) ||	// DOS additional 3K
 				   ((addr >= 0x3C00) && (addr < 0x4000) && (main_ramflag > 1)) ||
-				   ((addr >= 0x4000) && (addr < 0x8000) && (main_ramflag > 2)) ||	// Extra 16K 
+				   ((addr >= 0x4000) && (addr < 0x8000) && (main_ramflag > 2)) ||	// Extra 16K
 					ramrom_enable);													// Always enabled for RAMROM.
 
 	return result;
@@ -308,9 +309,9 @@ uint8_t readmeml(uint16_t addr)
 {
 	uint8_t addrh	= (addr >> 8);	// It seems all unmapped addresses just return the high byte of the address....
 	int		ram_enabled;
-	
+
 	ram_enabled = RamEnabled(addr);
-				
+
     if (debugon) {
         debugread(addr);
     }
@@ -327,7 +328,7 @@ uint8_t readmeml(uint16_t addr)
     {
         if ((addr & 0x0F00) == 0x0A00)	/*FDC*/
         {
-            if((ramrom_enable && RR_BLKA_enabled()) || 
+            if((ramrom_enable && RR_BLKA_enabled()) ||
 			   (!ramrom_enable && ram_enabled))
                 return ram[addr];
             else
@@ -337,13 +338,13 @@ uint8_t readmeml(uint16_t addr)
             return ram_enabled ? ram[addr] : addrh;
     }
 
-    if (i <= 0x6C00) 
+    if (i <= 0x6C00)
 		return ram_enabled ? ram[addr] : addrh; /* RAM, DOS RAM */
 
     if (i <= 0x7C00)
     {
         if (!ramrom_enable || (RR_enables & RAMROM_FLAG_EXTRAM)==0) return ram[addr];
-		
+
         return ram_enabled ? ram[addr] : addrh;; // dont let the code execution fall through
     }
 
@@ -351,7 +352,7 @@ uint8_t readmeml(uint16_t addr)
     {
         if (snow && cycles >= 0 && cycles < 32)
             fetcheddat[31 - cycles] = ram[addr];
-		
+
 		if (addr < vid_top)
 			return ram[addr];
 		else
@@ -366,7 +367,7 @@ uint8_t readmeml(uint16_t addr)
 		// GDOS 2015, BC10.
 		if((fdc1770) && (addr>=WDBASE) && (addr <= CTRLREG))
 			return read1770(addr);
-	
+
         if((sndatomsid) && (addr>=0xBDC0) && (addr<=0xBDDF))
             return sid_read(addr & 0x1F);
 
@@ -384,7 +385,7 @@ uint8_t readmeml(uint16_t addr)
                     return 0xBF;
             }
         }
-        
+
         return addrh; // don't let the code execution fall through
     }
 
@@ -516,7 +517,7 @@ uint8_t readmeml(uint16_t addr)
 void writememl(uint16_t addr, uint8_t val)
 {
 	int		ram_enabled;
-	
+
 	ram_enabled = RamEnabled(addr);
 
     if (debugon) {
@@ -531,7 +532,7 @@ void writememl(uint16_t addr, uint8_t val)
     {
         if ((addr & 0x0F00) == 0x0A00)	/*FDC*/
         {
-            if((ramrom_enable && RR_BLKA_enabled()) || 
+            if((ramrom_enable && RR_BLKA_enabled()) ||
 			   (!ramrom_enable && ram_enabled)) {
                 if (ram_enabled) ram[addr] = val;
             } else
@@ -556,7 +557,7 @@ void writememl(uint16_t addr, uint8_t val)
         if ((!ramrom_enable || (RR_enables & RAMROM_FLAG_EXTRAM)==0) ||
 		     (ram_enabled && !ramrom_enable))
         	ram[addr] = val;
-		
+
         return;
     }
 
@@ -564,7 +565,7 @@ void writememl(uint16_t addr, uint8_t val)
     {
     	if (snow && cycles >= 0 && cycles < 32)
     	    fetcheddat[31 - cycles] = val;
-    
+
 		if (addr < vid_top)
 			ram[addr] = val;
 
@@ -588,7 +589,7 @@ void writememl(uint16_t addr, uint8_t val)
     	if (addr < 0xB810) writevia(addr, val);  /* 6522 VIA */
     	return;
     }
-    
+
     if (i == 0xBC00)
     {
 		// GDOS-2015 BC10.
@@ -600,7 +601,7 @@ void writememl(uint16_t addr, uint8_t val)
     		sid_write(addr & 0x1F,val);
     		return;
     	}
-        
+
         if(ramrom_enable)
         {
             if (addr == 0xBFFF)
@@ -766,7 +767,7 @@ void exec6502(int linenum, int cpl)
 //                rpclog("Exec line %i\n",lines);
 		lns = lines;
 		if (lines < 262 || lines == 311)
-			drawline(lines);      
+			drawline(lines);
 		// DMB: poll sound called every half line, i.e. 32us / 31.250KHz
 		for (halfline = 0; halfline < 2; halfline++) {
 			pollsound();
@@ -806,7 +807,7 @@ void exec6502(int linenum, int cpl)
 					p.i = 1;
 					polltime(7);
 					break;
-	
+
 				case 0x01:         /*ORA (,x)*/
 					temp = readmem(pc) + x; pc++;
 					addr = readmem(temp) | (readmem(temp + 1) << 8);
@@ -814,14 +815,14 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(6);
 					break;
-	
+
 				case 0x05:         /*ORA zp*/
 					addr = readmem(pc); pc++;
 					a |= readmem(addr);
 					setzn(a);
 					polltime(3);
 					break;
-	
+
 				case 0x06:         /*ASL zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
@@ -831,7 +832,7 @@ void exec6502(int linenum, int cpl)
 					writemem(addr, temp);
 					polltime(5);
 					break;
-	
+
 				case 0x08:         /*PHP*/
 					temp = 0x30;
 					if (p.c)
@@ -849,34 +850,34 @@ void exec6502(int linenum, int cpl)
 					push(temp);
 					polltime(3);
 					break;
-	
+
 				case 0x09:         /*ORA imm*/
 					a |= readmem(pc); pc++;
 					setzn(a);
 					polltime(2);
 					break;
-	
+
 				case 0x0A:         /*ASL A*/
 					p.c = a & 0x80;
 					a <<= 1;
 					setzn(a);
 					polltime(2);
 					break;
-	
+
 				case 0x0B:         /*ANC imm*/
 					a &= readmem(pc); pc++;
 					setzn(a);
 					p.c = p.n;
 					polltime(2);
 					break;
-	
+
 				case 0x0D:         /*ORA abs*/
 					addr = getw();
 					a |= readmem(addr);
 					setzn(a);
 					polltime(4);
 					break;
-	
+
 				case 0x0E:         /*ASL abs*/
 					addr = getw();
 					temp = readmem(addr);
@@ -886,7 +887,7 @@ void exec6502(int linenum, int cpl)
 					writemem(addr, temp);
 					polltime(6);
 					break;
-	
+
 				case 0x10:         /*BPL*/
 					offset = (int8_t)readmem(pc); pc++;
 					temp = 2;
@@ -899,7 +900,7 @@ void exec6502(int linenum, int cpl)
 					}
 					polltime(temp);
 					break;
-	
+
 				case 0x11:         /*ORA (),y*/
 					temp = readmem(pc); pc++;
 					addr = readmem(temp) + (readmem(temp + 1) << 8);
@@ -909,14 +910,14 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(5);
 					break;
-	
+
 				case 0x15:         /*ORA zp,x*/
 					addr = readmem(pc); pc++;
 					a |= ram[(addr + x) & 0xFF];
 					setzn(a);
 					polltime(3);
 					break;
-	
+
 				case 0x16:         /*ASL zp,x*/
 					addr = (readmem(pc) + x) & 0xFF; pc++;
 					temp = ram[addr];
@@ -926,12 +927,12 @@ void exec6502(int linenum, int cpl)
 					ram[addr] = temp;
 					polltime(5);
 					break;
-	
+
 				case 0x18:         /*CLC*/
 					p.c = 0;
 					polltime(2);
 					break;
-	
+
 				case 0x19:         /*ORA abs,y*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + y) & 0xFF00))
@@ -940,7 +941,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(4);
 					break;
-	
+
 				case 0x1D:         /*ORA abs,x*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + x) & 0xFF00))
@@ -950,7 +951,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(4);
 					break;
-	
+
 				case 0x1E:         /*ASL abs,x*/
 					addr = getw(); addr += x;
 					temp = readmem(addr);
@@ -960,7 +961,7 @@ void exec6502(int linenum, int cpl)
 					setzn(temp);
 					polltime(7);
 					break;
-	
+
 				case 0x20:         /*JSR*/
 					addr = getw(); pc--;
 					push(pc >> 8);
@@ -968,7 +969,7 @@ void exec6502(int linenum, int cpl)
 					pc = addr;
 					polltime(6);
 					break;
-	
+
 				case 0x21:         /*AND (,x)*/
 					temp = readmem(pc) + x; pc++;
 					addr = readmem(temp) | (readmem(temp + 1) << 8);
@@ -976,7 +977,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(6);
 					break;
-	
+
 				case 0x24:         /*BIT zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
@@ -985,14 +986,14 @@ void exec6502(int linenum, int cpl)
 					p.n = temp & 0x80;
 					polltime(3);
 					break;
-	
+
 				case 0x25:         /*AND zp*/
 					addr = readmem(pc); pc++;
 					a &= readmem(addr);
 					setzn(a);
 					polltime(3);
 					break;
-	
+
 				case 0x26:         /*ROL zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
@@ -1005,7 +1006,7 @@ void exec6502(int linenum, int cpl)
 					writemem(addr, temp);
 					polltime(5);
 					break;
-	
+
 				case 0x28:         /*PLP*/
 					temp = pull();
 					p.c = temp & 1; p.z = temp & 2;
@@ -1013,13 +1014,13 @@ void exec6502(int linenum, int cpl)
 					p.v = temp & 0x40; p.n = temp & 0x80;
 					polltime(4);
 					break;
-	
+
 				case 0x29:         /*AND*/
 					a &= readmem(pc); pc++;
 					setzn(a);
 					polltime(2);
 					break;
-	
+
 				case 0x2A:         /*ROL A*/
 					tempi = p.c;
 					p.c = a & 0x80;
@@ -1029,7 +1030,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(2);
 					break;
-	
+
 				case 0x2C:         /*BIT abs*/
 					addr = getw();
 					temp = readmem(addr);
@@ -1038,14 +1039,14 @@ void exec6502(int linenum, int cpl)
 					p.n = temp & 0x80;
 					polltime(4);
 					break;
-	
+
 				case 0x2D:         /*AND abs*/
 					addr = getw();
 					a &= readmem(addr);
 					setzn(a);
 					polltime(4);
 					break;
-	
+
 				case 0x2E:         /*ROL abs*/
 					addr = getw();
 					temp = readmem(addr);
@@ -1058,7 +1059,7 @@ void exec6502(int linenum, int cpl)
 					setzn(temp);
 					polltime(6);
 					break;
-	
+
 				case 0x30:         /*BMI*/
 					offset = (int8_t)readmem(pc); pc++;
 					temp = 2;
@@ -1071,7 +1072,7 @@ void exec6502(int linenum, int cpl)
 					}
 					polltime(temp);
 					break;
-	
+
 				case 0x31:         /*AND (),y*/
 					temp = readmem(pc); pc++;
 					addr = readmem(temp) + (readmem(temp + 1) << 8);
@@ -1081,14 +1082,14 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(5);
 					break;
-	
+
 				case 0x35:         /*AND zp,x*/
 					addr = readmem(pc); pc++;
 					a &= ram[(addr + x) & 0xFF];
 					setzn(a);
 					polltime(3);
 					break;
-	
+
 				case 0x36:         /*ROL zp,x*/
 					addr = readmem(pc); pc++;
 					addr += x; addr &= 0xFF;
@@ -1102,12 +1103,12 @@ void exec6502(int linenum, int cpl)
 					ram[addr] = temp;
 					polltime(5);
 					break;
-	
+
 				case 0x38:         /*SEC*/
 					p.c = 1;
 					polltime(2);
 					break;
-	
+
 				case 0x39:         /*AND abs,y*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + y) & 0xFF00))
@@ -1116,7 +1117,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(4);
 					break;
-	
+
 				case 0x3D:         /*AND abs,x*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + x) & 0xFF00))
@@ -1126,7 +1127,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(4);
 					break;
-	
+
 				case 0x3E:         /*ROL abs,x*/
 					addr = getw(); addr += x;
 					temp = readmem(addr);
@@ -1139,7 +1140,7 @@ void exec6502(int linenum, int cpl)
 					setzn(temp);
 					polltime(7);
 					break;
-	
+
 				case 0x40:         /*RTI*/
 	//                                output=0;
 					temp = pull();
@@ -1151,7 +1152,7 @@ void exec6502(int linenum, int cpl)
 					polltime(6);
 					nmilock = 0;
 					break;
-	
+
 				case 0x41:         /*EOR (,x)*/
 					temp = readmem(pc) + x; pc++;
 					addr = readmem(temp) | (readmem(temp + 1) << 8);
@@ -1159,14 +1160,14 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(6);
 					break;
-	
+
 				case 0x45:         /*EOR zp*/
 					addr = readmem(pc); pc++;
 					a ^= readmem(addr);
 					setzn(a);
 					polltime(3);
 					break;
-	
+
 				case 0x46:         /*LSR zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
@@ -1176,38 +1177,38 @@ void exec6502(int linenum, int cpl)
 					writemem(addr, temp);
 					polltime(5);
 					break;
-	
+
 				case 0x48:         /*PHA*/
 					push(a);
 					polltime(3);
 					break;
-	
+
 				case 0x49:         /*EOR*/
 					a ^= readmem(pc); pc++;
 					setzn(a);
 					polltime(2);
 					break;
-	
+
 				case 0x4A:         /*LSR A*/
 					p.c = a & 1;
 					a >>= 1;
 					setzn(a);
 					polltime(2);
 					break;
-	
+
 				case 0x4C:         /*JMP*/
 					addr = getw();
 					pc = addr;
 					polltime(3);
 					break;
-	
+
 				case 0x4D:         /*EOR abs*/
 					addr = getw();
 					a ^= readmem(addr);
 					setzn(a);
 					polltime(4);
 					break;
-	
+
 				case 0x4E:         /*LSR abs*/
 					addr = getw();
 					polltime(4);
@@ -1221,7 +1222,7 @@ void exec6502(int linenum, int cpl)
 					writemem(addr, temp);
 					polltime(6);
 					break;
-	
+
 				case 0x50:         /*BVC*/
 					offset = (int8_t)readmem(pc); pc++;
 					temp = 2;
@@ -1234,7 +1235,7 @@ void exec6502(int linenum, int cpl)
 					}
 					polltime(temp);
 					break;
-	
+
 				case 0x51:         /*EOR (),y*/
 					temp = readmem(pc); pc++;
 					addr = readmem(temp) + (readmem(temp + 1) << 8);
@@ -1244,14 +1245,14 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(5);
 					break;
-	
+
 				case 0x55:         /*EOR zp,x*/
 					addr = readmem(pc); pc++;
 					a ^= ram[(addr + x) & 0xFF];
 					setzn(a);
 					polltime(3);
 					break;
-	
+
 				case 0x56:         /*LSR zp,x*/
 					addr = (readmem(pc) + x) & 0xFF; pc++;
 					temp = ram[addr];
@@ -1261,14 +1262,14 @@ void exec6502(int linenum, int cpl)
 					ram[addr] = temp;
 					polltime(5);
 					break;
-	
+
 				case 0x58:         /*CLI*/
 	//                                if (pc<0x8000) printf("CLI at %04X\n",pc);
 					p.i = 0;
 					skipint = 1;
 					polltime(2);
 					break;
-	
+
 				case 0x59:         /*EOR abs,y*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + y) & 0xFF00))
@@ -1277,7 +1278,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(4);
 					break;
-	
+
 				case 0x5D:         /*EOR abs,x*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + x) & 0xFF00))
@@ -1287,7 +1288,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(4);
 					break;
-	
+
 				case 0x5E:         /*LSR abs,x*/
 					addr = getw(); addr += x;
 					temp = readmem(addr);
@@ -1297,14 +1298,14 @@ void exec6502(int linenum, int cpl)
 					setzn(temp);
 					polltime(7);
 					break;
-	
+
 				case 0x60:         /*RTS*/
 					pc = pull();
 					pc |= (pull() << 8);
 					pc++;
 					polltime(6);
 					break;
-	
+
 				case 0x61:         /*ADC (,x)*/
 					temp = readmem(pc) + x; pc++;
 					addr = readmem(temp) | (readmem(temp + 1) << 8);
@@ -1312,14 +1313,14 @@ void exec6502(int linenum, int cpl)
 					ADC(temp);
 					polltime(6);
 					break;
-	
+
 				case 0x65:         /*ADC zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
 					ADC(temp);
 					polltime(3);
 					break;
-	
+
 				case 0x66:         /*ROR zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
@@ -1332,19 +1333,19 @@ void exec6502(int linenum, int cpl)
 					writemem(addr, temp);
 					polltime(5);
 					break;
-	
+
 				case 0x68:         /*PLA*/
 					a = pull();
 					setzn(a);
 					polltime(4);
 					break;
-	
+
 				case 0x69:         /*ADC imm*/
 					temp = readmem(pc); pc++;
 					ADC(temp);
 					polltime(2);
 					break;
-	
+
 				case 0x6A:         /*ROR A*/
 					tempi = p.c;
 					p.c = a & 1;
@@ -1354,7 +1355,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(2);
 					break;
-	
+
 				case 0x6C:         /*JMP ()*/
 					addr = getw();
 					if ((addr & 0xFF) == 0xFF)
@@ -1363,14 +1364,14 @@ void exec6502(int linenum, int cpl)
 						pc = readmem(addr) | (readmem(addr + 1) << 8);
 					polltime(5);
 					break;
-	
+
 				case 0x6D:         /*ADC abs*/
 					addr = getw();
 					temp = readmem(addr);
 					ADC(temp);
 					polltime(4);
 					break;
-	
+
 				case 0x6E:         /*ROR abs*/
 					addr = getw();
 					polltime(4);
@@ -1386,7 +1387,7 @@ void exec6502(int linenum, int cpl)
 					setzn(temp);
 					writemem(addr, temp);
 					break;
-	
+
 				case 0x70:         /*BVS*/
 					offset = (int8_t)readmem(pc); pc++;
 					temp = 2;
@@ -1399,7 +1400,7 @@ void exec6502(int linenum, int cpl)
 					}
 					polltime(temp);
 					break;
-	
+
 				case 0x71:         /*ADC (),y*/
 					temp = readmem(pc); pc++;
 					addr = readmem(temp) + (readmem(temp + 1) << 8);
@@ -1409,14 +1410,14 @@ void exec6502(int linenum, int cpl)
 					ADC(temp);
 					polltime(5);
 					break;
-	
+
 				case 0x75:         /*ADC zp,x*/
 					addr = readmem(pc); pc++;
 					temp = ram[(addr + x) & 0xFF];
 					ADC(temp);
 					polltime(4);
 					break;
-	
+
 				case 0x76:         /*ROR zp,x*/
 					addr = readmem(pc); pc++;
 					addr += x; addr &= 0xFF;
@@ -1430,14 +1431,14 @@ void exec6502(int linenum, int cpl)
 					ram[addr] = temp;
 					polltime(5);
 					break;
-	
+
 				case 0x78:         /*SEI*/
 	//                                if (pc<0x8000) printf("SEI at %04X\n",pc);
 					p.i = 1;
 					polltime(2);
 	//                                if (output2) printf("SEI at line %i %04X %02X %02X\n",lines,pc,ram[0x103+s],ram[0x104+s]);
 					break;
-	
+
 				case 0x79:         /*ADC abs,y*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + y) & 0xFF00))
@@ -1446,7 +1447,7 @@ void exec6502(int linenum, int cpl)
 					ADC(temp);
 					polltime(4);
 					break;
-	
+
 				case 0x7D:         /*ADC abs,x*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + x) & 0xFF00))
@@ -1456,7 +1457,7 @@ void exec6502(int linenum, int cpl)
 					ADC(temp);
 					polltime(4);
 					break;
-	
+
 				case 0x7E:         /*ROR abs,x*/
 					addr = getw(); addr += x;
 					temp = readmem(addr);
@@ -1469,65 +1470,65 @@ void exec6502(int linenum, int cpl)
 					setzn(temp);
 					polltime(7);
 					break;
-	
+
 				case 0x81:         /*STA (,x)*/
 					temp = readmem(pc) + x; pc++;
 					addr = readmem(temp) | (readmem(temp + 1) << 8);
 					writemem(addr, a);
 					polltime(6);
 					break;
-	
+
 				case 0x84:         /*STY zp*/
 					addr = readmem(pc); pc++;
 					writemem(addr, y);
 					polltime(3);
 					break;
-	
+
 				case 0x85:         /*STA zp*/
 					addr = readmem(pc); pc++;
 					writemem(addr, a);
 					polltime(3);
 					break;
-	
+
 				case 0x86:         /*STX zp*/
 					addr = readmem(pc); pc++;
 					writemem(addr, x);
 					polltime(3);
 					break;
-	
+
 				case 0x88:         /*DEY*/
 					y--;
 					setzn(y);
 					polltime(2);
 					break;
-	
+
 				case 0x8A:         /*TXA*/
 					a = x;
 					setzn(a);
 					polltime(2);
 					break;
-	
+
 				case 0x8C:         /*STY abs*/
 					addr = getw();
 					polltime(3);
 					writemem(addr, y);
 					polltime(1);
 					break;
-	
+
 				case 0x8D:         /*STA abs*/
 					addr = getw();
 					polltime(3);
 					writemem(addr, a);
 					polltime(1);
 					break;
-	
+
 				case 0x8E:         /*STX abs*/
 					addr = getw();
 					polltime(3);
 					writemem(addr, x);
 					polltime(1);
 					break;
-	
+
 				case 0x90:         /*BCC*/
 					offset = (int8_t)readmem(pc); pc++;
 					temp = 2;
@@ -1540,64 +1541,64 @@ void exec6502(int linenum, int cpl)
 					}
 					polltime(temp);
 					break;
-	
+
 				case 0x91:         /*STA (),y*/
 					temp = readmem(pc); pc++;
 					addr = readmem(temp) + (readmem(temp + 1) << 8) + y;
 					writemem(addr, a);
 					polltime(6);
 					break;
-	
+
 				case 0x94:         /*STY zp,x*/
 					addr = readmem(pc); pc++;
 					ram[(addr + x) & 0xFF] = y;
 					polltime(4);
 					break;
-	
+
 				case 0x95:         /*STA zp,x*/
 					addr = readmem(pc); pc++;
 					writemem((addr + x) & 0xFF, a);
 	//                                ram[(addr+x)&0xFF]=a;
 					polltime(4);
 					break;
-	
+
 				case 0x96:         /*STX zp,y*/
 					addr = readmem(pc); pc++;
 					ram[(addr + y) & 0xFF] = x;
 					polltime(4);
 					break;
-	
+
 				case 0x98:         /*TYA*/
 					a = y;
 					setzn(a);
 					polltime(2);
 					break;
-	
+
 				case 0x99:         /*STA abs,y*/
 					addr = getw();
 					polltime(4);
 					writemem(addr + y, a);
 					polltime(1);
 					break;
-	
+
 				case 0x9A:         /*TXS*/
 					s = x;
 					polltime(2);
 					break;
-	
+
 				case 0x9D:         /*STA abs,x*/
 					addr = getw();
 					polltime(4);
 					writemem(addr + x, a);
 					polltime(1);
 					break;
-	
+
 				case 0xA0:         /*LDY imm*/
 					y = readmem(pc); pc++;
 					setzn(y);
 					polltime(2);
 					break;
-	
+
 				case 0xA1:         /*LDA (,x)*/
 					temp = readmem(pc) + x; pc++;
 					addr = readmem(temp) | (readmem(temp + 1) << 8);
@@ -1605,51 +1606,51 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(6);
 					break;
-	
+
 				case 0xA2:         /*LDX imm*/
 					x = readmem(pc); pc++;
 					setzn(x);
 					polltime(2);
 					break;
-	
+
 				case 0xA4:         /*LDY zp*/
 					addr = readmem(pc); pc++;
 					y = readmem(addr);
 					setzn(y);
 					polltime(3);
 					break;
-	
+
 				case 0xA5:         /*LDA zp*/
 					addr = readmem(pc); pc++;
 					a = readmem(addr);
 					setzn(a);
 					polltime(3);
 					break;
-	
+
 				case 0xA6:         /*LDX zp*/
 					addr = readmem(pc); pc++;
 					x = readmem(addr);
 					setzn(x);
 					polltime(3);
 					break;
-	
+
 				case 0xA8:         /*TAY*/
 					y = a;
 					setzn(y);
 					break;
-	
+
 				case 0xA9:         /*LDA imm*/
 					a = readmem(pc); pc++;
 					setzn(a);
 					polltime(2);
 					break;
-	
+
 				case 0xAA:         /*TAX*/
 					x = a;
 					setzn(x);
 					polltime(2);
 					break;
-	
+
 				case 0xAC:         /*LDY abs*/
 					addr = getw();
 					polltime(3);
@@ -1657,7 +1658,7 @@ void exec6502(int linenum, int cpl)
 					setzn(y);
 					polltime(1);
 					break;
-	
+
 				case 0xAD:         /*LDA abs*/
 					addr = getw();
 					polltime(3);
@@ -1665,7 +1666,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(1);
 					break;
-	
+
 				case 0xAE:         /*LDX abs*/
 					addr = getw();
 					polltime(3);
@@ -1673,7 +1674,7 @@ void exec6502(int linenum, int cpl)
 					setzn(x);
 					polltime(1);
 					break;
-	
+
 				case 0xB0:         /*BCS*/
 					offset = (int8_t)readmem(pc); pc++;
 					temp = 2;
@@ -1686,7 +1687,7 @@ void exec6502(int linenum, int cpl)
 					}
 					polltime(temp);
 					break;
-	
+
 				case 0xB1:         /*LDA (),y*/
 					temp = readmem(pc); pc++;
 					addr = readmem(temp) + (readmem(temp + 1) << 8);
@@ -1696,33 +1697,33 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(5);
 					break;
-	
+
 				case 0xB4:         /*LDY zp,x*/
 					addr = readmem(pc); pc++;
 					y = ram[(addr + x) & 0xFF];
 					setzn(y);
 					polltime(3);
 					break;
-	
+
 				case 0xB5:         /*LDA zp,x*/
 					addr = readmem(pc); pc++;
 					a = ram[(addr + x) & 0xFF];
 					setzn(a);
 					polltime(3);
 					break;
-	
+
 				case 0xB6:         /*LDX zp,y*/
 					addr = readmem(pc); pc++;
 					x = ram[(addr + y) & 0xFF];
 					setzn(x);
 					polltime(3);
 					break;
-	
+
 				case 0xB8:         /*CLV*/
 					p.v = 0;
 					polltime(2);
 					break;
-	
+
 				case 0xB9:         /*LDA abs,y*/
 					addr = getw();
 					polltime(3);
@@ -1732,13 +1733,13 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(1);
 					break;
-	
+
 				case 0xBA:         /*TSX*/
 					x = s;
 					setzn(x);
 					polltime(2);
 					break;
-	
+
 				case 0xBC:         /*LDY abs,x*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + x) & 0xFF00))
@@ -1747,7 +1748,7 @@ void exec6502(int linenum, int cpl)
 					setzn(y);
 					polltime(4);
 					break;
-	
+
 				case 0xBD:         /*LDA abs,x*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + x) & 0xFF00))
@@ -1756,7 +1757,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(4);
 					break;
-	
+
 				case 0xBE:         /*LDX abs,y*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + y) & 0xFF00))
@@ -1765,14 +1766,14 @@ void exec6502(int linenum, int cpl)
 					setzn(x);
 					polltime(4);
 					break;
-	
+
 				case 0xC0:         /*CPY imm*/
 					temp = readmem(pc); pc++;
 					setzn(y - temp);
 					p.c = (y >= temp);
 					polltime(2);
 					break;
-	
+
 				case 0xC1:         /*CMP (,x)*/
 					temp = readmem(pc) + x; pc++;
 					addr = readmem(temp) | (readmem(temp + 1) << 8);
@@ -1781,7 +1782,7 @@ void exec6502(int linenum, int cpl)
 					p.c = (a >= temp);
 					polltime(6);
 					break;
-	
+
 				case 0xC4:         /*CPY zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
@@ -1789,7 +1790,7 @@ void exec6502(int linenum, int cpl)
 					p.c = (y >= temp);
 					polltime(3);
 					break;
-	
+
 				case 0xC5:         /*CMP zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
@@ -1797,7 +1798,7 @@ void exec6502(int linenum, int cpl)
 					p.c = (a >= temp);
 					polltime(3);
 					break;
-	
+
 				case 0xC6:         /*DEC zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr) - 1;
@@ -1805,26 +1806,26 @@ void exec6502(int linenum, int cpl)
 					setzn(temp);
 					polltime(5);
 					break;
-	
+
 				case 0xC8:         /*INY*/
 					y++;
 					setzn(y);
 					polltime(2);
 					break;
-	
+
 				case 0xC9:         /*CMP imm*/
 					temp = readmem(pc); pc++;
 					setzn(a - temp);
 					p.c = (a >= temp);
 					polltime(2);
 					break;
-	
+
 				case 0xCA:         /*DEX*/
 					x--;
 					setzn(x);
 					polltime(2);
 					break;
-	
+
 				case 0xCC:         /*CPY abs*/
 					addr = getw();
 					temp = readmem(addr);
@@ -1832,7 +1833,7 @@ void exec6502(int linenum, int cpl)
 					p.c = (y >= temp);
 					polltime(4);
 					break;
-	
+
 				case 0xCD:         /*CMP abs*/
 					addr = getw();
 					temp = readmem(addr);
@@ -1840,7 +1841,7 @@ void exec6502(int linenum, int cpl)
 					p.c = (a >= temp);
 					polltime(4);
 					break;
-	
+
 				case 0xCE:         /*DEC abs*/
 					addr = getw();
 					polltime(4);
@@ -1851,7 +1852,7 @@ void exec6502(int linenum, int cpl)
 					writemem(addr, temp);
 					setzn(temp);
 					break;
-	
+
 				case 0xD0:         /*BNE*/
 					offset = (int8_t)readmem(pc); pc++;
 					temp = 2;
@@ -1864,7 +1865,7 @@ void exec6502(int linenum, int cpl)
 					}
 					polltime(temp);
 					break;
-	
+
 				case 0xD1:         /*CMP (),y*/
 					temp = readmem(pc); pc++;
 					addr = readmem(temp) + (readmem(temp + 1) << 8);
@@ -1875,7 +1876,7 @@ void exec6502(int linenum, int cpl)
 					p.c = (a >= temp);
 					polltime(5);
 					break;
-	
+
 				case 0xD5:         /*CMP zp,x*/
 					addr = readmem(pc); pc++;
 					temp = ram[(addr + x) & 0xFF];
@@ -1883,19 +1884,19 @@ void exec6502(int linenum, int cpl)
 					p.c = (a >= temp);
 					polltime(3);
 					break;
-	
+
 				case 0xD6:         /*DEC zp,x*/
 					addr = readmem(pc); pc++;
 					ram[(addr + x) & 0xFF]--;
 					setzn(ram[(addr + x) & 0xFF]);
 					polltime(5);
 					break;
-	
+
 				case 0xD8:         /*CLD*/
 					p.d = 0;
 					polltime(2);
 					break;
-	
+
 				case 0xD9:         /*CMP abs,y*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + y) & 0xFF00))
@@ -1905,7 +1906,7 @@ void exec6502(int linenum, int cpl)
 					p.c = (a >= temp);
 					polltime(4);
 					break;
-	
+
 				case 0xDD:         /*CMP abs,x*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + x) & 0xFF00))
@@ -1915,7 +1916,7 @@ void exec6502(int linenum, int cpl)
 					p.c = (a >= temp);
 					polltime(4);
 					break;
-	
+
 				case 0xDE:         /*DEC abs,x*/
 					addr = getw(); addr += x;
 					temp = readmem(addr) - 1;
@@ -1923,16 +1924,16 @@ void exec6502(int linenum, int cpl)
 					setzn(temp);
 					polltime(6);
 					break;
-	
+
 				case 0xE0:         /*CPX imm*/
 					temp = readmem(pc); pc++;
 					setzn(x - temp);
 					p.c = (x >= temp);
 					polltime(3);
 					break;
-	
+
 	/*SP8 CHANGE SBC(oper,X) */
-	
+
 				case 0xE1:         /*SBC (,x)*/
 				temp = readmem(pc) + x; pc++;
 				addr = readmem(temp) | (readmem(temp + 1) << 8);
@@ -1940,9 +1941,9 @@ void exec6502(int linenum, int cpl)
 				SBC(temp);
 				polltime(6);
 				break;
-	
+
 	/*SP8 END */
-	
+
 				case 0xE4:         /*CPX zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
@@ -1950,14 +1951,14 @@ void exec6502(int linenum, int cpl)
 					p.c = (x >= temp);
 					polltime(3);
 					break;
-	
+
 				case 0xE5:         /*SBC zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
 					SBC(temp);
 					polltime(3);
 					break;
-	
+
 				case 0xE6:         /*INC zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr) + 1;
@@ -1965,23 +1966,23 @@ void exec6502(int linenum, int cpl)
 					setzn(temp);
 					polltime(5);
 					break;
-	
+
 				case 0xE8:         /*INX*/
 					x++;
 					setzn(x);
 					polltime(2);
 					break;
-	
+
 				case 0xE9:         /*SBC imm*/
 					temp = readmem(pc); pc++;
 					SBC(temp);
 					polltime(2);
 					break;
-	
+
 				case 0xEA:         /*NOP*/
 					polltime(2);
 					break;
-	
+
 				case 0xEC:         /*CPX abs*/
 					addr = getw();
 					temp = readmem(addr);
@@ -1989,14 +1990,14 @@ void exec6502(int linenum, int cpl)
 					p.c = (x >= temp);
 					polltime(3);
 					break;
-	
+
 				case 0xED:         /*SBC abs*/
 					addr = getw();
 					temp = readmem(addr);
 					SBC(temp);
 					polltime(4);
 					break;
-	
+
 				case 0xEE:         /*DEC abs*/
 					addr = getw();
 					polltime(4);
@@ -2007,7 +2008,7 @@ void exec6502(int linenum, int cpl)
 					writemem(addr, temp);
 					setzn(temp);
 					break;
-	
+
 				case 0xF0:         /*BEQ*/
 					offset = (int8_t)readmem(pc); pc++;
 					temp = 2;
@@ -2020,7 +2021,7 @@ void exec6502(int linenum, int cpl)
 					}
 					polltime(temp);
 					break;
-	
+
 				case 0xF1:         /*SBC (),y*/
 					temp = readmem(pc); pc++;
 					addr = readmem(temp) + (readmem(temp + 1) << 8);
@@ -2030,26 +2031,26 @@ void exec6502(int linenum, int cpl)
 					SBC(temp);
 					polltime(5);
 					break;
-	
+
 				case 0xF5:         /*SBC zp,x*/
 					addr = readmem(pc); pc++;
 					temp = ram[(addr + x) & 0xFF];
 					SBC(temp);
 					polltime(3);
 					break;
-	
+
 				case 0xF6:         /*INC zp,x*/
 					addr = readmem(pc); pc++;
 					ram[(addr + x) & 0xFF]++;
 					setzn(ram[(addr + x) & 0xFF]);
 					polltime(5);
 					break;
-	
+
 				case 0xF8:         /*SED*/
 					p.d = 1;
 					polltime(2);
 					break;
-	
+
 				case 0xF9:         /*SBC abs,y*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + y) & 0xFF00))
@@ -2058,7 +2059,7 @@ void exec6502(int linenum, int cpl)
 					SBC(temp);
 					polltime(4);
 					break;
-	
+
 				case 0xFD:         /*SBC abs,x*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + x) & 0xFF00))
@@ -2067,7 +2068,7 @@ void exec6502(int linenum, int cpl)
 					SBC(temp);
 					polltime(4);
 					break;
-	
+
 				case 0xFE:         /*INC abs,x*/
 					addr = getw(); addr += x;
 					temp = readmem(addr) + 1;
@@ -2075,17 +2076,17 @@ void exec6502(int linenum, int cpl)
 					setzn(temp);
 					polltime(6);
 					break;
-	
+
 				case 0x04:         /*Undocumented - NOP zp*/
 					addr = readmem(pc); pc++;
 					polltime(3);
 					break;
-	
+
 				case 0xF4:         /*Undocumented - NOP zpx*/
 					addr = readmem(pc); pc++;
 					polltime(4);
 					break;
-	
+
 				case 0xA3:         /*Undocumented - LAX (,y)*/
 					temp = readmem(pc) + x; pc++;
 					addr = readmem(temp) | (readmem(temp + 1) << 8);
@@ -2093,7 +2094,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(6);
 					break;
-	
+
 				case 0x07:         /*Undocumented - SLO zp*/
 					addr = readmem(pc); pc++;
 					c = ram[addr] & 0x80;
@@ -2102,12 +2103,12 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(5);
 					break;
-	
+
 				case 0x23:              /*Undocumented - RLA*/
 					break;          /*This was found in Repton 3 and
 					                   looks like a mistake, so I'll
 					                   ignore it for now*/
-	
+
 				case 0x2F:              /*Undocumented - RLA abs*/
 					addr = getw();  /*Found in The Hobbit*/
 					temp = readmem(addr);
@@ -2121,7 +2122,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(6);
 					break;
-	
+
 				case 0x4B:         /*Undocumented - ASR*/
 					a &= readmem(pc); pc++;
 					p.c = a & 1;
@@ -2129,7 +2130,7 @@ void exec6502(int linenum, int cpl)
 					setzn(a);
 					polltime(2);
 					break;
-	
+
 				case 0x67:         /*Undocumented - RRA zp*/
 					addr = readmem(pc); pc++;
 					ram[addr] >>= 1;
@@ -2139,29 +2140,29 @@ void exec6502(int linenum, int cpl)
 					ADC(temp);
 					polltime(5);
 					break;
-	
+
 				case 0x80:         /*Undocumented - NOP imm*/
 					readmem(pc); pc++;
 					polltime(2);
 					break;
-	
+
 				case 0x87:         /*Undocumented - SAX zp*/
 					addr = readmem(pc); pc++;
 					ram[addr] = a & x;
 					polltime(3);
 					break;
-	
+
 				case 0x9C:         /*Undocumented - SHY abs,x*/
 					addr = getw();
 					writemem(addr + x, y & ((addr >> 8) + 1));
 					polltime(5);
 					break;
-	
+
 				case 0xDA:         /*Undocumented - NOP*/
 	//                                case 0xFA:
 					polltime(2);
 					break;
-	
+
 				case 0xDC:         /*Undocumented - NOP abs,x*/
 					addr = getw();
 					if ((addr & 0xFF00) ^ ((addr + x) & 0xFF00))
@@ -2169,7 +2170,7 @@ void exec6502(int linenum, int cpl)
 					readmem(addr + x);
 					polltime(4);
 					break;
-	
+
 				default:
 					switch (opcode & 0xF)
 					{
@@ -2251,7 +2252,7 @@ void exec6502(int linenum, int cpl)
 	//                                rpclog("NMI %04X\n",pc);
 				}
 				oldnmi = nmi;
-	
+
 				if (motoron)
 				{
 					if (fdctime)
@@ -2264,7 +2265,7 @@ void exec6502(int linenum, int cpl)
 						disctime += 8; disc_poll();
 					}
 				}
-	
+
 				if ((interrupt && !p.i && !skipint) || skipint == 2)
 				{
 	//                                printf("Intrupt\n");
@@ -2317,4 +2318,3 @@ void exec6502(int linenum, int cpl)
 	}
 //        rpclog("Exec over\n");
 }
-

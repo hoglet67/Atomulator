@@ -24,13 +24,17 @@ void loaddiscsamps()
 {
 	char path[512], p2[512];
 
-	getcwd(p2, 511);
+	if (!getcwd(p2, 511)) {
+		rpclog("Failed to getcwd()\n");
+    }
 	if (ddtype)
 		sprintf(path, "%sddnoise/35", exedir);
 	else
 		sprintf(path, "%sddnoise/525", exedir);
 //        printf("path now %s\n",path);
-	chdir(path);
+	if (chdir(path)) {
+		rpclog("Failed to chdir() to %s\n", path);
+	}
 
 	seeksmp[0][0] = load_wav("stepo.wav");
 	if (seeksmp[0][0])
@@ -57,7 +61,9 @@ void loaddiscsamps()
 	motorsmp[0] = load_wav("motoron.wav");
 	motorsmp[1] = load_wav("motor.wav");
 	motorsmp[2] = load_wav("motoroff.wav");
-	chdir(p2);
+	if (chdir(p2)) {
+		rpclog("Failed to chdir() to %s\n", p2);
+	}
 //        printf("done!\n");
 }
 

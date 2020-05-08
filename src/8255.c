@@ -3,6 +3,7 @@
 #include <string.h>
 #include <allegro.h>
 #include "atom.h"
+#include "sid_atom.h"
 
 int16_t sndbuffer[312 * 2 * 5];
 int sndpos = 0;
@@ -67,7 +68,7 @@ int keyrow;
 void write8255(uint16_t addr, uint8_t val)
 {
 	int oldgfx = gfxmode;
-	
+
 	switch (addr & 0xF)
 	{
 	case 0:
@@ -87,13 +88,13 @@ void write8255(uint16_t addr, uint8_t val)
 	case 3:
 		switch (val & 0xE)
 		{
-		case 0x4: 
+		case 0x4:
 			speaker = val & 1;
-			//rpclog("Speaker %i\n", (val & 4) >> 2); 
+			//rpclog("Speaker %i\n", (val & 4) >> 2);
 			break;
 
-		case 0x6: 
-			css = (val & 1) ? 2 : 0; 
+		case 0x6:
+			css = (val & 1) ? 2 : 0;
 			break;
 		}
 		break;
@@ -255,7 +256,7 @@ void pollsound()
 
 	if (spon)
 		temp += (speaker) ? 4095 : -4096;
-		
+
 	if (tpon)
 		temp += (tapedat) ? 2047 : -2048;
 

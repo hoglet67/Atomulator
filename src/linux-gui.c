@@ -10,6 +10,7 @@
 #include "roms.h"
 #include "resources.h"
 #include "sidtypes.h"
+#include "sid_atom.h"
 
 #undef printf
 
@@ -96,34 +97,34 @@ void updatelinuxgui()
 	ddtypemenu[0].flags = (!ddtype) ? D_SELECTED : 0;
 	ddtypemenu[1].flags = (ddtype) ? D_SELECTED : 0;
 	for (x = 0; x < 3; x++)
-		ddvolmenu[x].flags = (ddvol == (int)ddvolmenu[x].dp) ? D_SELECTED : 0;
+		ddvolmenu[x].flags = (ddvol == (intptr_t)ddvolmenu[x].dp) ? D_SELECTED : 0;
 
 	for (x = 0; x < 10; x++)
-		speedmenu[x].flags = (emuspeed == (int)speedmenu[x].dp) ? D_SELECTED : 0;
+		speedmenu[x].flags = (emuspeed == (intptr_t)speedmenu[x].dp) ? D_SELECTED : 0;
 
-	for (x=0;x<14;x++) 
-		sidtypemenu[x].flags=(cursid==(int)sidtypemenu[x].dp)?D_SELECTED:0;
+	for (x=0;x<14;x++)
+		sidtypemenu[x].flags=(cursid==(intptr_t)sidtypemenu[x].dp)?D_SELECTED:0;
 
 	settingsmenu[7].flags = joyst ? D_SELECTED : 0;
 
 	methodmenu[0].flags=(!sidmethod)?D_SELECTED:0;
     methodmenu[1].flags=(sidmethod)?D_SELECTED:0;
-	
-	ramrommenu[0].flags=(ramrom_enable) ? D_SELECTED : 0;
-	ramrommenu[1].flags=(RR_jumpers & RAMROM_FLAG_DISKROM) ? D_SELECTED : 0;	
 
-// RAM config	
+	ramrommenu[0].flags=(ramrom_enable) ? D_SELECTED : 0;
+	ramrommenu[1].flags=(RR_jumpers & RAMROM_FLAG_DISKROM) ? D_SELECTED : 0;
+
+// RAM config
 	for(x=0; x < 6; x++)
-		mainrammenu[x].flags=(main_ramflag == (int)mainrammenu[x].dp) ? D_SELECTED : 0;
-		
+		mainrammenu[x].flags=(main_ramflag == (intptr_t)mainrammenu[x].dp) ? D_SELECTED : 0;
+
 	for(x=0; x < 8; x++)
-		vidrammenu[x].flags=(vid_ramflag == (int)vidrammenu[x].dp) ? D_SELECTED : 0;
+		vidrammenu[x].flags=(vid_ramflag == (intptr_t)vidrammenu[x].dp) ? D_SELECTED : 0;
 // end RAM config
 // GDOS2015
 	floppymenu[0].flags=fdc1770 ? D_SELECTED : 0;
-	
+
 	for(x=0; x < 15; x++)
-		floppybankmenu[x].flags=(GD_bank == (int)floppybankmenu[x].dp) ? D_SELECTED : 0;
+		floppybankmenu[x].flags=(GD_bank == (intptr_t)floppybankmenu[x].dp) ? D_SELECTED : 0;
 // end GDOS2015
 }
 
@@ -340,7 +341,7 @@ MENU videomenu[3] =
 
 int gui_sidtype()
 {
-        cursid=(int)active_menu->dp;
+        cursid=(intptr_t)active_menu->dp;
         sid_settype(sidmethod, cursid);
         updatelinuxgui();
         return D_O_K;
@@ -367,7 +368,7 @@ MENU sidtypemenu[15]=
 
 int gui_method()
 {
-        sidmethod=(int)active_menu->dp;
+        sidmethod=(intptr_t)active_menu->dp;
         sid_settype(sidmethod, cursid);
         updatelinuxgui();
         return D_O_K;
@@ -389,7 +390,7 @@ MENU residmenu[3]=
 
 int gui_ddtype()
 {
-	ddtype = (int)active_menu->dp;
+	ddtype = (intptr_t)active_menu->dp;
 	closeddnoise();
 	loaddiscsamps();
 	updatelinuxgui();
@@ -405,7 +406,7 @@ MENU ddtypemenu[3] =
 
 int gui_ddvol()
 {
-	ddvol = (int)active_menu->dp;
+	ddvol = (intptr_t)active_menu->dp;
 	updatelinuxgui();
 	return D_O_K;
 }
@@ -494,7 +495,7 @@ int gui_joystk_en()
 {
 	joyst = !joyst;
 	updatelinuxgui();
-	return D_O_K;	
+	return D_O_K;
 }
 
 MENU hardmenu[3] =
@@ -508,12 +509,12 @@ MENU settingsmenu[9] =
 {
 	{ "&Video",    	NULL, videomenu, 0, NULL },
 	{ "&Hardware", 	NULL, hardmenu,	0, NULL },
-	{ "&RamRom",	NULL, ramrommenu, 0, NULL},	
+	{ "&RamRom",	NULL, ramrommenu, 0, NULL},
 	{ "R&am",		NULL, rammenu, 0, NULL },
 	{ "&Floppy",	NULL, floppymenu, 0, NULL },
 	{ "&Sound",    	NULL, soundmenu, 0, NULL },
 	{ "&Keyboard", 	NULL, keymenu,	0, NULL },
-	{ "Joystick PORTB", 	gui_joystk_en, NULL, 0, NULL }, 
+	{ "Joystick PORTB", 	gui_joystk_en, NULL, 0, NULL },
 	{ NULL,	       	NULL, NULL,	0, NULL }
 };
 
@@ -543,13 +544,13 @@ MENU ramrommenu[2] =
 
 int gui_mainmem()
 {
-	main_ramflag=(int)active_menu->dp;
+	main_ramflag=(intptr_t)active_menu->dp;
     updatelinuxgui();
     return D_O_K;
 }
 int gui_vidram()
 {
-	vid_ramflag=(int)active_menu->dp;
+	vid_ramflag=(intptr_t)active_menu->dp;
     updatelinuxgui();
     return D_O_K;
 }
@@ -557,15 +558,15 @@ int gui_vidram()
 MENU mainrammenu[7] =
 {
 	{ "Minimum 1K in base",						gui_mainmem, NULL, 0, (void *)0},
-	{ "Minimum 1K in base + 5K",				gui_mainmem, NULL, 0, (void *)1},	
+	{ "Minimum 1K in base + 5K",				gui_mainmem, NULL, 0, (void *)1},
 	{ "6K on motherboard + 3K DOS",				gui_mainmem, NULL, 0, (void *)2},
 	{ "6K motherboard + 3K DOS + 16K expansion",gui_mainmem, NULL, 0, (void *)3},
 	{ "6K motherboard + 3K DOS + 22K expansion (hole at A00)",gui_mainmem, NULL, 0, (void *)4},
 	{ "6K motherboard + 3K DOS + 23K expansion",gui_mainmem, NULL, 0, (void *)5},
-	{ NULL,									   	NULL,		 NULL, 0, NULL }	
+	{ NULL,									   	NULL,		 NULL, 0, NULL }
 };
 
-MENU vidrammenu[9] = 
+MENU vidrammenu[9] =
 {
 	{ "1K Video RAM",	gui_vidram,	NULL,	0, 	(void *)0},
 	{ "2K Video RAM",	gui_vidram,	NULL,	0, 	(void *)1},
@@ -583,7 +584,7 @@ MENU rammenu[3] =
 	{ "Main RAM",		NULL,		mainrammenu, 	0,	NULL},
 	{ "Video RAM",		NULL,		vidrammenu,		0, 	NULL},
 	{ NULL,				NULL,		NULL,			0,	NULL}
-}; 
+};
 
 // end RAM config
 
@@ -596,12 +597,12 @@ int gui_gdenable()
 }
 int gui_gdbank()
 {
-	GD_bank=(int)active_menu->dp;
+	GD_bank=(intptr_t)active_menu->dp;
     updatelinuxgui();
     set_dosrom_ptr();
-    return D_O_K;  
+    return D_O_K;
 }
-MENU floppymenu[3] = 
+MENU floppymenu[3] =
 {
 	{ "&GDOS/ADOS 2015 (1770 based) Enabled",	gui_gdenable,	NULL, 	0, 	NULL},
 	{ "&Rombank",								NULL,			floppybankmenu,	0,	NULL},
@@ -649,7 +650,7 @@ int gui_scrshot()
 
 int gui_speed()
 {
-	emuspeed = (int)active_menu->dp;
+	emuspeed = (intptr_t)active_menu->dp;
 	changetimerspeed(timerspeeds[emuspeed]);
 	fskipmax = frameskips[emuspeed];
 	updatelinuxgui();
