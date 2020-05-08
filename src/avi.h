@@ -30,8 +30,8 @@
 #define 	AVIF_COPYRIGHTED      0x00020000
 
 // These settings are specific to the Atom
-#define AVI_X_SIZE 1280
-#define AVI_Y_SIZE 720
+#define AVI_X_SIZE 640
+#define AVI_Y_SIZE 480
 #define AVI_FREQUENCY 31250
 
 struct avi_handle
