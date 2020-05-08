@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <string.h>
-#include <sys/time.h>
+// #include <sys/time.h>
 #include "avi.h"
 
 // TODO: Define these for big endian platforms (if we rerally care!)
@@ -123,7 +123,7 @@ struct avi_handle *avi_open( char *filename, uint8_t *pal, bool dosound, int is5
 
   ok &= writestr( ok, ah, "avih"        , NULL               );   // MainAVIHeader chunk
   ok &= write32l( ok, ah,             56, NULL               );   // Chunk size
-  ok &= write32l( ok, ah,is50hz?20000:16667,&ah->offs_usperfrm);  // Microseconds per frame
+  ok &= write32l( ok, ah,is50hz?19968:16768,&ah->offs_usperfrm);  // Microseconds per frame
   ok &= write32l( ok, ah,              0, NULL               );   // Max bytes per second
   ok &= write32l( ok, ah,              0, NULL               );   // Padding granularity
   ok &= write32l( ok, ah,       AVIFLAGS, NULL               );   // Flags
@@ -150,7 +150,7 @@ struct avi_handle *avi_open( char *filename, uint8_t *pal, bool dosound, int is5
   ok &= write32l( ok, ah,              0, NULL               );   // Reserved
   ok &= write32l( ok, ah,              0, NULL               );   // Initial frames
   ok &= write32l( ok, ah,        1000000, NULL               );   // Scale
-  ok &= write32l( ok, ah,is50hz?50000000:60000000,&ah->offs_frmrate);   // Rate
+  ok &= write32l( ok, ah,is50hz?50080128:59637404,&ah->offs_frmrate);   // Rate
   ok &= write32l( ok, ah,              0, NULL               );   // Start
   ok &= write32l( ok, ah,              0, &ah->offs_frames2  );   // Length
   ok &= write32l( ok, ah,              0, NULL               );   // Suggested buffer size
@@ -231,8 +231,8 @@ struct avi_handle *avi_open( char *filename, uint8_t *pal, bool dosound, int is5
   ah->audiolen       = 0;
   ah->movisize       = 0;
   ah->lastframevalid = false;
-  ah->time_start.tv_sec = 0;
-  ah->time_start.tv_usec = 0;
+  //  ah->time_start.tv_sec = 0;
+  //  ah->time_start.tv_usec = 0;
 
   return ah;
 }
@@ -425,11 +425,11 @@ bool avi_addframe( struct avi_handle **ah, uint8_t *srcdata )
     return false;
   }
 
-  if( !(*ah)->time_start.tv_sec )
-  {
-     gettimeofday(&(*ah)->time_start, 0);
-
-  }
+  //  if( !(*ah)->time_start.tv_sec )
+  //  {
+  //     gettimeofday(&(*ah)->time_start, 0);
+  //
+  //  }
 
   return true;
 }
@@ -459,19 +459,19 @@ bool avi_addaudio( struct avi_handle **ah, int16_t *audiodata, uint32_t audiosiz
   return true;
 }
 
-float timedifference_msec(struct timeval t0, struct timeval t1)
-{
-    return (t1.tv_sec - t0.tv_sec) * 1000.0f + (t1.tv_usec - t0.tv_usec) / 1000.0f;
-}
+//float timedifference_msec(struct timeval t0, struct timeval t1)
+//{
+//    return (t1.tv_sec - t0.tv_sec) * 1000.0f + (t1.tv_usec - t0.tv_usec) / 1000.0f;
+//}
 
 void avi_close( struct avi_handle **ah )
 {
   bool ok;
 
-  struct timeval time_end;
-  gettimeofday(&time_end, 0);
+  //  struct timeval time_end;
+  //  gettimeofday(&time_end, 0);
 
-  double time_ms, rate, usperfrm;
+  //  double time_ms, rate, usperfrm;
 
   if( ( !ah ) || (!(*ah)) ) return;
 
@@ -485,9 +485,9 @@ void avi_close( struct avi_handle **ah )
     ok &= seek_write32l( ok, *ah, (*ah)->offs_movisize, (*ah)->movisize );
     ok &= seek_write32l( ok, *ah, (*ah)->offs_audiolen, (*ah)->audiolen );
 
-    time_ms = (double)timedifference_msec((*ah)->time_start, time_end);  // Time in milliseconds
-    rate     = ((double)((*ah)->frames) * 1000000000.0f) / time_ms;
-    usperfrm = (time_ms*1000.0f) / ((double)(*ah)->frames);
+    //    time_ms = (double)timedifference_msec((*ah)->time_start, time_end);  // Time in milliseconds
+    //    rate     = ((double)((*ah)->frames) * 1000000000.0f) / time_ms;
+    //    usperfrm = (time_ms*1000.0f) / ((double)(*ah)->frames);
 
     //    ok &= seek_write32l( ok, *ah, (*ah)->offs_frmrate,  (uint32_t)(rate + .5) );
     //    ok &= seek_write32l( ok, *ah, (*ah)->offs_usperfrm, (uint32_t)(usperfrm + .5) );
