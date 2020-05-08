@@ -514,8 +514,9 @@ void leavefullscreen()
 
 void startmovie()
 {
+   int i;
    uint8_t palette[8 * 3];
-   for (int i = 0; i < 8; i++) {
+   for (i = 0; i < 8; i++) {
       palette[i * 3 + 0] = (*currentpal)[i].r << 2;
       palette[i * 3 + 1] = (*currentpal)[i].g << 2;
       palette[i * 3 + 2] = (*currentpal)[i].b << 2;
