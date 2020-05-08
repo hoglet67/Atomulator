@@ -271,7 +271,9 @@ extern int emuspeed, fskipmax;
 extern char scrshotname[260];
 extern int savescrshot;
 extern char moviename[260];
-extern uint8_t sndstreambuf[626];
-extern int sndstreamptr;
+
+#define SNDBUFFER_SIZE (312 * 2 * 5)
+extern int16_t sndbuffer[];
+extern int sndpos;
 
 void changetimerspeed(int i);

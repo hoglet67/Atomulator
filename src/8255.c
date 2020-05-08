@@ -5,7 +5,7 @@
 #include "atom.h"
 #include "sid_atom.h"
 
-int16_t sndbuffer[312 * 2 * 5];
+int16_t sndbuffer[SNDBUFFER_SIZE];
 int sndpos = 0;
 
 /*SWARM - CTRL=LEFT, ADJ=RIGHT, REPT=FIRE*/
@@ -265,7 +265,7 @@ void pollsound()
 		sndbuffer[sndpos++] = temp;
 	}
 
-	if (sndpos >= (312 * 2 * 5))
+	if (sndpos >= SNDBUFFER_SIZE)
 	{
 		sndpos = 0;
 		givealbuffer(sndbuffer);

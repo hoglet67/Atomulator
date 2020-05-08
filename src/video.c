@@ -137,9 +137,6 @@ void initvideo()
 
 	updatepal();
 	set_color_depth(depth);
-
-	/* Clear the sound stream buffer before we start filling it. */
-	memset(sndstreambuf, 0, sizeof(sndstreambuf));
 }
 
 void updatepal()
@@ -165,9 +162,6 @@ char scrshotname[260];
 int savescrshot = 0;
 
 char moviename[260];
-uint8_t sndstreambuf[626];
-int sndstreamindex = 0;
-int sndstreamcount = 0;
 int wantmovieframe=0;
 
 struct avi_handle *avifile;
@@ -423,7 +417,9 @@ void drawline(int line)
 
 			frmcount = 0;
 		}
-                if (wantmovieframe) saveframe();
+		if (wantmovieframe) {
+			saveframe();
+		}
 		endblit();
 	}
 
@@ -526,13 +522,11 @@ void startmovie()
    }
    stopmovie();
    wantmovieframe = 1;
-   avifile = avi_open(moviename, palette, false, false );
+   avifile = avi_open(moviename, palette, true, palnotntsc);
    if (avifile == NULL) {
       return;
    }
-   moviebitmap = create_bitmap_ex(8, 512, 384);
-   sndstreamindex = 0;
-   sndstreamcount = 0;
+   moviebitmap = create_bitmap_ex(8, AVI_X_SIZE, AVI_Y_SIZE);
 }
 
 void stopmovie()
@@ -544,41 +538,33 @@ void stopmovie()
     }
 }
 
-#define DEFLATE_CHUNK_SIZE 262144
-
 void saveframe()
 {
-    if (avifile == NULL)
-        return;
+   if (avifile == NULL) {
+      return;
+   }
 
-    int start;
-    if (sndstreamcount == 624) {
-        /* Take the last 625 samples. */
-        start = (sndstreamindex + 1) % sizeof(sndstreambuf);
-    } else if (sndstreamcount == 626) {
-        /* Take the first 625 samples from the 626 obtained and leave the last
-           one for the next frame. */
-        start = sndstreamindex;
-    }
+   int scale_x = AVI_X_SIZE / 256;
+   int scale_y = AVI_Y_SIZE / 192;
+   int scale = scale_x < scale_y ? scale_x : scale_y;
+   int offset_x = (AVI_X_SIZE - 256 * scale) >> 1;
+   int offset_y = (AVI_Y_SIZE - 192 * scale) >> 1;
 
-    stretch_blit(b, moviebitmap, 0, 0, 256, 192, 0, 0, 512, 384);
+   stretch_blit(b, moviebitmap, 0, 0, 256, 192, offset_x, offset_y, 256 * scale, 192 * scale);
 
-    avi_addframe(&avifile, moviebitmap->dat);
+   avi_addframe(&avifile, moviebitmap->dat);
 
-#if 0
-    avi_addaudio(&avifile, int16_t *audiodata, uint32_t audiosize );
+   // Two samples per line
+   int samples = (palnotntsc ? 312 : 262) * 2;
 
-    int remaining = sizeof(sndstreambuf) - start;
-    if (remaining >= 625)
-        fwrite(&sndstreambuf[start], 1, 625, moviefile);
-    else {
-        fwrite(&sndstreambuf[start], 1, remaining, moviefile);
-        fwrite(sndstreambuf, 1, 625 - remaining, moviefile);
-    }
-#endif
-
-    sndstreamcount = 0;
-
+   if (sndpos >= samples) {
+      avi_addaudio(&avifile, sndbuffer + sndpos - samples, samples);
+   } else {
+      avi_addaudio(&avifile, sndbuffer + SNDBUFFER_SIZE - samples + sndpos, samples - sndpos);
+      if (sndpos) {
+         avi_addaudio(&avifile, sndbuffer, sndpos);
+      }
+   }
 }
 
 void clearscreen()

@@ -29,8 +29,10 @@
 #define 	AVIF_WASCAPTUREFILE   0x00010000
 #define 	AVIF_COPYRIGHTED      0x00020000
 
-#define X_SIZE 512
-#define Y_SIZE 384
+// These settings are specific to the Atom
+#define AVI_X_SIZE 1280
+#define AVI_Y_SIZE 720
+#define AVI_FREQUENCY 31250
 
 struct avi_handle
 {
@@ -49,11 +51,10 @@ struct avi_handle
    uint32_t   offs_usperfrm;
    uint32_t   offs_frmrate;
    struct timeval time_start;
-
    bool       dosnd;
    bool       lastframevalid;
-   uint8_t    rledata[X_SIZE*Y_SIZE*4];
-   uint8_t    lastframe[X_SIZE*Y_SIZE];
+   uint8_t    rledata[AVI_X_SIZE * AVI_Y_SIZE * 4];
+   uint8_t    lastframe[AVI_X_SIZE * AVI_Y_SIZE];
 
    // This is an int instead of bool because we use bit 1 for optimisation purposes
    // (matches the oric 50hz bit)

@@ -33,8 +33,6 @@
 #define _MAKE_LE16(X)
 #define _MAKE_LE32(X)
 
-#define FREQUENCY 44100
-
 // Write a 32bit value to a stream in little-endian format
 static bool write32l( bool stillok, struct avi_handle *ah, uint32_t val, uint32_t *rem )
 {
@@ -133,8 +131,8 @@ struct avi_handle *avi_open( char *filename, uint8_t *pal, bool dosound, int is5
   ok &= write32l( ok, ah,              0, NULL               );   // Initial frames
   ok &= write32l( ok, ah,  ah->dosnd?2:1, NULL               );   // Stream count
   ok &= write32l( ok, ah,              0, NULL               );   // Suggested buffer size
-  ok &= write32l( ok, ah,         X_SIZE, NULL               );   // Width
-  ok &= write32l( ok, ah,         Y_SIZE, NULL               );   // Height
+  ok &= write32l( ok, ah,     AVI_X_SIZE, NULL               );   // Width
+  ok &= write32l( ok, ah,     AVI_Y_SIZE, NULL               );   // Height
   ok &= write32l( ok, ah,              0, NULL               );   // Reserved
   ok &= write32l( ok, ah,              0, NULL               );   // Reserved
   ok &= write32l( ok, ah,              0, NULL               );   // Reserved
@@ -164,12 +162,12 @@ struct avi_handle *avi_open( char *filename, uint8_t *pal, bool dosound, int is5
   ok &= writestr( ok, ah, "strf"        , NULL               );   // Video stream format
   ok &= write32l( ok, ah,         40+8*4, NULL               );   // Chunk size
   ok &= write32l( ok, ah,             40, NULL               );   // Structure size
-  ok &= write32l( ok, ah,         X_SIZE, NULL               );   // Width
-  ok &= write32l( ok, ah,         Y_SIZE, NULL               );   // Height
+  ok &= write32l( ok, ah,     AVI_X_SIZE, NULL               );   // Width
+  ok &= write32l( ok, ah,     AVI_Y_SIZE, NULL               );   // Height
   ok &= write16l( ok, ah,              1, NULL               );   // Planes
   ok &= write16l( ok, ah,              8, NULL               );   // Bit count
   ok &= write32l( ok, ah,              1, NULL               );   // Compression
-  ok &= write32l( ok, ah,  X_SIZE*Y_SIZE, NULL               );   // Image size
+  ok &= write32l( ok, ah,  AVI_X_SIZE*AVI_Y_SIZE, NULL               );   // Image size
   ok &= write32l( ok, ah,              0, NULL               );   // XPelsPerMeter
   ok &= write32l( ok, ah,              0, NULL               );   // YPelsPerMeter
   ok &= write32l( ok, ah,              8, NULL               );   // Colours used
@@ -197,7 +195,7 @@ struct avi_handle *avi_open( char *filename, uint8_t *pal, bool dosound, int is5
     ok &= write32l( ok, ah,            0, NULL               );   // Reserved
     ok &= write32l( ok, ah,            0, NULL               );   // Initial frames
     ok &= write32l( ok, ah,            1, NULL               );   // Scale
-    ok &= write32l( ok, ah,    FREQUENCY, NULL               );   // Rate
+    ok &= write32l( ok, ah,AVI_FREQUENCY, NULL               );   // Rate
     ok &= write32l( ok, ah,            0, NULL               );   // Start
     ok &= write32l( ok, ah,            0, &ah->offs_audiolen );   // Length
     ok &= write32l( ok, ah,            0, NULL               );   // Suggested buffer size
@@ -210,8 +208,8 @@ struct avi_handle *avi_open( char *filename, uint8_t *pal, bool dosound, int is5
     ok &= write32l( ok, ah,           16, NULL               );   // Chunk size
     ok &= write16l( ok, ah,            1, NULL               );   // Format (PCM)
     ok &= write16l( ok, ah,            1, NULL               );   // Channels
-    ok &= write32l( ok, ah,    FREQUENCY, NULL               );   // Samples per second
-    ok &= write32l( ok, ah,  FREQUENCY*2, NULL               );   // Bytes per second
+    ok &= write32l( ok, ah,AVI_FREQUENCY, NULL               );   // Samples per second
+    ok &= write32l( ok, ah,AVI_FREQUENCY*2, NULL               );   // Bytes per second
     ok &= write16l( ok, ah,            2, NULL               );   // BlockAlign
     ok &= write16l( ok, ah,           16, NULL               );   // BitsPerSample
   }
@@ -374,43 +372,43 @@ bool avi_addframe( struct avi_handle **ah, uint8_t *srcdata )
   if( (*ah)->lastframevalid )
   {
     // Find the last line that differs
-    for( i=0; i<Y_SIZE; i++ )
+    for( i=0; i<AVI_Y_SIZE; i++ )
     {
-      for( x=0; x<X_SIZE; x++ )
+      for( x=0; x<AVI_X_SIZE; x++ )
       {
-        if( (*ah)->lastframe[i*X_SIZE+x] != srcdata[i*X_SIZE+x] )
+        if( (*ah)->lastframe[i*AVI_X_SIZE+x] != srcdata[i*AVI_X_SIZE+x] )
           break;
       }
-      if( x<X_SIZE ) break;
+      if( x<AVI_X_SIZE ) break;
     }
     lastline = i;
   }
 
-  if( lastline == Y_SIZE )
+  if( lastline == AVI_Y_SIZE )
   {
     size = 0;
     (*ah)->rledata[size++] = 0x00;
     (*ah)->rledata[size++] = 0x01;
   } else {
-    for( i=Y_SIZE-1,size=0; i>=lastline; i-- )
+    for( i=AVI_Y_SIZE-1,size=0; i>=lastline; i-- )
     {
-      lastx = X_SIZE;
+      lastx = AVI_X_SIZE;
       if( (*ah)->lastframevalid )
       {
         // Find the last pixel we need to encode
-        for( x=X_SIZE-1; x>=0; x-- )
+        for( x=AVI_X_SIZE-1; x>=0; x-- )
         {
-          if( (*ah)->lastframe[i*X_SIZE+x] != srcdata[i*X_SIZE+x] )
+          if( (*ah)->lastframe[i*AVI_X_SIZE+x] != srcdata[i*AVI_X_SIZE+x] )
             break;
         }
         lastx = x+1;
       }
-      size = rle_encode( *ah, &srcdata[i*X_SIZE], size, lastx );
+      size = rle_encode( *ah, &srcdata[i*AVI_X_SIZE], size, lastx );
     }
     (*ah)->rledata[size-1] = 0x01;
   }
 
-  memcpy( (*ah)->lastframe, srcdata, X_SIZE*Y_SIZE );
+  memcpy( (*ah)->lastframe, srcdata, AVI_X_SIZE*AVI_Y_SIZE );
   (*ah)->lastframevalid = true;
 
   ok = true;
@@ -442,10 +440,12 @@ bool avi_addaudio( struct avi_handle **ah, int16_t *audiodata, uint32_t audiosiz
 
   if( !(*ah)->dosnd ) return true;
 
+  audiosize *= sizeof(int16_t);
+
   ok = true;
   ok &= writestr( ok, *ah, "01wb", NULL );       // Chunk header
   ok &= write32l( ok, *ah, audiosize, NULL );    // Chunk size
-  ok &= writeblk( ok, *ah, (uint8_t *)audiodata, audiosize ); // Chunk data
+  ok &= writeblk( ok, *ah, (uint8_t *)audiodata, audiosize); // Chunk data
 
   (*ah)->movisize += audiosize+8;
   (*ah)->audiolen += audiosize;
@@ -489,8 +489,8 @@ void avi_close( struct avi_handle **ah )
     rate     = ((double)((*ah)->frames) * 1000000000.0f) / time_ms;
     usperfrm = (time_ms*1000.0f) / ((double)(*ah)->frames);
 
-    ok &= seek_write32l( ok, *ah, (*ah)->offs_frmrate,  (uint32_t)(rate + .5) );
-    ok &= seek_write32l( ok, *ah, (*ah)->offs_usperfrm, (uint32_t)(usperfrm + .5) );
+    //    ok &= seek_write32l( ok, *ah, (*ah)->offs_frmrate,  (uint32_t)(rate + .5) );
+    //    ok &= seek_write32l( ok, *ah, (*ah)->offs_usperfrm, (uint32_t)(usperfrm + .5) );
 
     fclose( (*ah)->f );
   }
