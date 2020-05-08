@@ -5,6 +5,7 @@
 #include <allegro.h>
 #include <zlib.h>
 #include "atom.h"
+#include "avi.h"
 
 int fullscreen = 0;
 int winsizex = 512, winsizey = 384;
@@ -109,6 +110,9 @@ PALETTE monopal =
 	{ 55, 55, 55 }, /*Orange - actually red on the Atom*/
 };
 
+
+PALETTE *currentpal = &atompal;
+
 BITMAP *b, *b2;
 int depth;
 void initvideo()
@@ -131,23 +135,21 @@ void initvideo()
 	set_color_depth(8);
 	b = create_bitmap(256, 192);
 
-//	if (colourboard)
-//		set_palette(atompal);
-//	else
-//		set_palette(monopal);
 	updatepal();
 	set_color_depth(depth);
 
-        /* Clear the sound stream buffer before we start filling it. */
-        memset(sndstreambuf, 0, sizeof(sndstreambuf));
+	/* Clear the sound stream buffer before we start filling it. */
+	memset(sndstreambuf, 0, sizeof(sndstreambuf));
 }
 
 void updatepal()
 {
-	if (colourboard)
-		set_palette(atompal);
-	else
-		set_palette(monopal);
+   if (colourboard) {
+      currentpal = &atompal;
+   } else {
+      currentpal = &monopal;
+   }
+   set_palette(*currentpal);
 }
 
 uint8_t *ram;
@@ -167,7 +169,9 @@ uint8_t sndstreambuf[626];
 int sndstreamindex = 0;
 int sndstreamcount = 0;
 int wantmovieframe=0;
-FILE *moviefile;
+
+struct avi_handle *avifile;
+
 BITMAP *moviebitmap;
 
 uint8_t fetcheddat[32];
@@ -397,10 +401,7 @@ void drawline(int line)
 		if (savescrshot)
 		{
 			savescrshot = 0;
-			if (colourboard)
-				save_bmp(scrshotname, b, atompal);
-			else
-				save_bmp(scrshotname, b, monopal);
+            save_bmp(scrshotname, b, *currentpal);
 		}
 
 		if ((!(tapeon && fasttape) && fskipcount >= fskipmax) || frmcount == 60)
@@ -485,10 +486,6 @@ void enterfullscreen()
 
 	set_color_depth(8);
 	updatepal();
-//	if (colourboard)
-//		set_palette(atompal);
-//	else
-//		set_palette(monopal);
 }
 
 void leavefullscreen()
@@ -516,80 +513,42 @@ void leavefullscreen()
 
 	set_color_depth(8);
 	updatepal();
-//	if (colourboard)
-//		set_palette(atompal);
-//	else
-//		set_palette(monopal);
 	updatewindowsize(512, 384);
 }
 
 void startmovie()
 {
-    stopmovie();
-
-    wantmovieframe = 1;
-    moviefile = fopen(moviename, "wb");
-    if (moviefile == NULL)
-        return;
-
-    moviebitmap = create_bitmap_ex(8, 512, 384);
-    sndstreamindex = 0;
-    sndstreamcount = 0;
+   uint8_t palette[8 * 3];
+   for (int i = 0; i < 8; i++) {
+      palette[i * 3 + 0] = (*currentpal)[i].r << 2;
+      palette[i * 3 + 1] = (*currentpal)[i].g << 2;
+      palette[i * 3 + 2] = (*currentpal)[i].b << 2;
+   }
+   stopmovie();
+   wantmovieframe = 1;
+   avifile = avi_open(moviename, palette, false, false );
+   if (avifile == NULL) {
+      return;
+   }
+   moviebitmap = create_bitmap_ex(8, 512, 384);
+   sndstreamindex = 0;
+   sndstreamcount = 0;
 }
 
 void stopmovie()
 {
     wantmovieframe = 0;
-    if (moviefile != NULL) {
-        fclose(moviefile);
+    if (avifile != NULL) {
+        avi_close(&avifile);
         destroy_bitmap(moviebitmap);
-        moviefile = NULL;
     }
 }
 
 #define DEFLATE_CHUNK_SIZE 262144
 
-int deflate_bitmap(int level)
-{
-    unsigned int have;
-    z_stream strm;
-    unsigned char in[DEFLATE_CHUNK_SIZE];
-    unsigned char out[DEFLATE_CHUNK_SIZE];
-
-    /* Allocate the deflate state. */
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    if (deflateInit(&strm, level) != Z_OK)
-        return Z_ERRNO;
-
-    /* Compress the bitmap buffer. */
-    strm.avail_in = 512*384;
-    strm.next_in = moviebitmap->dat;
-
-    /* Run deflate() on the bitmap buffer, finishing the compression. */
-    strm.avail_out = DEFLATE_CHUNK_SIZE;
-    strm.next_out = out;
-    if (deflate(&strm, Z_FINISH) == Z_STREAM_ERROR)
-        return Z_ERRNO;
-
-    /* Write the length of the data. */
-    have = DEFLATE_CHUNK_SIZE - strm.avail_out;
-    fwrite(&have, sizeof(unsigned int), 1, moviefile);
-
-    if (fwrite(out, 1, have, moviefile) != have || ferror(moviefile)) {
-        deflateEnd(&strm);
-        return Z_ERRNO;
-    }
-
-    /* clean up and return */
-    deflateEnd(&strm);
-    return Z_OK;
-}
-
 void saveframe()
 {
-    if (moviefile == NULL)
+    if (avifile == NULL)
         return;
 
     int start;
@@ -604,10 +563,10 @@ void saveframe()
 
     stretch_blit(b, moviebitmap, 0, 0, 256, 192, 0, 0, 512, 384);
 
-    if (deflate_bitmap(6) != Z_OK) {
-        stopmovie();
-        return;
-    }
+    avi_addframe(&avifile, moviebitmap->dat);
+
+#if 0
+    avi_addaudio(&avifile, int16_t *audiodata, uint32_t audiosize );
 
     int remaining = sizeof(sndstreambuf) - start;
     if (remaining >= 625)
@@ -616,8 +575,10 @@ void saveframe()
         fwrite(&sndstreambuf[start], 1, remaining, moviefile);
         fwrite(sndstreambuf, 1, 625 - remaining, moviefile);
     }
+#endif
 
     sndstreamcount = 0;
+
 }
 
 void clearscreen()
