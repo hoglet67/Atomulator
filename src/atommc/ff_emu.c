@@ -59,7 +59,7 @@ static BYTE file_exists(char	name[])
 {
 	struct stat statbuf;
 
-rpclog("file_exists(%s)\n",name);
+	//rpclog("file_exists(%s)\n",name);
 
 	if(0==stat(name,&statbuf) && !S_ISDIR(statbuf.st_mode) )
 		return FR_OK;
@@ -284,7 +284,7 @@ FRESULT f_write (
 	*bw=written;
 
 	//debuglog("f_write(%d) offset=%d[%04X],result=%d\n",btw,ptrpos,ptrpos,written);
-//	HexDumpHead(buff,btw);
+	//HexDumpHead(buff,btw);
 
 	if(written<0)
 	{
@@ -358,7 +358,7 @@ FRESULT f_opendir (
 {
 	char	newpath[PATHSIZE+1];
 
-	rpclog("f_opendir(%s)\n",path);
+	//rpclog("f_opendir(%s)\n",path);
 
 	snprintf(newpath,PATHSIZE,"%s/%s",MMCPath,path);
 
@@ -423,7 +423,7 @@ FRESULT f_rename (
    char full_path_new[PATHSIZE+1];
    snprintf(full_path_old, PATHSIZE, "%s/%s", MMCPath, path_old);
    snprintf(full_path_new, PATHSIZE, "%s/%s", MMCPath, path_new);
-   rpclog("f_rename(%s, %s)\n", full_path_old, full_path_new);
+   //rpclog("f_rename(%s, %s)\n", full_path_old, full_path_new);
    if (rename(full_path_old, full_path_new) == 0) {
       return FR_OK;
    } else {
@@ -437,7 +437,7 @@ FRESULT f_mkdir (
 {
    char full_path[PATHSIZE+1];
    snprintf(full_path, PATHSIZE, "%s/%s", MMCPath, path);
-   rpclog("f_mkdir(%s)\n", full_path);
+   //rpclog("f_mkdir(%s)\n", full_path);
 #ifdef WIN32
    if (mkdir(full_path) == 0) {
 #else
@@ -461,7 +461,7 @@ void get_fileinfo_special(FILINFO *fno)
 {
 //   get_fileinfo(&dj, fno);
 
-rpclog("get_fileinfo_special()\n");
+	//rpclog("get_fileinfo_special()\n");
 	if(NULL!=openfil)
 	{
 
@@ -470,7 +470,7 @@ rpclog("get_fileinfo_special()\n");
 		fno->fdate	= 0;
 		fno->ftime	= 0;
 		fno->fattrib= get_fat_attribs((intptr_t)openfil->fs);
-rpclog("size=%d, attr=%d\n",fno->fsize,fno->fattrib);
+		//rpclog("size=%d, attr=%d\n",fno->fsize,fno->fattrib);
 	}
 }
 
