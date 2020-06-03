@@ -67,6 +67,18 @@ static BYTE file_exists(char	name[])
 		return FR_NO_PATH;
 }
 
+static BYTE dir_exists(char	name[])
+{
+	struct stat statbuf;
+
+	//rpclog("dir_exists(%s)\n",name);
+
+	if(0==stat(name,&statbuf) && S_ISDIR(statbuf.st_mode) )
+		return FR_OK;
+	else
+		return FR_NO_PATH;
+}
+
 static FRESULT validate(FIL *fp)
 {
 	if (!fp || !fp->fs) {
@@ -147,8 +159,8 @@ FRESULT f_chdir (
 		// Check that the new path is BELOW the base mmcpath
 		if(0==strncmp(BaseMMCPath,fullpath,strlen(BaseMMCPath)))
 		{
-			// And that it exists
-			if(0==access(fullpath,FR_OK))
+			// And that it exists and is a directory
+			if(dir_exists(fullpath) == FR_OK)
 			{
 				strcpy(MMCPath,fullpath);
 				result=FR_OK;
