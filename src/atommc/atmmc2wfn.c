@@ -395,6 +395,15 @@ void wfnFileClose(void)
 
 void wfnFileDelete(void)
 {
+#if (PLATFORM==PLATFORM_EMU)
+   // This is needed for Atomulator on Windows, because for some reason
+   // the AtoMMC ROM deliberately opens the file before deleting it. The
+   // comment says AtoMMC requires this, which I think is incorrect.
+   // It would be better to fix this in AtoMMC, but there will be ancient
+   // versions floating around, so fix here instead.
+   FIL *fil = &fildata[filenum];
+   f_close(fil);
+#endif
    WriteDataPort(STATUS_COMPLETE | f_unlink((const XCHAR*)&globalData[0]));
 }
 
