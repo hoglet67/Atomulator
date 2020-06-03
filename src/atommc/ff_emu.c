@@ -67,6 +67,14 @@ rpclog("file_exists(%s)\n",name);
 		return FR_NO_PATH;
 }
 
+static FRESULT validate(FIL *fp)
+{
+	if (!fp || !fp->fs) {
+		return FR_INVALID_OBJECT;
+	}
+	return FR_OK;
+}
+
 static void update_FIL(FIL	*fil,
 					   int	fp,
 					   int	updatefp)
@@ -227,6 +235,12 @@ FRESULT f_read (
 	int	bytesread;
 	int	error;
 
+	/* Check validity of the file object */
+	FRESULT res;
+	if ((res = validate(fp)) != FR_OK) {
+		return res;
+	}
+
 	ptrpos=fp->fptr;
 	bytesread=read((intptr_t)fp->fs,buff,btr);
 	*br=bytesread;
@@ -255,6 +269,12 @@ FRESULT f_write (
 	DWORD	ptrpos;
 	int		written;
 	int 	error;
+
+	/* Check validity of the file object */
+	FRESULT res;
+	if ((res = validate(fp)) != FR_OK) {
+		return res;
+	}
 
 	ptrpos=fp->fptr;
 
@@ -375,6 +395,11 @@ FRESULT f_lseek (
 	DWORD ofs		/* File pointer from top of file */
 )
 {
+	/* Check validity of the file object */
+	FRESULT res;
+	if ((res = validate(fp)) != FR_OK) {
+		return res;
+	}
 	lseek((intptr_t)fp->fs,ofs,SEEK_SET);
 	update_FIL(fp,0,0);
 	return FR_OK;
