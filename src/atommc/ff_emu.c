@@ -300,27 +300,32 @@ FRESULT f_unlink (
 	const XCHAR *path		/* Pointer to the file or directory path */
 )
 {
+	struct stat statbuf;
 	char del_path[PATHSIZE+1];
-	int open_mode=0;
 
 /* CHANGED FOR SP4 */
 
-	int result=0;
-
-	int newfile;
-
 	// Get real path of file and check to see if it exists
-	snprintf(del_path,PATHSIZE,"%s/%s",MMCPath,path);
+	snprintf(del_path, PATHSIZE, "%s/%s", MMCPath, path);
 
-	//debuglog("f_unlink(%s)\n",del_path);
+	// Check that path exists
+	if (stat(del_path, &statbuf)) {
+		return FR_NO_PATH;
+	}
 
-      result=unlink(del_path);
+	// Try to delete it
+	if (S_ISDIR(statbuf.st_mode)) {
+      rmdir(del_path);
+	} else {
+      unlink(del_path);
+	}
 
-      if (result == 0)
-         return FR_OK;
-      else
-
-      return get_result(errno);
+	// Check that path no longer exists
+	if (stat(del_path, &statbuf)) {
+		return FR_OK;
+	} else {
+		return FR_DENIED;
+	}
 
 /* END SP4*/
 
