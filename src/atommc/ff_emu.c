@@ -196,6 +196,12 @@ FRESULT f_open (
 			return FR_NO_FILE;
 	}
 
+	// To prevent leaking of file descriptors, leading to
+	// files that cannot be deleted on Windows
+	if (fp->fs) {
+		f_close(fp);
+	}
+
 	newfile=open(open_path,open_mode | O_BINARY,S_IRWXU);
 	update_FIL(fp,newfile,1);
 
