@@ -55,7 +55,7 @@ void HexDumpHead(const void 	*Buff,
 
 #endif
 
-static BYTE file_exists(char	name[])
+static BYTE file_exists(char *name)
 {
 	struct stat statbuf;
 
@@ -67,7 +67,7 @@ static BYTE file_exists(char	name[])
 		return FR_NO_PATH;
 }
 
-static BYTE dir_exists(char	name[])
+static BYTE dir_exists(char *name)
 {
 	struct stat statbuf;
 
@@ -449,7 +449,16 @@ FRESULT f_mkdir (
 {
    char full_path[PATHSIZE+1];
    snprintf(full_path, PATHSIZE, "%s/%s", MMCPath, path);
+
    //rpclog("f_mkdir(%s)\n", full_path);
+
+   if (file_exists(full_path) == FR_OK) {
+      return FR_EXIST;
+   }
+   if (dir_exists(full_path) == FR_OK) {
+      return FR_EXIST;
+   }
+
 #ifdef WIN32
    if (mkdir(full_path) == 0) {
 #else
