@@ -150,8 +150,13 @@ FRESULT f_chdir (
 	char	fullpath[PATHSIZE+1];
 	FRESULT	result = FR_NO_PATH;
 
-	// add new directory to current
-	snprintf(newpath,PATHSIZE,"%s/%s",MMCPath,path);
+	if (*path == '/' || *path == '\\') {
+		// append the new directory to the root path
+		snprintf(newpath,PATHSIZE,"%s/%s",BaseMMCPath,path);
+	} else {
+		// append the new directory to current path
+		snprintf(newpath,PATHSIZE,"%s/%s",MMCPath,path);
+	}
 
 	// Resolve the newpath
 	if(NULL!=saferealpath(newpath,fullpath))
