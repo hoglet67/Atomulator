@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#define ATOMULATOR_VERSION	"Atomulator 1.30"
+#define ATOMULATOR_VERSION	"Atomulator 1.31"
 
 #define MAXPATH	512
 
