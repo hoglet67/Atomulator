@@ -148,6 +148,14 @@ char *saferealpath(const char *path, char *resolved_path)
 			resolved_path[idx] = '/';
 	}
 
+	// Strip off any trailing slashes
+	idx = strlen(resolved_path) - 1; // start at the index of the last character
+	while (idx > 1 && resolved_path[idx] == '/')
+	{
+		resolved_path[idx] = 0; // shorten then string by one character
+		idx--;
+	}
+
 	return resolved_path;
 #else
 	return realpath(path, resolved_path);
