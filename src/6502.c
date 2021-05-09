@@ -766,7 +766,7 @@ void exec6502(int linenum, int cpl)
 	{
 //                rpclog("Exec line %i\n",lines);
 		lns = lines;
-		if (lines < 262 || lines == 311)
+		if (lines <= 224)
 			drawline(lines);
 		// DMB: poll sound called every half line, i.e. 32us / 31.250KHz
 		for (halfline = 0; halfline < 2; halfline++) {

@@ -550,7 +550,7 @@ void dodebugger(int linenum)
 		debugdisaddr = d;
 		// Force the screen to be refreshed before each debug command
 		for (lines = 0; lines < linenum; lines++) {
-			if (lines < 262 || lines == 311) {
+			if (lines <= 224) {
 				drawline(lines);
 			}
 		}

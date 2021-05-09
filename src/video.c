@@ -168,7 +168,64 @@ struct avi_handle *avifile;
 
 BITMAP *moviebitmap;
 
-uint8_t fetcheddat[32];
+// Table of when to increment the address (every N lines)
+static int lines_per_row[16] = {
+	12,
+	3,   // 1a   64x64 in 4 cols
+	12,
+	3,   // 1   128x64 in 2 cols
+	12,
+	3,   // 2a  128x64 in 4 cols
+	12,
+	2,   // 2   128x96 in 2 cols
+	12,
+	2,   // 3a  128x96 in 4 cols
+	12,
+	1,   // 3  128x192 in 2 cols
+	12,
+	1,   // 4a 128x192 in 4 cols
+	12,
+	1	// 4  256x192 in 2 cols
+};
+
+static int bytes_per_row[16] = {
+	32,
+	16,  // 1a   64x64 in 4 cols
+	32,
+	16,  // 1   128x64 in 2 cols
+	32,
+	32,  // 2a  128x64 in 4 cols
+	32,
+	16,  // 2   128x96 in 2 cols
+	32,
+	32,  // 3a  128x96 in 4 cols
+	32,
+	16,  // 3  128x192 in 2 cols
+	32,
+	32,  // 4a 128x192 in 4 cols
+	32,
+	32   // 4  256x192 in 2 cols
+};
+
+static int mask_per_row[16] = {
+	0xFFE0,
+	0xFFF0,  // 1a   64x64 in 4 cols
+	0xFFE0,
+	0xFFF0,  // 1   128x64 in 2 cols
+	0xFFE0,
+	0xFFE0,  // 2a  128x64 in 4 cols
+	0xFFE0,
+	0xFFF0,  // 2   128x96 in 2 cols
+	0xFFE0,
+	0xFFE0,  // 3a  128x96 in 4 cols
+	0xFFE0,
+	0xFFF0,  // 3  128x192 in 2 cols
+	0xFFE0,
+	0xFFE0,  // 4a 128x192 in 4 cols
+	0xFFE0,
+	0xFFE0   // 4  256x192 in 2 cols
+};
+
 
 void drawline(int line)
 {
@@ -177,18 +234,29 @@ void drawline(int line)
 	uint8_t temp;
 	static int addr = 0x8000;
 
-	if (!line)
-		vbl = cy = sy = 0;
+	// At the start of frame, initialize the address pointer to 0x8000 unconditionally
+	if (!line) {
+	   addr = 0x8000;
+	   vbl = cy = sy = 0;
+	}
 
 	if (line < 192)
 	{
+		// For repeated lines, decrement the address pointer
+		if ((line % lines_per_row[gfxmode]) != 0) {
+			addr -= bytes_per_row[gfxmode];
+		}
+
+		// Make sure address pointer has the right alignment
+		addr &= mask_per_row[gfxmode];
+
 		switch (gfxmode)
 		{
 		case 0: case 2: case 4: case 6:		 /*Text mode*/
 		case 8: case 10: case 12: case 14:
 			for (x = 0; x < 256; x += 8)
 			{
-				chr = fetcheddat[x >> 3];
+				chr = ram[addr + (x >> 3)];
 				if (chr & 0x40)
 				{
 					temp = chr;
@@ -208,7 +276,7 @@ void drawline(int line)
 				else
 				{
 					chr = ((chr & 0x3F) * 12) + sy;
-					if (fetcheddat[x >> 3] & 0x80)
+					if (ram[addr + (x >> 3)] & 0x80)
 					{
 						for (xx = 0; xx < 8; xx++)
 						{
@@ -229,49 +297,32 @@ void drawline(int line)
 			{
 				sy = 0;
 				cy++;
-				addr += 32;
 			}
-			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[addr + x];
 			break;
 
 		/* Propper graphics modes */
 		case 1:		 /*64x64, 4 colours*/
 			for (x = 0; x < 256; x += 16)
 			{
-				temp = fetcheddat[x >> 3];
+				temp = ram[addr + (x >> 4)];
 				for (xx = 0; xx < 16; xx += 4)
 				{
 					b->line[line][x + xx] = b->line[line][x + xx + 1] = b->line[line][x + xx + 2] = b->line[line][x + xx + 3] = semigrcol[(temp >> 6) | (css << 1)];
 					temp <<= 2;
 				}
 			}
-
-			if ((line % 3) == 2) {
-				addr += 16;
-			}
-			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[addr + (x >> 1)];
-
 			break;
 
 		case 3:		 /*128x64, 2 colours*/
 			for (x = 0; x < 256; x += 16)
 			{
-				temp = fetcheddat[x >> 3];
+				temp = ram[addr + (x >> 4)];
 				for (xx = 0; xx < 16; xx += 2)
 				{
 					b->line[line][x + xx] = b->line[line][x + xx + 1] = (temp & 0x80) ? grcol[css | 1] : grcol[css];
 					temp <<= 1;
 				}
 			}
-
-			if ((line % 3) == 2) {
-				addr += 16;
-			}
-			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[addr + (x >> 1)];
-
 			break;
 
 /* PATCH FOR CORRECT CLEAR2a */
@@ -279,19 +330,13 @@ void drawline(int line)
 		case 5: /*128x64, 4 colours*/
 			for (x = 0; x < 256; x += 8)
 			{
-				temp = fetcheddat[x >> 3];
+				temp = ram[addr + (x >> 3)];
 				for (xx = 0; xx < 8; xx += 2)
 				{
 					b->line[line][x + xx] = b->line[line][x + xx + 1] = semigrcol[(temp >> 6) |(css << 1)];
 					temp <<= 2;
 				}
 			}
-
-			if ((line % 3) == 2) {
-				addr += 32;
-			}
-			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[addr + x];
 			break;
 
 /* PATCH CHANGES */
@@ -299,101 +344,66 @@ void drawline(int line)
 		case 7:		 /*128x96, 2 colours*/
 			for (x = 0; x < 256; x += 16)
 			{
-				temp = fetcheddat[x >> 3];
+				temp = ram[addr + (x >> 4)];
 				for (xx = 0; xx < 16; xx += 2)
 				{
 					b->line[line][x + xx] = b->line[line][x + xx + 1] = (temp & 0x80) ? grcol[css | 1] : grcol[css];
 					temp <<= 1;
 				}
 			}
-
-			if ((line % 2) == 1) {
-				addr += 16;
-			}
-			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[addr + (x >> 1)];
-
 			break;
 
 		case 9:		 /*128x96, 4 colours*/
 			for (x = 0; x < 256; x += 8)
 			{
-				temp = fetcheddat[x >> 3];
+				temp = ram[addr + (x >> 3)];
 				for (xx = 0; xx < 8; xx += 2)
 				{
 					b->line[line][x + xx] = b->line[line][x + xx + 1] = semigrcol[(temp >> 6) | (css << 1)];
 					temp <<= 2;
 				}
 			}
-
-			if ((line % 2) == 1) {
-				addr += 32;
-			}
-			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[addr + x];
-
 			break;
 
 		case 11:		 /*128x192, 2 colours*/
 			for (x = 0; x < 256; x += 16)
 			{
-				temp = fetcheddat[x >> 3];
+				temp = ram[addr + (x >> 4)];
 				for (xx = 0; xx < 16; xx += 2)
 				{
 					b->line[line][x + xx] = b->line[line][x + xx + 1] = (temp & 0x80) ? grcol[css | 1] : grcol[css];
 					temp <<= 1;
 				}
 			}
-
-
-			addr += 16;
-			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[addr + (x >> 1)];
-
 			break;
 
 		case 13:		 /*128x192, 4 colours*/
 			for (x = 0; x < 256; x += 8)
 			{
-				temp = fetcheddat[x >> 3];
+				temp = ram[addr + (x >> 3)];
 				for (xx = 0; xx < 8; xx += 2)
 				{
 					b->line[line][x + xx] = b->line[line][x + xx + 1] = semigrcol[(temp >> 6) | (css << 1)];
 					temp <<= 2;
 				}
 			}
-
-
-			addr += 32;
-			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[addr + x];
-
 			break;
 
 		case 15:		 /*256x192, 2 colours*/
 			for (x = 0; x < 256; x += 8)
 			{
-				temp = fetcheddat[x >> 3];
+				temp = ram[addr + (x >> 3)];
 				for (xx = 0; xx < 8; xx++)
 				{
 					b->line[line][x + xx] = (temp & 0x80) ? grcol[css | 1] : grcol[css];
 					temp <<= 1;
 				}
 			}
-
-			addr += 32;
-			// rpclog("addr=%04X\n",addr);
-			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[addr + x];
-
 			break;
-
-//                        default:
-//                        printf("Bad GFX mode %i\n",gfxmode);
-//                        dumpregs();
-//                        dumpram();
-//                        exit(-1);
 		}
+
+		// After every line, increment the address pointer
+		addr += bytes_per_row[gfxmode];
 	}
 
 	if (line == 192)
@@ -438,32 +448,6 @@ void drawline(int line)
 
 	if (line == 224)
 		vbl = 0;
-
-	if ((line == 261 && !palnotntsc) || line == 311)
-	{
-		switch (gfxmode)
-		{
-
-/* PATCH FOR CORRECT CLEAR2a */
-
-		case 0: case 2: case 4: case 6:         /*Text mode*/
-		case 8: case 10: case 12: case 14:
-		case 5: case 9: case 13: case 15:
-			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[0x8000 + x];
-			break;
-/* END PATCH */
-
-		case 1: case 3: case 7: case 11:         /*16-byte per line*/
-			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[0x8000 + (x >> 1)];
-			break;
-
-		}
-		addr = 0x8000;
-	}
-
-//        sndbuffer[line]=(speaker)?255:0;
 }
 
 /*void mixaudio(uint8_t *p)
