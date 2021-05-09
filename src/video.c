@@ -172,9 +172,10 @@ uint8_t fetcheddat[32];
 
 void drawline(int line)
 {
-	int addr, chr, col;
+	int chr, col;
 	int x, xx;
 	uint8_t temp;
+	static int addr = 0x8000;
 
 	if (!line)
 		vbl = cy = sy = 0;
@@ -183,9 +184,8 @@ void drawline(int line)
 	{
 		switch (gfxmode)
 		{
-		case 0: case 2: case 4: case 6:         /*Text mode*/
+		case 0: case 2: case 4: case 6:		 /*Text mode*/
 		case 8: case 10: case 12: case 14:
-			addr = (cy << 5) + 0x8000;
 			for (x = 0; x < 256; x += 8)
 			{
 				chr = fetcheddat[x >> 3];
@@ -229,14 +229,14 @@ void drawline(int line)
 			{
 				sy = 0;
 				cy++;
+				addr += 32;
 			}
-			addr = (cy << 5) + 0x8000;
 			for (x = 0; x < 32; x++)
-				fetcheddat[x] = ram[addr++];
+				fetcheddat[x] = ram[addr + x];
 			break;
 
 		/* Propper graphics modes */
-		case 1:         /*64x64, 4 colours*/
+		case 1:		 /*64x64, 4 colours*/
 			for (x = 0; x < 256; x += 16)
 			{
 				temp = fetcheddat[x >> 3];
@@ -247,13 +247,15 @@ void drawline(int line)
 				}
 			}
 
-			addr = (((line + 1) / 3) << 4) | 0x8000;
+			if ((line % 3) == 2) {
+				addr += 16;
+			}
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[addr + (x >> 1)];
 
 			break;
 
-		case 3:         /*128x64, 2 colours*/
+		case 3:		 /*128x64, 2 colours*/
 			for (x = 0; x < 256; x += 16)
 			{
 				temp = fetcheddat[x >> 3];
@@ -264,7 +266,9 @@ void drawline(int line)
 				}
 			}
 
-			addr = (((line + 1) / 3) << 4) | 0x8000;
+			if ((line % 3) == 2) {
+				addr += 16;
+			}
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[addr + (x >> 1)];
 
@@ -283,14 +287,16 @@ void drawline(int line)
 				}
 			}
 
-			addr = (((line + 1) / 3) << 5) | 0x8000;
+			if ((line % 3) == 2) {
+				addr += 32;
+			}
 			for (x = 0; x < 32; x++)
-			fetcheddat[x] = ram[addr + x];
+				fetcheddat[x] = ram[addr + x];
 			break;
 
 /* PATCH CHANGES */
 
-		case 7:         /*128x96, 2 colours*/
+		case 7:		 /*128x96, 2 colours*/
 			for (x = 0; x < 256; x += 16)
 			{
 				temp = fetcheddat[x >> 3];
@@ -301,13 +307,15 @@ void drawline(int line)
 				}
 			}
 
-			addr = (((line + 1) >> 1) << 4) | 0x8000;
+			if ((line % 2) == 1) {
+				addr += 16;
+			}
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[addr + (x >> 1)];
 
 			break;
 
-		case 9:         /*128x96, 4 colours*/
+		case 9:		 /*128x96, 4 colours*/
 			for (x = 0; x < 256; x += 8)
 			{
 				temp = fetcheddat[x >> 3];
@@ -318,14 +326,15 @@ void drawline(int line)
 				}
 			}
 
-			addr = (((line + 1) >> 1) << 5) | 0x8000;
-
+			if ((line % 2) == 1) {
+				addr += 32;
+			}
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[addr + x];
 
 			break;
 
-		case 11:         /*128x192, 2 colours*/
+		case 11:		 /*128x192, 2 colours*/
 			for (x = 0; x < 256; x += 16)
 			{
 				temp = fetcheddat[x >> 3];
@@ -336,13 +345,14 @@ void drawline(int line)
 				}
 			}
 
-			addr = ((line + 1) << 4) | 0x8000;
+
+			addr += 16;
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[addr + (x >> 1)];
 
 			break;
 
-		case 13:         /*128x192, 4 colours*/
+		case 13:		 /*128x192, 4 colours*/
 			for (x = 0; x < 256; x += 8)
 			{
 				temp = fetcheddat[x >> 3];
@@ -353,14 +363,14 @@ void drawline(int line)
 				}
 			}
 
-			addr = ((line + 1) << 5) | 0x8000;
 
+			addr += 32;
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[addr + x];
 
 			break;
 
-		case 15:         /*256x192, 2 colours*/
+		case 15:		 /*256x192, 2 colours*/
 			for (x = 0; x < 256; x += 8)
 			{
 				temp = fetcheddat[x >> 3];
@@ -371,7 +381,7 @@ void drawline(int line)
 				}
 			}
 
-			addr = ((line + 1) << 5) | 0x8000;
+			addr += 32;
 			// rpclog("addr=%04X\n",addr);
 			for (x = 0; x < 32; x++)
 				fetcheddat[x] = ram[addr + x];
@@ -450,6 +460,7 @@ void drawline(int line)
 			break;
 
 		}
+		addr = 0x8000;
 	}
 
 //        sndbuffer[line]=(speaker)?255:0;
