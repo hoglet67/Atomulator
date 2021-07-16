@@ -465,6 +465,11 @@ int gui_keydefault()
 
 	for (c = 0; c < 128; c++)
 		keylookup[c] = c;
+
+	// Add some additional mappings
+	keylookup[KEY_BACKSLASH2] = KEY_BACKSLASH;
+	keylookup[KEY_COLON] = KEY_SEMICOLON;
+
 	return D_O_K;
 }
 
