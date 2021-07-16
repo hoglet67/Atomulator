@@ -341,6 +341,8 @@ void at_process(void)
                      JOYSTICK ^= 16;
                   }
               	  WriteDataPort(JOYSTICK);
+               } else {
+                  WriteDataPort(PORTB);
                }
 #else
                WriteDataPort(PORTB);
