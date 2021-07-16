@@ -1,5 +1,5 @@
-Atomulator v1.1
-~~~~~~~~~~~~~~~
+Atomulator
+~~~~~~~~~~
 
 Atomulator is an emulator of an Acorn Atom - the first micro from Acorn in 1980.
 
@@ -7,24 +7,22 @@ It emulates a 12+16k Atom with colour board, disc pack, and optional BBC BASIC m
 
 Atomulator is licensed under the GPL, see COPYING for more details.
 
-New in version 1.1
-~~~~~~~~~~~~~~~~~~
+Command Line Options
+~~~~~~~~~~~~~~~~~~~~
 
-Support for Ramoth RAM-ROM clockboost board, which extends the ram to 32K and 
-provides paged roms at #A000
-
-Support for the AtoMMC interface, emulated as a folder on the disk Atomulator is on.
-
-Support for the AtomSID interface.
-
-Fixed minor errors in some graphic mode emulations.
-
-Fixed issue with IRQ usage and reset.
+-help           - show help
+-fullscreen     - start in fullscreen mode
+-disc disc.ssd  - load disc.ssd into drives :0/:2
+-disc1 disc.ssd - load disc.ssd into drives :1/:3
+-tape tape.uef  - load tape.uef
+-fasttape       - set tape speed to fast
+-autoboot       - cause atommc to auto boot on power on reset
+-debug          - start debugger
 
 Usage
 ~~~~~
 
-Just run Atom.exe. The Atom isn't a very friendly machine, so some basic tips :
+Just run Atomulator.exe. The Atom isn't a very friendly machine, so some basic tips :
 
 
 Loading a program off tape :
@@ -87,46 +85,46 @@ Tape -> Load tape...           - select a new CSW or UEF tape image
 
 Disc -> Load disc 0/2          - load a disc image into drives 0 and 2.
         Load disc 1/3          - load a disc image into drives 1 and 3.
-	Eject disc 0/2         - removes disc image from drives 0 and 2.
-	Eject disc 1/3         - removes disc image from drives 1 and 3.
-	New disc 0/2   	       - creates a new DFS/ADFS disc and loads it into drives 0 and 2.
-	New disc 1/3           - creates a new DFS/ADFS disc and loads it into drives 1 and 3.
-	Write protect disc 0/2 - toggles write protection on drives 0 and 2.
-	Write protect disc 1/3 - toggles write protection on drives 1 and 3.
-	Default write protect  - determines whether loaded discs are write protected by default
+        Eject disc 0/2         - removes disc image from drives 0 and 2.
+        Eject disc 1/3         - removes disc image from drives 1 and 3.
+        New disc 0/2           - creates a new DFS/ADFS disc and loads it into drives 0 and 2.
+        New disc 1/3           - creates a new DFS/ADFS disc and loads it into drives 1 and 3.
+        Write protect disc 0/2 - toggles write protection on drives 0 and 2.
+        Write protect disc 1/3 - toggles write protection on drives 1 and 3.
+        Default write protect  - determines whether loaded discs are write protected by default
 
 Settings ->
-	Video ->    Snow              - emulate authentic Atom snow
-		    Fullscreen	      - switches to full screen mode. Use ALT-ENTER to leave
+        Video ->    Snow              - emulate authentic Atom snow
+                    Fullscreen        - switches to full screen mode. Use ALT-ENTER to leave
 
         Hardware -> Colour board      - emulates an Atom colour board. This allows colour in several 
                                         video modes, and slows video refresh from 60hz to 50hz
                     BBC BASIC         - emulates a BBC BASIC language board. This allows a superior
                                         BASIC, but the disc drive is not functional in BBC BASIC mode
-					(this seems to be the case with the real machine also)
-	
-	RamRom ->   RAM/ROM Enabled   - Enables emulation of the Ramoth RAM/ROM clockboost board.
-		    RAM/ROM dosrom Enabled			
-				      - Enables the AtoMMC #E000 rom instead of Atom DOS.
+                                        (this seems to be the case with the real machine also)
+        
+        RamRom ->   RAM/ROM Enabled   - Enables emulation of the Ramoth RAM/ROM clockboost board.
+                    RAM/ROM dosrom Enabled                      
+                                      - Enables the AtoMMC #E000 rom instead of Atom DOS.
 
-	Sound ->    Atom sound        - enables the sound output from the Atom
+        Sound ->    Atom sound        - enables the sound output from the Atom
                     Tape sound        - enables the sound from tape
-		    AtomSID           - enables the AtomSID interface.
+                    AtomSID           - enables the AtomSID interface.
 
                     reSID configuration :
-			Model 	      - choose between many different models of SID. Many tunes sound quite 
-					different depending on the model chosen.
-			Sample method - choose between interpolation and resampling. Resampling is in theory 
-					higher quality, but I can't tell the difference.
+                        Model         - choose between many different models of SID. Many tunes sound quite 
+                                        different depending on the model chosen.
+                        Sample method - choose between interpolation and resampling. Resampling is in theory 
+                                        higher quality, but I can't tell the difference.
                     
-		    Disc noise        - enables disc drive noise simulation
-  		    Disc drive type   - choose between sound from 5.25" drive or 3.5" drive.
-		    Disc drive volume - set the relative volume of the disc drive noise.
+                    Disc noise        - enables disc drive noise simulation
+                    Disc drive type   - choose between sound from 5.25" drive or 3.5" drive.
+                    Disc drive volume - set the relative volume of the disc drive noise.
 
 
 
-	Keyboard -> Redefine keys     - redefine PC -> Atom key mapping
-		    Default mapping   - restore the default keyboard mapping
+        Keyboard -> Redefine keys     - redefine PC -> Atom key mapping
+                    Default mapping   - restore the default keyboard mapping
 
 Misc -> Debugger (Windows only) - open the built-in 6502 debugger. Type '?' for a list of commands
         Break (Windows only)    - break into the debugger
