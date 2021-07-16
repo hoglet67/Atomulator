@@ -160,9 +160,10 @@ void atom_init(int argc, char **argv)
 
 	for (c = 1; c < argc; c++)
 	{
-		if (!strcasecmp(argv[c], "--help"))
+		if (!strcasecmp(argv[c], "-help") || !strcasecmp(argv[c], "--help"))
 		{
 			printf("%s command line options :\n\n",ATOMULATOR_VERSION);
+			printf("-fullscreen     - start in fullscreen mode\n");
 			printf("-disc disc.ssd  - load disc.ssd into drives :0/:2\n");
 			printf("-disc1 disc.ssd - load disc.ssd into drives :1/:3\n");
 			printf("-tape tape.uef  - load tape.uef\n");
@@ -175,6 +176,10 @@ void atom_init(int argc, char **argv)
 		if (!strcasecmp(argv[c], "-tape"))
 		{
 			tapenext = 2;
+		}
+		else if (!strcasecmp(argv[c], "-fullscreen"))
+		{
+			fullscreen = 1;
 		}
 		else if (!strcasecmp(argv[c], "-disc") || !strcasecmp(argv[c], "-disk"))
 		{
@@ -217,6 +222,9 @@ void atom_init(int argc, char **argv)
 	loadroms();
 	reset6502();
 	initvideo();
+	if (fullscreen) {
+		enterfullscreen();
+	}
 	init8255();
 	disc_reset();
 	reset8271();
