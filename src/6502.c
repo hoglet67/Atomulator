@@ -31,10 +31,7 @@ uint8_t *akernel_ptr;
 /*6502 registers*/
 uint8_t a, x, y, s;
 uint16_t pc;
-/*struct
-   {
-        int c,z,i,d,v,n;
-   } p;*/
+PS p;
 
 /*Memory structures*/
 uint8_t *mem[0x100];
