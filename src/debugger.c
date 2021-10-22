@@ -7,6 +7,7 @@
 #define writemem(a, v) writememl(a, v)
 
 int debug;
+int debugon;
 int indebug = 0;
 extern int fcount;
 int debug_on_brk = 0;
