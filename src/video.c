@@ -149,12 +149,12 @@ void updatepal()
    set_palette(*currentpal);
 }
 
-uint8_t *ram;
+extern uint8_t *ram; /* definition in 6502.c */
 int cy = 0, sy = 0;
 int textcol[4] = { 0, 1, 0, 8 };
 int semigrcol[8] = { 1, 2, 3, 4, 5, 6, 7, 8 };
 int grcol[4] = { 0, 1, 0, 5 };
-int tapeon;
+extern int tapeon; /* defined in 6502.c */
 int frmcount;
 int fskipcount = 0;
 

@@ -5,11 +5,10 @@
 #include "atom.h"
 #include "1770.h"
 
-extern int output;
+extern int output; /* defined in 6502.c */
 #ifndef ABS
 #define ABS(x) (((x)>0)?(x):-(x))
 #endif
-int motoron,fdctime,disctime,motorspin;
 
 void callback1770();
 void data1770(uint8_t dat);
@@ -36,7 +35,7 @@ struct
         int fifo;
 } wd1770;
 
-int byte;
+static int byte;
 
 void reset1770()
 {

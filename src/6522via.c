@@ -41,7 +41,6 @@ void updateIFR()
 }
 
 int timerout = 1;
-int lns;
 void updatetimers()
 {
 	if (via.t1c < -3)

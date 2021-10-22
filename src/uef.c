@@ -9,7 +9,7 @@
 void findfilenamesuef();
 int startchunk;
 int blocks = 0;
-int tapelcount, tapellatch, pps;
+static int tapelcount, tapellatch, pps; /* static because csw.c has the exact same definitions */
 //int intone=0;
 
 #if (ZLIB_VERNUM > 0x1250)
@@ -24,9 +24,9 @@ void inituef()
 	uef = NULL;
 }
 
-int inchunk = 0, chunkid = 0, chunklen = 0;
-int chunkpos = 0, chunkdatabits = 8;
-float chunkf;
+static int inchunk = 0, chunkid = 0, chunklen = 0;
+static int chunkpos = 0, chunkdatabits = 8;
+static float chunkf;
 
 int getftell()
 {

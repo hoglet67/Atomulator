@@ -21,39 +21,39 @@ void startmovie();
 void saveframe();
 void stopmovie();
 
-int vbl;
-int gfxmode;
-int css;
-int speaker;
-uint8_t lastdat;
-int cswena;
-int cswpoint;
+extern int vbl;
+extern int gfxmode;
+extern int css;
+extern int speaker;
+extern uint8_t lastdat;
+extern int cswena;
+extern int cswpoint;
 
 //#define printf rpclog
 
-int colourboard;
-int palnotntsc;
+extern int colourboard;
+extern int palnotntsc;
 
 // SP3 FOR JOYSTICK SUPPORT
 
-int joyst;
+extern int joyst;
 
 // END SP3
 
 // SP10 FOR KEYBOARDJOYSTICK SUPPORT
 
-int keyjoyst;
+extern int keyjoyst;
 
 // END SP10
 
-int fasttape;
-int ramrom_enable;
-int RR_jumpers;
-int RR_enables;
+extern int fasttape;
+extern int ramrom_enable;
+extern int RR_jumpers;
+extern int RR_enables;
 
 void set_dosrom_ptr();
 
-int interrupt;
+extern int interrupt;
 
 typedef struct VIA
 {
@@ -66,21 +66,22 @@ typedef struct VIA
 	uint8_t porta, portb;
 } VIA;
 
-VIA via;
+extern VIA via;
 
-int fetchc[65536], readc[65536], writec[65536];
-uint16_t pc;
-uint8_t a, x, y, s;
-struct
+extern int fetchc[65536], readc[65536], writec[65536];
+extern uint16_t pc;
+extern uint8_t a, x, y, s;
+typedef struct
 {
 	int c, z, i, d, v, n;
-} p;
+} PS;
+extern PS p;
 extern int nmi;
-int debug, debugon;
+extern int debug, debugon;
 
 extern uint8_t opcode;
 
-int spon, tpon;
+extern int spon, tpon;
 
 /* For 1770 based GDOS */
 //#define WD1770 1
@@ -95,15 +96,15 @@ extern int vid_top;
 #define SET_VID_TOP()	{vid_top=((vid_ramflag+1)*0x0400)+0x8000;}	// Last video RAM address.
 // end RAM Config
 
-void (*fdccallback)();
-void (*fdcdata)(uint8_t dat);
-void (*fdcspindown)();
-void (*fdcfinishread)();
-void (*fdcnotfound)();
-void (*fdcdatacrcerror)();
-void (*fdcheadercrcerror)();
-void (*fdcwriteprotect)();
-int (*fdcgetdata)(int last);
+extern void (*fdccallback)();
+extern void (*fdcdata)(uint8_t dat);
+extern void (*fdcspindown)();
+extern void (*fdcfinishread)();
+extern void (*fdcnotfound)();
+extern void (*fdcdatacrcerror)();
+extern void (*fdcheadercrcerror)();
+extern void (*fdcwriteprotect)();
+extern int (*fdcgetdata)(int last);
 
 extern int writeprot[2], fwriteprot[2];
 
@@ -153,7 +154,7 @@ extern int fdctime;
 extern int motoron;
 extern int disctime;
 
-struct
+typedef struct
 {
 	void (*seek)(int drive, int track);
 	void (*readsector)(int drive, int sector, int track, int side, int density);
@@ -161,7 +162,9 @@ struct
 	void (*readaddress)(int drive, int track, int side, int density);
 	void (*format)(int drive, int track, int side, int density);
 	void (*poll)();
-} drives[2];
+} DRIVE;
+
+extern DRIVE drives[2];
 
 extern int curdrive;
 
