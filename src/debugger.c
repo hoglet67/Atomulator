@@ -10,6 +10,7 @@ int debug;
 int indebug = 0;
 extern int fcount;
 int debug_on_brk = 0;
+int fetchc[65536], readc[65536], writec[65536]; /* used to visualize fetch/read/write cycles */
 
 #ifdef WIN32
 #include <process.h>
