@@ -7,6 +7,7 @@
 #include "atom.h"
 
 int motoron = 0, fdctime = 0, motorspin = 0, curdrive = 0, disctime = 0; /* only curdrive is used in this file, the rest is used from other files. */
+DRIVE drives[2];
 
 struct
 {
