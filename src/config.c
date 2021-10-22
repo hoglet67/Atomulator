@@ -64,6 +64,7 @@
 int snow;
 int defaultwriteprot;
 char discfns[2][260];
+int spon, tpon;
 
 struct stat	statbuf;
 

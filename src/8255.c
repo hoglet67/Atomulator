@@ -17,7 +17,11 @@ static int inchunk; /* when not static would conflict with definition in uef.c *
 int intone = 0, tapedat, hightone = 0;
 int bytevalid = 0, bitvalid = 0;
 uint16_t databyte;
+int vbl;
+int gfxmode;
 int css;
+uint8_t lastdat;
+static int speaker;
 
 int keyl[128];
 int keys[16][6] =

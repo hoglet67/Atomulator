@@ -24,7 +24,6 @@ void stopmovie();
 extern int vbl;
 extern int gfxmode;
 extern int css;
-extern int speaker;
 extern uint8_t lastdat;
 extern int cswena;
 extern int cswpoint;
