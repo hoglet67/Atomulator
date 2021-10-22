@@ -73,7 +73,7 @@ extern uint16_t pc;
 extern uint8_t a, x, y, s;
 typedef struct
 {
-	int c, z, i, d, v, n;
+	int c : 1, z : 1, i : 1, d : 1, v : 1, n : 1;
 } PS;
 extern PS p;
 extern int nmi;

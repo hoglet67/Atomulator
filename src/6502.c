@@ -662,7 +662,7 @@ void dumpregs()
 	printf("Status : %c%c%c%c%c%c\n", (p.n) ? 'N' : ' ', (p.v) ? 'V' : ' ', (p.d) ? 'D' : ' ', (p.i) ? 'I' : ' ', (p.z) ? 'Z' : ' ', (p.c) ? 'C' : ' ');
 }
 
-#define setzn(v) p.z = !(v); p.n = (v) & 0x80
+#define setzn(v) p.z = !(v); p.n = !!((v) & 0x80)
 
 #define push(v) ram[0x100 + (s--)] = v
 #define pull()  ram[0x100 + (++s)]
@@ -678,7 +678,7 @@ uint8_t tempb;
 		tempw = (a + temp + (p.c ? 1 : 0));	   \
 		p.v = (!((a ^ temp) & 0x80) && ((a ^ tempw) & 0x80));  \
 		a = tempw & 0xFF;		   \
-		p.c = tempw & 0x100;		      \
+		p.c = !!(tempw & 0x100);	   \
 		setzn(a);		   \
 	}				   \
 	else				   \
@@ -832,7 +832,7 @@ void exec6502(int linenum, int cpl)
 				case 0x06:         /*ASL zp*/
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
-					p.c = temp & 0x80;
+					p.c = !!(temp & 0x80);
 					temp <<= 1;
 					setzn(temp);
 					writemem(addr, temp);
@@ -864,7 +864,7 @@ void exec6502(int linenum, int cpl)
 					break;
 
 				case 0x0A:         /*ASL A*/
-					p.c = a & 0x80;
+					p.c = !!(a & 0x80);
 					a <<= 1;
 					setzn(a);
 					polltime(2);
@@ -887,7 +887,7 @@ void exec6502(int linenum, int cpl)
 				case 0x0E:         /*ASL abs*/
 					addr = getw();
 					temp = readmem(addr);
-					p.c = temp & 0x80;
+					p.c = !!(temp & 0x80);
 					temp <<= 1;
 					setzn(temp);
 					writemem(addr, temp);
@@ -927,7 +927,7 @@ void exec6502(int linenum, int cpl)
 				case 0x16:         /*ASL zp,x*/
 					addr = (readmem(pc) + x) & 0xFF; pc++;
 					temp = ram[addr];
-					p.c = temp & 0x80;
+					p.c = !!(temp & 0x80);
 					temp <<= 1;
 					setzn(temp);
 					ram[addr] = temp;
@@ -961,7 +961,7 @@ void exec6502(int linenum, int cpl)
 				case 0x1E:         /*ASL abs,x*/
 					addr = getw(); addr += x;
 					temp = readmem(addr);
-					p.c = temp & 0x80;
+					p.c = !!(temp & 0x80);
 					temp <<= 1;
 					writemem(addr, temp);
 					setzn(temp);
@@ -988,8 +988,8 @@ void exec6502(int linenum, int cpl)
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
 					p.z = !(a & temp);
-					p.v = temp & 0x40;
-					p.n = temp & 0x80;
+					p.v = !!(temp & 0x40);
+					p.n = !!(temp & 0x80);
 					polltime(3);
 					break;
 
@@ -1004,7 +1004,7 @@ void exec6502(int linenum, int cpl)
 					addr = readmem(pc); pc++;
 					temp = readmem(addr);
 					tempi = p.c;
-					p.c = temp & 0x80;
+					p.c = !!(temp & 0x80);
 					temp <<= 1;
 					if (tempi)
 						temp |= 1;
@@ -1015,9 +1015,9 @@ void exec6502(int linenum, int cpl)
 
 				case 0x28:         /*PLP*/
 					temp = pull();
-					p.c = temp & 1; p.z = temp & 2;
-					p.i = temp & 4; p.d = temp & 8;
-					p.v = temp & 0x40; p.n = temp & 0x80;
+					p.c = !!(temp & 1); p.z = !!(temp & 2);
+					p.i = !!(temp & 4); p.d = !!(temp & 8);
+					p.v = !!(temp & 0x40); p.n = !!(temp & 0x80);
 					polltime(4);
 					break;
 
@@ -1029,7 +1029,7 @@ void exec6502(int linenum, int cpl)
 
 				case 0x2A:         /*ROL A*/
 					tempi = p.c;
-					p.c = a & 0x80;
+					p.c = !!(a & 0x80);
 					a <<= 1;
 					if (tempi)
 						a |= 1;
@@ -1041,8 +1041,8 @@ void exec6502(int linenum, int cpl)
 					addr = getw();
 					temp = readmem(addr);
 					p.z = !(a & temp);
-					p.v = temp & 0x40;
-					p.n = temp & 0x80;
+					p.v = !!(temp & 0x40);
+					p.n = !!(temp & 0x80);
 					polltime(4);
 					break;
 
@@ -1057,7 +1057,7 @@ void exec6502(int linenum, int cpl)
 					addr = getw();
 					temp = readmem(addr);
 					tempi = p.c;
-					p.c = temp & 0x80;
+					p.c = !!(temp & 0x80);
 					temp <<= 1;
 					if (tempi)
 						temp |= 1;
@@ -1101,7 +1101,7 @@ void exec6502(int linenum, int cpl)
 					addr += x; addr &= 0xFF;
 					temp = ram[addr];
 					tempi = p.c;
-					p.c = temp & 0x80;
+					p.c = !!(temp & 0x80);
 					temp <<= 1;
 					if (tempi)
 						temp |= 1;
@@ -1138,7 +1138,7 @@ void exec6502(int linenum, int cpl)
 					addr = getw(); addr += x;
 					temp = readmem(addr);
 					tempi = p.c;
-					p.c = temp & 0x80;
+					p.c = !!(temp & 0x80);
 					temp <<= 1;
 					if (tempi)
 						temp |= 1;
@@ -1150,9 +1150,9 @@ void exec6502(int linenum, int cpl)
 				case 0x40:         /*RTI*/
 	//                                output=0;
 					temp = pull();
-					p.c = temp & 1; p.z = temp & 2;
-					p.i = temp & 4; p.d = temp & 8;
-					p.v = temp & 0x40; p.n = temp & 0x80;
+					p.c = !!(temp & 1); p.z = !!(temp & 2);
+					p.i = !!(temp & 4); p.d = !!(temp & 8);
+					p.v = !!(temp & 0x40); p.n = !!(temp & 0x80);
 					pc = pull();
 					pc |= (pull() << 8);
 					polltime(6);
@@ -2119,7 +2119,7 @@ void exec6502(int linenum, int cpl)
 					addr = getw();  /*Found in The Hobbit*/
 					temp = readmem(addr);
 					tempi = p.c;
-					p.c = temp & 0x80;
+					p.c = !!(temp & 0x80);
 					temp <<= 1;
 					if (tempi)
 						temp |= 1;
