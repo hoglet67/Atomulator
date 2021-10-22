@@ -2228,7 +2228,7 @@ void exec6502(int linenum, int cpl)
 	                        if (pc==0xF9E0) rpclog("Loading block...\n");
 	                        if (pc==0xFA07) rpclog("Finished block, %i\n",p.c);*/
 	//                        if (pc==0xF172) output=1;
-	//                        if (output) rpclog("%02X A=%02X X=%02X Y=%02X PC=%04X %c%c%c%c%c%c %i\n",opcode,a,x,y,pc,(p.n)?'N':' ',(p.v)?'V':' ',(p.d)?'D':' ',(p.i)?'I':' ',(p.z)?'Z':' ',(p.c)?'C':' ',t	otcyc);
+	//                        if (output) rpclog("%02X A=%02X X=%02X Y=%02X PC=%04X %c%c%c%c%c%c %i\n",opcode,a,x,y,pc,(p.n)?'N':' ',(p.v)?'V':' ',(p.d)?'D':' ',(p.i)?'I':' ',(p.z)?'Z':' ',(p.c)?'C':' ',totcyc);
 				ins++;
 	/*                        if (timetolive)
 	                        {
