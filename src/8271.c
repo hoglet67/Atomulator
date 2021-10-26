@@ -15,7 +15,7 @@ void headercrcerror8271();
 void writeprotect8271();
 int getdata8271(int last);
 
-int byte;
+static int byte;
 int verify8271 = 0;
 struct
 {
@@ -111,8 +111,7 @@ int getparams8271()
         dumpregs();
         exit(-1);*/
 }
-uint16_t pc;
-int output, timetolive;
+extern int output, timetolive; /* defined in 6502.c */
 uint8_t read8271(uint16_t addr)
 {
 	uint8_t val;

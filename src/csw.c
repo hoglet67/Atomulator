@@ -16,7 +16,7 @@ int cswrate;
 uint8_t *cswdat;
 int cswpoint;
 uint8_t cswhead[0x34];
-int tapelcount, tapellatch, pps;
+static int tapelcount, tapellatch, pps; /* static because uef.c has the exact same definitions */
 int cswskip = 0;
 int tapespeed;
 float cswmul;
@@ -102,7 +102,7 @@ int getcsw()
 int fpoint = 0;
 int header, cinbyte, cnextbit;
 int cover;
-int output;
+extern int output; /* defined in 6502.c */
 
 uint8_t findcswbyte()
 {

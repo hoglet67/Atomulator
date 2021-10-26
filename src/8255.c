@@ -10,15 +10,18 @@ int sndpos = 0;
 
 /*SWARM - CTRL=LEFT, ADJ=RIGHT, REPT=FIRE*/
 /*PINBALL - SHIFT,REPT*/
-int output;
-int tapecyc;
-int inchunk;
+extern int output; /* defined in 6502.c */
+extern int tapecyc; /* defined in 6502.c */
+extern int tapeon; /* defined in 6502.c */
+static int inchunk; /* when not static would conflict with definition in uef.c */
 int intone = 0, tapedat, hightone = 0;
 int bytevalid = 0, bitvalid = 0;
-int tapeon = 0;
 uint16_t databyte;
-
-uint16_t pc;
+int vbl;
+int gfxmode;
+int css;
+uint8_t lastdat;
+static int speaker;
 
 int keyl[128];
 int keys[16][6] =

@@ -12,12 +12,9 @@
 #include "roms.h"
 #include "debugger.h"
 
-uint8_t *ram;
-
 HWND hwndCat;
 
 int infocus = 1;
-int tapeon;
 
 HWND ghwnd;
 char szClassName[]  = "WindowsApp";

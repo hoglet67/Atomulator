@@ -26,6 +26,8 @@
 #define IER     	0x0e
 #define ORAnh   	0x0f
 
+VIA via;
+
 void updateIFR()
 {
 	if ((via.ifr & 0x7F) & (via.ier & 0x7F))
@@ -41,7 +43,6 @@ void updateIFR()
 }
 
 int timerout = 1;
-int lns;
 void updatetimers()
 {
 	if (via.t1c < -3)

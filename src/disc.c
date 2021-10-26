@@ -6,7 +6,18 @@
 #include <stdio.h>
 #include "atom.h"
 
-int motoron = 0, fdctime = 0, motorspin = 0, curdrive = 0;
+int motoron = 0, fdctime = 0, motorspin = 0, curdrive = 0, disctime = 0; /* only curdrive is used in this file, the rest is used from other files. */
+DRIVE drives[2];
+/* The following function pointers need to live somewhere, maybe this is a good spot. */
+void (*fdccallback)();
+void (*fdcdata)(uint8_t dat);
+void (*fdcspindown)();
+void (*fdcfinishread)();
+void (*fdcnotfound)();
+void (*fdcdatacrcerror)();
+void (*fdcheadercrcerror)();
+void (*fdcwriteprotect)();
+int (*fdcgetdata)(int last);
 
 struct
 {

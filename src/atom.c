@@ -96,8 +96,8 @@ void prtbuf(char *format, ...)
 
 /*END SP7*/
 
-int tapeon;
-uint8_t *ram;
+extern int tapeon; /* definition in 6502.c */
+extern uint8_t *ram; /* definition in 6502.c */
 char filelist[256][17];
 int filelistsize;
 int filepos[256];
