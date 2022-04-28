@@ -15,7 +15,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -96,7 +95,7 @@ static FRESULT build_absolute_path(const XCHAR *xpath, char *newpath, int valida
 	if (validate_name) {
 
 		// Find the last element of the path
-		char *name = rindex(path, '/');
+		char *name = strrchr(path, '/');
 		if (name == NULL) {
 			name = path;
 		} else {
@@ -104,7 +103,7 @@ static FRESULT build_absolute_path(const XCHAR *xpath, char *newpath, int valida
 		}
 
 		// Find the suffix
-		char *suffix = index(name, '.');
+		char *suffix = strchr(name, '.');
 
 		// Validate the name part
 		int name_len = (suffix != NULL) ? (suffix - name) : strlen(name);
@@ -118,7 +117,7 @@ static FRESULT build_absolute_path(const XCHAR *xpath, char *newpath, int valida
 			// Skip past the period
 			suffix++;
 			// Reject multiple suffixes
-			if (index(suffix, '.') != NULL) {
+			if (strchr(suffix, '.') != NULL) {
 				// More than one suffix
 				return FR_INVALID_NAME;
 			}
