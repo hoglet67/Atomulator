@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -81,9 +82,9 @@ static FRESULT build_absolute_path(const XCHAR *xpath, char *newpath, int valida
 	// Make a copy of the path, so we can normalize the path seperators
 	char path[PATHSIZE+1];
 	strncpy(path, xpath, PATHSIZE);
-
 	// Normalize the path seperators (linux treats \ as a valid name character)
-	for (int i = 0; i < strlen(path); i++) {
+	int i;
+	for (i = 0; i < strlen(path); i++) {
 		if (path[i] == '\\') {
 			path[i] = '/';
 		}
