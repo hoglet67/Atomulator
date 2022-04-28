@@ -469,7 +469,7 @@ FRESULT f_opendir (
 	//rpclog("f_opendir(%s)\n",path);
 
 	FRESULT res;
-	if ((res = build_absolute_path(path, newpath, 1)) != FR_OK) {
+	if ((res = build_absolute_path(path, newpath, 0)) != FR_OK) {
 		return res;
 	}
 
