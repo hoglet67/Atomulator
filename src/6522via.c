@@ -26,6 +26,21 @@
 #define IER     	0x0e
 #define ORAnh   	0x0f
 
+// DMB: TODO 2022/04/28
+//
+// via.porta and via.portb (which emulate the voltages on the external pins)
+// should be calculated on the fly. The current code attempts to pre calculate
+// them, and does an incomplete job (e.g. when the DDR changes).
+//
+// via.pcr bits 7..0 (ca1/2 and cb1/2 control) are not used
+//
+// via.acr bits 4..2 (the shift register) are not used
+//
+// via.acr bit 0 (porta latch control) is not used
+//
+// via.sr is not implemented at all
+//
+
 VIA via;
 
 void updateIFR()
@@ -58,9 +73,11 @@ void updatetimers()
 
 		if ((via.acr & 0x80) && !via.t1hit)
 		{
-			via.orb ^= 0x80;
-			via.irb ^= 0x80;
-			via.portb ^= 0x80;
+			// DMB: the timer output bit is seperately maintained
+			// (i.e. it doesn't actually affect 8-bit internal ORB register)
+			// via.orb ^= 0x80;
+			// via.irb ^= 0x80;
+			// via.portb ^= 0x80;
 			timerout ^= 1;
 		}
 
@@ -221,9 +238,10 @@ uint8_t readvia(uint16_t addr)
 		via.ifr &= ~PORTAINT;
 		updateIFR();
 	case ORAnh:
+		// DMB: Note the current modelling of Port A doesn't include input latch
 		temp = via.ora & via.ddra;
-		temp |= (via.porta & ~via.ddra);
-		temp &= 0x7F;
+		// DMB: PA7 input is cleared here so the printer is seen as not busy
+		temp |= (via.porta & ~via.ddra & 0x7F);
 		return temp;
 
 	case ORB:
@@ -234,11 +252,13 @@ uint8_t readvia(uint16_t addr)
 			temp |= (via.irb & ~via.ddrb);
 		else
 			temp |= (via.portb & ~via.ddrb);
-		temp |= 0xFF;
-		if (timerout)
-			temp |= 0x80;
-		else
-			temp &= ~0x80;
+		// DMB: The next line is clearly wrong, so commented out
+		// temp |= 0xFF;
+		// DMB: The timer output is only mixed in if ACR bit 7 is '1'
+		if (via.acr & 0x80) {
+			temp &= 0x7f;
+			temp != (timerout << 7);
+		}
 //                printf("ORB read %02X\n",temp);
 //                temp|=0xF0;
 		return temp;
