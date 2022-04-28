@@ -37,14 +37,11 @@
 # endif
 #endif
 
-#define SHORT_NAME_LEN	12
-
 DIR 	dj;
 EMUDIR	emu;
 char	MMCPath[PATHSIZE+1];
 char	BaseMMCPath[PATHSIZE+1];
 FIL		*openfil;
-char	openname[SHORT_NAME_LEN+1];
 
 #ifdef DEBUGFF
 void HexDump(const void 	*Buff,
@@ -79,15 +76,71 @@ void HexDumpHead(const void 	*Buff,
 // AtoMMC emulation allows access to filesystem objects outside of the MMC path
 // https://github.com/hoglet67/Atomulator/issues/13
 
-static void build_absolute_path(const XCHAR *path, char *newpath)
+static FRESULT build_absolute_path(const XCHAR *xpath, char *newpath, int validate_name)
 {
-	if (*path == '/' || *path == '\\') {
+	// Make a copy of the path, so we can normalize the path seperators
+	char path[PATHSIZE+1];
+	strncpy(path, xpath, PATHSIZE);
+
+	// Normalize the path seperators (linux treats \ as a valid name character)
+	for (int i = 0; i < strlen(path); i++) {
+		if (path[i] == '\\') {
+			path[i] = '/';
+		}
+	}
+
+	// For most functions, we need to make sure the name part is a valid 8.3 name
+	// (the exception is f_chdir where we allow things like .. and / and dir/)
+
+	if (validate_name) {
+
+		// Find the last element of the path
+		char *name = rindex(path, '/');
+		if (name == NULL) {
+			name = path;
+		} else {
+			name++;
+		}
+
+		// Find the suffix
+		char *suffix = index(name, '.');
+
+		// Validate the name part
+		int name_len = (suffix != NULL) ? (suffix - name) : strlen(name);
+		if (name_len < 1 || name_len > 8) {
+			// Name not between 1 and 8 characters
+			return FR_INVALID_NAME;
+		}
+
+		// Validate the optional suffix part
+		if (suffix) {
+			// Skip past the period
+			suffix++;
+			// Reject multiple suffixes
+			if (index(suffix, '.') != NULL) {
+				// More than one suffix
+				return FR_INVALID_NAME;
+			}
+			int suffix_len = strlen(suffix);
+			if (suffix_len == 0) {
+				// Remove a dangling suffix
+				*(suffix - 1) = '\0';
+			} else if (suffix_len > 3) {
+				// Suffix too long
+				return FR_INVALID_NAME;
+			}
+		}
+	}
+
+	// Make the path absolute
+	if (*path == '/') {
 		// absolute: append the path to the root directory path
-		snprintf(newpath,PATHSIZE,"%s/%s",BaseMMCPath,path);
+		snprintf(newpath, PATHSIZE, "%s/%s", BaseMMCPath, path);
 	} else {
 		// relative: append the path to current directory path
-		snprintf(newpath,PATHSIZE,"%s/%s",MMCPath,path);
+		snprintf(newpath, PATHSIZE, "%s/%s", MMCPath, path);
 	}
+	return F_OK;
 }
 
 static BYTE file_exists(char *name)
@@ -183,9 +236,11 @@ FRESULT f_chdir (
 {
 	char	newpath[PATHSIZE+1];
 	char	fullpath[PATHSIZE+1];
-	FRESULT	result = FR_NO_PATH;
 
-	build_absolute_path(path, newpath);
+	FRESULT	res;
+   	if ((res = build_absolute_path(path, newpath, 0)) != FR_OK) {
+		return res;
+	}
 
 	// Resolve the newpath
 	if(NULL!=saferealpath(newpath,fullpath))
@@ -197,14 +252,14 @@ FRESULT f_chdir (
 			if(dir_exists(fullpath) == FR_OK)
 			{
 				strcpy(MMCPath,fullpath);
-				result=FR_OK;
+				return FR_OK;
 			}
 		}
 	}
 
 	//rpclog("f_chdir(path)\nnewpath=%s\nfullpath=%s\nbasepath=%s\n",path,newpath,fullpath,BaseMMCPath);
 
-	return result;
+	return FR_NO_PATH;
 }
 
 FRESULT f_open (
@@ -219,7 +274,11 @@ FRESULT f_open (
 	int newfile;
 
 	// Get real path of file and check to see if it exists
-	build_absolute_path(path, open_path);
+	FRESULT res;
+	if ((res = build_absolute_path(path, open_path, 1)) != FR_OK) {
+		return res;
+	}
+
 	exists=file_exists(open_path);
 
 	//debuglog("f_open(%s,%02X):exists=%d\n",open_path,mode,exists);
@@ -372,7 +431,10 @@ FRESULT f_unlink (
 /* CHANGED FOR SP4 */
 
 	// Get real path of file and check to see if it exists
-	build_absolute_path(path, del_path);
+	FRESULT res;
+	if ((res = build_absolute_path(path, del_path, 1)) != FR_OK) {
+		return res;
+	}
 
 	// Check that path exists
 	if (stat(del_path, &statbuf)) {
@@ -406,7 +468,10 @@ FRESULT f_opendir (
 
 	//rpclog("f_opendir(%s)\n",path);
 
-	build_absolute_path(path, newpath);
+	FRESULT res;
+	if ((res = build_absolute_path(path, newpath, 1)) != FR_OK) {
+		return res;
+	}
 
 	if(findfirst(newpath,&emu))
 		return FR_OK;
@@ -468,8 +533,13 @@ FRESULT f_rename (
    char full_path_old[PATHSIZE+1];
    char full_path_new[PATHSIZE+1];
 
-   build_absolute_path(path_old, full_path_old);
-   build_absolute_path(path_new, full_path_new);
+   FRESULT res;
+   if ((res = build_absolute_path(path_old, full_path_old, 1)) != FR_OK) {
+	   return res;
+   }
+   if ((res = build_absolute_path(path_new, full_path_new, 1)) != FR_OK) {
+	   return res;
+   }
    //rpclog("f_rename(%s, %s)\n", full_path_old, full_path_new);
    if (rename(full_path_old, full_path_new) == 0) {
       return FR_OK;
@@ -483,7 +553,11 @@ FRESULT f_mkdir (
 )
 {
    char full_path[PATHSIZE+1];
-   build_absolute_path(path, full_path);
+
+   FRESULT res;
+   if ((res = build_absolute_path(path, full_path, 1)) != FR_OK) {
+	   return res;
+   }
 
    //rpclog("f_mkdir(%s)\n", full_path);
 
