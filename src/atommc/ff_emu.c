@@ -55,6 +55,41 @@ void HexDumpHead(const void 	*Buff,
 
 #endif
 
+// This function is used to convert an path sent by AtoMMC
+// to a filesystem path.
+//
+// Relative paths are appended to the curent directory (MMCPath)
+//
+// Absolute paths are appended to the "MMC" root directory (BaseMMCPath)
+//
+// Note: Atomulator does not securely sandbox the MMC directory. For example
+// *CAT /.. will access the parent folder (containing the Atomulator exe file)
+// *DELETE /..atom.cfg will delete the atom.cfg file (!!!)
+//
+// This is not a regression; it has always been the case.
+//
+// The f_chdir (change directory) function does try to prevent the user moveing
+// to a directory that is above BaseMMCPath. It does a reasonable job of this.
+// On linux, realpath() is used, for example. This approach does not generalize
+// to the other f_ functions, because realpath() only works if the file/
+// directory exists. So it could not, for example, be used by f_open().
+//
+// We should revisit this!
+//
+// AtoMMC emulation allows access to filesystem objects outside of the MMC path
+// https://github.com/hoglet67/Atomulator/issues/13
+
+static void build_absolute_path(const XCHAR *path, char *newpath)
+{
+	if (*path == '/' || *path == '\\') {
+		// absolute: append the path to the root directory path
+		snprintf(newpath,PATHSIZE,"%s/%s",BaseMMCPath,path);
+	} else {
+		// relative: append the path to current directory path
+		snprintf(newpath,PATHSIZE,"%s/%s",MMCPath,path);
+	}
+}
+
 static BYTE file_exists(char *name)
 {
 	struct stat statbuf;
@@ -150,13 +185,7 @@ FRESULT f_chdir (
 	char	fullpath[PATHSIZE+1];
 	FRESULT	result = FR_NO_PATH;
 
-	if (*path == '/' || *path == '\\') {
-		// append the new directory to the root path
-		snprintf(newpath,PATHSIZE,"%s/%s",BaseMMCPath,path);
-	} else {
-		// append the new directory to current path
-		snprintf(newpath,PATHSIZE,"%s/%s",MMCPath,path);
-	}
+	build_absolute_path(path, newpath);
 
 	// Resolve the newpath
 	if(NULL!=saferealpath(newpath,fullpath))
@@ -190,7 +219,7 @@ FRESULT f_open (
 	int newfile;
 
 	// Get real path of file and check to see if it exists
-	snprintf(open_path,PATHSIZE,"%s/%s",MMCPath,path);
+	build_absolute_path(path, open_path);
 	exists=file_exists(open_path);
 
 	//debuglog("f_open(%s,%02X):exists=%d\n",open_path,mode,exists);
@@ -343,7 +372,7 @@ FRESULT f_unlink (
 /* CHANGED FOR SP4 */
 
 	// Get real path of file and check to see if it exists
-	snprintf(del_path, PATHSIZE, "%s/%s", MMCPath, path);
+	build_absolute_path(path, del_path);
 
 	// Check that path exists
 	if (stat(del_path, &statbuf)) {
@@ -377,7 +406,7 @@ FRESULT f_opendir (
 
 	//rpclog("f_opendir(%s)\n",path);
 
-	snprintf(newpath,PATHSIZE,"%s/%s",MMCPath,path);
+	build_absolute_path(path, newpath);
 
 	if(findfirst(newpath,&emu))
 		return FR_OK;
@@ -438,8 +467,9 @@ FRESULT f_rename (
 {
    char full_path_old[PATHSIZE+1];
    char full_path_new[PATHSIZE+1];
-   snprintf(full_path_old, PATHSIZE, "%s/%s", MMCPath, path_old);
-   snprintf(full_path_new, PATHSIZE, "%s/%s", MMCPath, path_new);
+
+   build_absolute_path(path_old, full_path_old);
+   build_absolute_path(path_new, full_path_new);
    //rpclog("f_rename(%s, %s)\n", full_path_old, full_path_new);
    if (rename(full_path_old, full_path_new) == 0) {
       return FR_OK;
@@ -453,7 +483,7 @@ FRESULT f_mkdir (
 )
 {
    char full_path[PATHSIZE+1];
-   snprintf(full_path, PATHSIZE, "%s/%s", MMCPath, path);
+   build_absolute_path(path, full_path);
 
    //rpclog("f_mkdir(%s)\n", full_path);
 
