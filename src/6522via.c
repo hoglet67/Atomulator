@@ -49,13 +49,13 @@ void updatetimers()
 	{
 		while (via.t1c < -3)
 			via.t1c += via.t1l + 4;
-		
+
 		if (!via.t1hit)
 		{
 			via.ifr |= TIMER1INT;
 			updateIFR();
 		}
-		
+
 		if ((via.acr & 0x80) && !via.t1hit)
 		{
 			via.orb ^= 0x80;
@@ -63,11 +63,11 @@ void updatetimers()
 			via.portb ^= 0x80;
 			timerout ^= 1;
 		}
-		
+
 		if (!(via.acr & 0x40))
 			via.t1hit = 1;
 	}
-	
+
 	if (!(via.acr & 0x20) /* && !via.t2hit*/)
 	{
 		if (via.t2c < -3 && !via.t2hit)
@@ -175,7 +175,11 @@ void writevia(uint16_t addr, uint8_t val)
 		via.t2l &= 0xFF;
 		via.t2l |= (val << 8);
 //                if (via.t2c<1) printf("UT2 reload %i\n",via.t2c);
-		via.t2c = via.t2l + 1;
+		via.t2c = via.t2l;
+		/* Increment the value because it must take effect in 1 tick. */
+		if (!(via.acr & 0x20)) {
+			via.t2c++;
+		}
 		via.ifr &= ~TIMER2INT;
 		updateIFR();
 		via.t2hit = 0;
@@ -293,7 +297,7 @@ void resetvia()
 	via.t1hit = via.t2hit = 1;
 	timerout = 1;
 	via.acr = 0;
-	
+
 	// To make sure interrupts get cleared at reset
 	updateIFR();
 }
