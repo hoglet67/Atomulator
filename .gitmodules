@@ -4,3 +4,6 @@
 [submodule "lib/openal-soft"]
 	path = lib/openal-soft
 	url = https://github.com/kcat/openal-soft.git
+[submodule "lib/freealut"]
+	path = lib/freealut
+	url = https://github.com/vancegroup/freealut.git
