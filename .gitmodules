@@ -1,3 +1,6 @@
 [submodule "lib/allegro4"]
 	path = lib/allegro4
 	url = https://github.com/liballeg/allegro4.git
+[submodule "lib/openal-soft"]
+	path = lib/openal-soft
+	url = https://github.com/kcat/openal-soft.git
