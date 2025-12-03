@@ -126,16 +126,16 @@ void StripTrailingSlash(char	*path)
 char *saferealpath(const char *path, char *resolved_path)
 {
 #ifdef __WIN32__
-	char	buf[MAX_PATH];
+	char	buf[MAXPATH];
 	char* 	basename;
 	int		len;
 	size_t	idx;
 
-	_fullpath(buf,path,MAX_PATH);
+	_fullpath(buf,path,MAXPATH);
 
 	len=strlen(buf);
 
-	if (len == 0 || len > MAX_PATH - 1)
+	if (len == 0 || len > MAXPATH - 1)
 		strcpy(resolved_path, path);
 	else
 		strcpy(resolved_path, buf);
