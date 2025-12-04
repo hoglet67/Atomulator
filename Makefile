@@ -69,6 +69,10 @@ FULLOBJ = $(foreach objname, $(OBJ), $(BUILD_DIR)/$(objname))
 FULLSIDOBJ = $(foreach objname, $(SIDOBJ), $(BUILD_DIR)/resid-fp/$(objname))
 FULLMMCOBJ = $(foreach objname, $(MMCOBJ), $(BUILD_DIR)/atommc/$(objname))
 
+BUILD_VER != git describe --tags --always
+# Extra escaped quotes due to C Macro quoting. Defaults to commit sha if no tags
+CFLAGS += -DBUILD_VER="\"$(BUILD_VER)\""
+
 help:
 	@echo Available targets: all, clean
 	@echo See $(MAKEFILE_TARGET) in src for more targets
