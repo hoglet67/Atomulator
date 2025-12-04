@@ -1,8 +1,11 @@
-name: C/C++ CI
+name: Build
+run-name: Build Atomulator
 
 on:
   push:
     branches: [ "master" ]
+    tags:
+      - '*'
   pull_request:
     branches: [ "master" ]
 
@@ -181,3 +184,59 @@ jobs:
       with:
         name: Atomulator-linux
         path: bin
+
+  release:
+    if: github.ref_type == 'tag'
+    needs:
+    - build-ubuntu
+    - build-windows
+    runs-on: ubuntu-latest
+    steps:
+    - run: mkdir release
+
+    - name: Download Windows Artifact
+      uses: actions/download-artifact@v5.0.0
+      with:
+        name: Atomulator-windows
+        path: release/windows
+
+    - name: Download Linux Artifact
+      uses: actions/download-artifact@v5.0.0
+      with:
+        name: Atomulator-linux
+        path: release/linux
+
+    - name: Compress Releases
+      working-directory: release
+      run: |
+        zip -r Atomulator-win32-${GITHUB_REF_NAME}.zip windows
+        tar -czf Atomulator-linux-i686-${GITHUB_REF_NAME}.tar.gz linux
+
+    - name: Create Github Release
+      working-directory: release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+      run: |
+        echo "Creating Release ${GITHUB_REF_NAME}"
+        gh release create \
+          "${GITHUB_REF_NAME}" \
+          --draft \
+          --title "${GITHUB_REF_NAME}" \
+          --notes "Atomulator Release ${GITHUB_REF_NAME}"
+
+        echo "Uploading Artifacts to Release"
+
+        echo "    Artifact: Atomulator-win32-${GITHUB_REF_NAME}.zip"
+        gh release upload "${GITHUB_REF_NAME}" Atomulator-win32-${GITHUB_REF_NAME}.zip
+
+        echo "    Artifact: Atomulator-linux-i686-${GITHUB_REF_NAME}.tar.gz"
+        gh release upload "${GITHUB_REF_NAME}" Atomulator-linux-i686-${GITHUB_REF_NAME}.tar.gz
+
+        if [[ "${GITHUB_REF_NAME}" =~ [0-9.]+-.* ]]; then
+          echo "Setting to pre-release"
+          gh release edit "${GITHUB_REF_NAME}" --prerelease --draft=false
+        fi
+
+        echo "Taking Release out of Draft"
+        gh release edit "${GITHUB_REF_NAME}" --draft=false
