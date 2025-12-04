@@ -1,7 +1,9 @@
 mmc/
+build/
 *.o
 atom.cfg
 rlog.txt
 *~
 \#*
 Atomulator
+bin/
