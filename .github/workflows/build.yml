@@ -214,6 +214,7 @@ jobs:
     - name: Compress Linux Release
       working-directory: release/linux
       run: |
+        chmod +x Atomulator
         tar -czf ../Atomulator-linux-i686-${GITHUB_REF_NAME}.tar.gz .
 
     - name: Create Github Release
