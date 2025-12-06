@@ -206,11 +206,15 @@ jobs:
         name: Atomulator-linux
         path: release/linux
 
-    - name: Compress Releases
-      working-directory: release
+    - name: Compress Windows Release
+      working-directory: release/windows
       run: |
-        zip -r Atomulator-win32-${GITHUB_REF_NAME}.zip windows
-        tar -czf Atomulator-linux-i686-${GITHUB_REF_NAME}.tar.gz linux
+        zip -r ../Atomulator-win32-${GITHUB_REF_NAME}.zip .
+
+    - name: Compress Linux Release
+      working-directory: release/linux
+      run: |
+        tar -czf ../Atomulator-linux-i686-${GITHUB_REF_NAME}.tar.gz .
 
     - name: Create Github Release
       working-directory: release
