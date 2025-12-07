@@ -1,0 +1,247 @@
+name: Build
+run-name: Build Atomulator
+
+on:
+  push:
+    branches: [ "master" ]
+    tags:
+      - '*'
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  # running a seperate job on each due to artifact output name difference
+  build-windows:
+    name: Build on Windows
+    runs-on: windows-latest
+    env:
+      BUILD_TOOL_BIN: C:/mingw32/bin
+      INCLUDE: C:/mingw32/include
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'true'
+
+    - name: Setup Allegro4 Build
+      working-directory: lib/allegro4
+      run: mkdir Build
+
+    - name: Restore Cache Allegro4
+      id: cache-allegro4-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: lib/allegro4/Build
+        key: ${{ runner.os }}-allegro4
+
+    - name: Allegro4 CMake
+      if: steps.cache-allegro4-restore.outputs.cache-hit != 'true'
+      working-directory: lib/allegro4/Build
+      run: |
+        $env:Path = "$env:BUILD_TOOL_BIN;" + $env:Path
+        cmake -Wno-dev `
+        -DCMAKE_BUILD_TYPE:STRING="RelWithDebInfo" `
+        -DCMAKE_COLOR_MAKEFILE:BOOL="0" `
+        -DCMAKE_C_COMPILER:FILEPATH="gcc.exe" `
+        -DCMAKE_CXX_COMPILER:STRING="g++.exe" `
+        -DCMAKE_LINKER:FILEPATH="ld.exe" `
+        -DCMAKE_MAKE_PROGRAM:FILEPATH="mingw32-make.exe" `
+        -DCMAKE_NM:FILEPATH="nm.exe" `
+        -DDDRAW_INCLUDE_DIR:PATH="$env:GITHUB_WORKSPACE/lib/dx80_mgw/include" `
+        -DDDRAW_LIBRARY:FILEPATH="$env:GITHUB_WORKSPACE/lib/dx80_mgw/lib/libddraw.a" `
+        -DDINPUT_INCLUDE_DIR:PATH="$env:GITHUB_WORKSPACE/lib/dx80_mgw/include" `
+        -DDINPUT_LIBRARY:FILEPATH="$env:GITHUB_WORKSPACE/lib/dx80_mgw/lib/libdinput.a" `
+        -DDSOUND_INCLUDE_DIR:PATH="$env:GITHUB_WORKSPACE/lib/dx80_mgw/include" `
+        -DDSOUND_LIBRARY:FILEPATH="$env:GITHUB_WORKSPACE/lib/dx80_mgw/lib/libdsound.a" `
+        -DDXGUID_LIBRARY:FILEPATH="$env:GITHUB_WORKSPACE/lib/dx80_mgw/lib/libdxguid.a" `
+        -DSHARED:BOOL="1" `
+        -DWANT_ALLEGROGL:BOOL="0" `
+        -DWANT_DOCS:BOOL="0" `
+        -DWANT_EXAMPLES:BOOL="0" `
+        -DWANT_JPGALLEG:BOOL="0" `
+        -DWANT_LOADPNG:BOOL="0" `
+        -DWANT_LOGG:BOOL="0" `
+        -DWANT_MODULES:BOOL="0" `
+        -DWANT_TESTS:BOOL="0" `
+        -DWANT_TOOLS:BOOL="0" `
+        -DWANT_X11:BOOL="0" `
+        -G "MinGW Makefiles" `
+        ..
+        mingw32-make.exe
+
+    - name: Save Cache Allegro4
+      id: cache-allegro4-save
+      if: steps.cache-allegro4-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: lib/allegro4/Build
+        key: ${{ steps.cache-allegro4-restore.outputs.cache-primary-key }}
+
+    - name: Restore Cache OpenAL
+      id: cache-openal-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: lib/openal-soft/build
+        key: ${{ runner.os }}-openal
+
+    - name: OpenAL Make & Build
+      if: steps.cache-openal-restore.outputs.cache-hit != 'true'
+      working-directory: lib/openal-soft/build
+      run: |
+        $env:Path = "$env:BUILD_TOOL_BIN;" + $env:Path
+        cmake -G "MinGW Makefiles" `
+        -DALSOFT_TESTS=ON `
+        -DALSOFT_BUILD_ROUTER=ON `
+        -DALSOFT_REQUIRE_WINMM=ON `
+        -DALSOFT_REQUIRE_DSOUND=ON `
+        -DALSOFT_REQUIRE_WASAPI=ON `
+        ..
+        mingw32-make.exe
+
+    - name: Save Cache OpenAL
+      id: cache-openal-save
+      if: steps.cache-openal-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: lib/openal-soft/build
+        key: ${{ steps.cache-openal-restore.outputs.cache-primary-key }}
+
+    - name: Setup Freealut Build
+      working-directory: lib/freealut
+      run: mkdir build
+
+    - name: Restore Cache Freealut
+      id: cache-freealut-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: lib/freealut/build
+        key: ${{ runner.os }}-openal
+
+    - name: Make Freealut
+      if: steps.cache-freealut-restore.outputs.cache-hit != 'true'
+      working-directory: lib/freealut/build
+      run: |
+        $env:Path = "$env:BUILD_TOOL_BIN;" + $env:Path
+        cmake -G "MinGW Makefiles" `
+        -DOPENAL_INCLUDE_DIR:FILEPATH="$env:GITHUB_WORKSPACE/lib/openal-soft/include" `
+        -DOPENAL_LIBRARY:FILEPATH="$env:GITHUB_WORKSPACE/lib/openal-soft/build/OpenAL32.dll" `
+        ..
+        mingw32-make.exe
+
+    - name: Save Cache Freealut
+      id: cache-freealut-save
+      if: steps.cache-freealut-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: lib/freealut/build
+        key: ${{ steps.cache-freealut-restore.outputs.cache-primary-key }}
+
+    - name: make Atomulator
+      run: |
+        $env:Path = "$env:BUILD_TOOL_BIN;" + $env:Path
+        mingw32-make.exe all
+
+    - name: Copy DLLs and Roms into release
+      run: |
+        Copy-Item lib/allegro4/Build/lib/alleg44.dll bin
+        Copy-Item lib/openal-soft/build/OpenAL32.dll bin
+        Copy-Item lib/freealut/build/src/libalut.dll bin
+        Copy-Item C:\mingw32\i686-w64-mingw32\lib\libstdc++-6.dll bin
+        Copy-Item C:\mingw32\opt\bin\libgcc_s_dw2-1.dll bin
+        Copy-Item C:\mingw32\opt\bin\libwinpthread-1.dll bin
+        
+        Copy-Item -Recurse roms bin
+        Copy-Item -Recurse ddnoise bin
+        Copy-Item -Recurse mmc bin
+
+    - name: Upload Build
+      uses: actions/upload-artifact@v5.0.0
+      with:
+        name: Atomulator-windows
+        path: bin
+
+  build-ubuntu:
+    name: Build on Ubuntu
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: install deps
+      run: sudo apt install -y libalut-dev liballegro4-dev
+
+    - name: make
+      run: make all
+
+    - name: Copy ROMS etc
+      run: |
+        cp -r roms bin
+        cp -r ddnoise bin
+        cp -r mmc bin
+
+    - name: Upload Build
+      uses: actions/upload-artifact@v5.0.0
+      with:
+        name: Atomulator-linux
+        path: bin
+
+  release:
+    if: github.ref_type == 'tag'
+    needs:
+    - build-ubuntu
+    - build-windows
+    runs-on: ubuntu-latest
+    steps:
+    - run: mkdir release
+
+    - name: Download Windows Artifact
+      uses: actions/download-artifact@v5.0.0
+      with:
+        name: Atomulator-windows
+        path: release/windows
+
+    - name: Download Linux Artifact
+      uses: actions/download-artifact@v5.0.0
+      with:
+        name: Atomulator-linux
+        path: release/linux
+
+    - name: Compress Windows Release
+      working-directory: release/windows
+      run: |
+        zip -r ../Atomulator-win32-${GITHUB_REF_NAME}.zip .
+
+    - name: Compress Linux Release
+      working-directory: release/linux
+      run: |
+        chmod +x Atomulator
+        tar -czf ../Atomulator-linux-i686-${GITHUB_REF_NAME}.tar.gz .
+
+    - name: Create Github Release
+      working-directory: release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+      run: |
+        echo "Creating Release ${GITHUB_REF_NAME}"
+        gh release create \
+          "${GITHUB_REF_NAME}" \
+          --draft \
+          --title "${GITHUB_REF_NAME}" \
+          --notes "Atomulator Release ${GITHUB_REF_NAME}"
+
+        echo "Uploading Artifacts to Release"
+
+        echo "    Artifact: Atomulator-win32-${GITHUB_REF_NAME}.zip"
+        gh release upload "${GITHUB_REF_NAME}" Atomulator-win32-${GITHUB_REF_NAME}.zip
+
+        echo "    Artifact: Atomulator-linux-i686-${GITHUB_REF_NAME}.tar.gz"
+        gh release upload "${GITHUB_REF_NAME}" Atomulator-linux-i686-${GITHUB_REF_NAME}.tar.gz
+
+        if [[ "${GITHUB_REF_NAME}" =~ [0-9.]+-.* ]]; then
+          echo "Setting to pre-release"
+          gh release edit "${GITHUB_REF_NAME}" --prerelease --draft=false
+        fi
+
+        echo "Taking Release out of Draft"
+        gh release edit "${GITHUB_REF_NAME}" --draft=false

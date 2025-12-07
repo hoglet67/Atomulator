@@ -1,6 +1,10 @@
 #include <stdint.h>
 
-#define ATOMULATOR_VERSION	"Atomulator 1.31"
+#ifndef BUILD_VER
+#define BUILD_VER "Dev"
+#endif
+
+#define ATOMULATOR_VERSION	"Atomulator " BUILD_VER
 
 #define MAXPATH	512
 
@@ -191,7 +195,7 @@ void givealbuffer(int16_t *buf);
 void givealbufferdd(int16_t *buf);
 
 void reset6502();
-void exec6502();
+void exec6502(int, int);
 void dumpregs();
 
 void initmem();
@@ -230,7 +234,7 @@ void enddebug();
 void killdebug();
 void debugread(uint16_t addr);
 void debugwrite(uint16_t addr, uint8_t val);
-void dodebugger();
+void dodebugger(int);
 void debuglog(char *format, ...);
 
 void cataddname(char *s);

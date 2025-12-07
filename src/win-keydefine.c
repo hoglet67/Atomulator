@@ -261,6 +261,6 @@ BOOL CALLBACK redefinedlgproc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lPa
 
 void redefinekeys()
 {
-	DialogBox(hinstance, TEXT("Redefine"), ghwnd, redefinedlgproc);
+	DialogBox(hinstance, TEXT("Redefine"), ghwnd, (DLGPROC)redefinedlgproc);
 }
 #endif
