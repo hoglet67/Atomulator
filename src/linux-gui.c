@@ -556,6 +556,7 @@ int gui_mainmem()
 int gui_vidram()
 {
 	vid_ramflag=(intptr_t)active_menu->dp;
+    SET_VID_TOP();
     updatelinuxgui();
     return D_O_K;
 }
