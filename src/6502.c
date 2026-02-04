@@ -759,9 +759,6 @@ void exec6502(int linenum, int cpl)
 	int oldcyc;
 	int halfline;
 
-	// Maintain an error metric in 1000th of a cycle
-	int error = 0;
-
 	for (lines = 0; lines < linenum; lines++)
 	{
 //                rpclog("Exec line %i\n",lines);
@@ -772,13 +769,7 @@ void exec6502(int linenum, int cpl)
 		for (halfline = 0; halfline < 2; halfline++) {
 			pollsound();
 			cycles += (cpl >> 1);
-			// At cps=64 us, every half line the error is 0.152us
-			error += 152;
-			if (error >= 1000)
-			{
-				cycles--;
-				error -= 1000;
-			}
+	//                badline=0;
 			while (cycles > 0)
 			{
 				oldcyc = cycles;
