@@ -793,6 +793,8 @@ void exec6502(int linenum, int cpl)
 						temp |= 1;
 					if (p.z)
 						temp |= 2;
+					if (p.i)
+						temp |= 4;
 					if (p.d)
 						temp |= 8;
 					if (p.v)

@@ -82,7 +82,7 @@ void setspindown1770()
         motorspin=45000;
 }
 
-#define track0 (wd1770.curtrack?4:0)
+#define track0 (wd1770.curtrack?0:4)
 
 void write1770(uint16_t addr, uint8_t val)
 {
