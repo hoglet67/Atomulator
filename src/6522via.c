@@ -130,7 +130,7 @@ void writevia(uint16_t addr, uint8_t val)
 	case ORB:
 		via.orb = val;
 		via.portb = (via.portb & ~via.ddrb) | (via.orb & via.ddrb);
-		via.ifr &= 0xfe; //~PORTBINT;
+		via.ifr &= ~PORTBINT;
 		updateIFR();
 		break;
 
@@ -257,7 +257,7 @@ uint8_t readvia(uint16_t addr)
 		// DMB: The timer output is only mixed in if ACR bit 7 is '1'
 		if (via.acr & 0x80) {
 			temp &= 0x7f;
-			temp != (timerout << 7);
+			temp |= (timerout << 7);
 		}
 //                printf("ORB read %02X\n",temp);
 //                temp|=0xF0;
@@ -311,6 +311,9 @@ uint8_t readvia(uint16_t addr)
 void resetvia()
 {
 	via.ora = 0x80;
+	via.orb = 0;
+	via.ddra = via.ddrb = 0;
+	via.pcr = 0;
 	via.ifr = via.ier = 0;
 	via.t1c = via.t1l = 0x1FFFE;
 	via.t2c = via.t2l = 0x1FFFE;

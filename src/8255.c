@@ -89,6 +89,9 @@ void write8255(uint16_t addr, uint8_t val)
 //		rpclog("Speaker %i\n", (val & 4) >> 2);
 		break;
 	case 3:
+		// Bit 7 set is a mode-set word, not a bit set/reset
+		if (val & 0x80)
+			break;
 		switch (val & 0xE)
 		{
 		case 0x4:
